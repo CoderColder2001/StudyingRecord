@@ -1,4 +1,10 @@
-  
+## Content  
+* C++内存管理  
+* 变量与类型
+* STL
+
+<br>
+
 ----
   
 ## · c++内存管理
@@ -16,4 +22,79 @@
 <u>**引入virtual可能带来的副作用**</u> : &emsp; virtual会带来构造函数的强制合成（需要生成虚函数表 安排虚表指针）  
 * 每个类额外增加一个指针大小的内存占用  
 * 函数调用多一层间接性   
+<br>  
 
+----
+##  
+## · 变量与类型
+---  
+### 常量引用 & 引用常量 & 常量指针 & 指针常量  
+| code | explain |
+|--|--|
+|``` const int &r ``` | 对const的引用 |
+|``` int &const r ``` | 对const的引用 |  
+|``` const int *p ``` | 指向常量的指针 | 
+|``` int const *p ``` | 指向常量的指针 | 
+|``` int *const p ``` | 指针本身是常量（顶层const） | 
+
+在执行拷贝操作时，确保拷入和拷出的对象必须具有相同的底层const资格  
+（不能将一个const int * 赋值给 int *）
+
+---
+### auto（C++11）  
+主要用法  
+* 代替冗长复杂的变量声明
+* 定义模板参数时，用于声明依赖模板参数的变量
+* 模板函数依赖于模板参数的返回值   
+
+当引用被作为初始值时，真正参与初始化的是引用对象的值  
+此时编译器以引用对象的类型作为auto的类型  
+
+auto一般会忽略顶层const &emsp; 希望auto是顶层const时，需要明确指出 ```const auto f = xxx; ```  
+```auto &f = xxx``` ：将引用的类型设为auto
+
+---
+### 迭代器
+访问元素：```(*iter) ```
+
+<br>
+  
+----
+##  
+## · STL
+---  
+### priority_queue  
+
+``` c++
+struct cmp {
+    bool operator()(const Tweet *a, const Tweet *b) {
+        return a->time < b->time;
+    }
+};
+// 构造大顶堆 时间最大的排在最上面
+priority_queue<Tweet*, vector<Tweet*>, cmp> q;
+```
+
+---
+### vector
+
+将哈希表内容存到vector中，并根据value降序排序，按值重复存放到string中：  
+``` c++
+vector<pair<char, int>> vec;
+for (auto &it : mp)
+    vec.emplace_back(it);
+
+sort(vec.begin(), 
+    vec.end(), 
+    [](const pair<char, int> &a, const pair<char, int> &b) {
+        return a.second > b.second;
+    }
+);
+
+string ret;
+for (auto &[ch, num] : vec) {
+    for (int i = 0; i < num; i++) {
+        ret.push_back(ch);
+    }
+}
+```
