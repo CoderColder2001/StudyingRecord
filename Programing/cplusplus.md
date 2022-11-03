@@ -7,7 +7,7 @@
 
 ----
   
-## · c++内存管理
+* ## c++内存管理
 ---
 ### 对象模型  
 非静态数据成员被置于每一个类对象之内，静态数据成员则被存放在类对象之外；静态和非静态成员函数也被存放在类对象外。  
@@ -26,7 +26,7 @@
 
 ----
 ##  
-## · 变量与类型
+* ## 变量与类型
 ---  
 ### 常量引用 & 引用常量 & 常量指针 & 指针常量  
 | code | explain |
@@ -60,11 +60,14 @@ auto一般会忽略顶层const &emsp; 希望auto是顶层const时，需要明确
 <br>
   
 ----
-##  
-## · STL
+* ## STL
+  - priority_queue
+  - vector
+
 ---  
 ### priority_queue  
 
+"<"构造大顶堆 &emsp; ">"（`greater<int>`）构造小顶堆
 ``` c++
 struct cmp {
     bool operator()(const Tweet *a, const Tweet *b) {
