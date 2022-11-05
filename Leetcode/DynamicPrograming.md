@@ -44,6 +44,9 @@
 &emsp;&emsp;根据LIS问题的贪心解的思路，可以额外使用一个数组记录下特定长度数链的最小结尾值，从而实现二分找前驱状态   
 &emsp;&emsp;具体地，创建`g[ ]`，其中`g[len]=x` 代表数链长度为len时结尾元素的第二维最小值为x
 
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
 ```c++
 class Solution {
 public:
@@ -96,3 +99,4 @@ public:
     // }
 };
 ```
+</details> 
