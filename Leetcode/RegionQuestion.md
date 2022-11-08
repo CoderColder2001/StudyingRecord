@@ -27,6 +27,10 @@ void add(vector<int> c, int l, int r)
 否则区间分为[0, b] 与 [a, n-1]两段 
 对属于这些区间的k取值进行标记+1, 最终标记值最大的k值即为答案  
 使用差分数组实现区间标记操作  
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
 ```c++
 class Solution {
 public:
@@ -71,7 +75,7 @@ public:
     }
 };
 ```
-
+</details>
 
 ---
 * ### 单调队列/单调栈 ： 
@@ -81,6 +85,9 @@ public:
 ## 题目
 --- 
 ### &emsp; 239. 滑动窗口最大值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
 
 ```c++
 class Solution {
@@ -110,3 +117,4 @@ public:
     }
 };
 ```
+</details>
