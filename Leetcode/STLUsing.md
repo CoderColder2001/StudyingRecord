@@ -137,3 +137,37 @@ public:
 </details>
 
 ---
+### &emsp; 1642. 可以到达的最远建筑 MID
+关键思路：
+贪心，尽可能在高度差大的地方使用梯子 &emsp; <b>使用优先队列维护高度差</b>  
+问题在于在无法抵达末尾时，`如何判断各高度差的 “先后次序”`  
+解决方案：使用<b>size有限的优先队列（小顶堆）</b>即可，当大小超出size时，取出堆顶，将这个高度差改为使用砖块  
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int furthestBuilding(vector<int>& heights, int bricks, int ladders) {
+        priority_queue<int, vector<int>, greater<int>> up_heights; // 小顶堆
+        int bricks_used = 0; // 当前使用的砖块数
+        for(int i = 0; i < heights.size()-1; i++)
+        {
+            int delta_height = heights[i+1] - heights[i];
+            if(delta_height > 0)
+                up_heights.push(delta_height);
+            if(up_heights.size() > ladders)
+            {
+                int use_bricks = up_heights.top(); // 取出最小值
+                up_heights.pop();
+                bricks_used += use_bricks;
+                if(bricks_used > bricks)
+                    return i;
+            }
+        }
+        return heights.size()-1;
+    }
+};
+```
+</details>
