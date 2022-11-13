@@ -171,3 +171,54 @@ public:
 };
 ```
 </details>
+
+---
+### &emsp; 1705 吃苹果的最大数目 MID
+关键思路：  
+<b>使用优先队列，贪心，优先吃过期日期早的苹果</b>  
+不再产生新苹果后，看还能再吃多少天（这时候不用考虑“不吃苹果”的选项了）
+需要注意的是，优先队列中存放 `pair<ddl，num>` 以减少堆操作数目，节约时间  
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int eatenApples(vector<int>& apples, vector<int>& days) {
+        int day = 0;
+        int day_napple = 0;
+        priority_queue<int, vector<int>, greater<int>> deadline; // 小顶堆 存放到期时间 
+        for(day = 0; day < apples.size(); day++)
+        {
+            for(int i = 0; i < apples[day]; i++)
+                deadline.push(day + days[day] - 1);
+            while(true)
+            {
+                if(deadline.empty())
+                {
+                    day_napple++;
+                    break;
+                }
+                int ddl = deadline.top();
+                deadline.pop();
+                if(ddl < day)
+                    continue;
+                else
+                    break;
+            }
+        }
+        while(!deadline.empty())
+        {
+            int ddl = deadline.top();
+            deadline.pop();
+            if(ddl < day)
+                continue;
+            else
+                day++;
+        }
+        return day-day_napple;
+    }
+};
+```
+</details>
