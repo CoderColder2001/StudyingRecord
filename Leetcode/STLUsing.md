@@ -1,6 +1,67 @@
 ## Leetcode中利用STL中数据结构求解的题目
 
 ---
+### &emsp; 313. 超级丑数 MID
+关键思路：
+- 丑数列`ans` 是由各prime序列合并后的子集 &emsp; 使用「已有丑数」乘上「给定质因数」primes[i] 得到该prime序列
+- 虚拟的 “多路归并” 设计数据结构 `( 当前值(ans[index]*prime), 来自于哪个序列, 对应ans数组的index )`
+- <b>使用优先队列</b>
+- 优先队列中 维护各列中最小的元素
+- 判断是否能填入丑数列
+- 注意这一构造过程中体现的 “单调性”
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 基于优先队列的多路归并
+    typedef struct Info{
+        long val;
+        int prime_from;
+        int index_ans;
+        Info(long a, int b, int c)
+        {
+            val = a; prime_from = b; index_ans =c;
+        }
+    }info;
+    struct cmp {
+        bool operator()(const info &a, const info &b) {
+            return a.val > b.val;
+        }
+    };
+    int nthSuperUglyNumber(int n, vector<int>& primes) {
+        vector<int> ans;
+        priority_queue<info, vector<info>, cmp> p_q;
+        ans.push_back(1);
+        for(int i = 0; i < primes.size(); i++)
+        {
+            // 由ans[0] 构造各prime路对应的下一元素
+            // 各prime路的第i各元素 = ans[i]*prime
+            p_q.emplace(primes[i], i, 0);
+        }
+
+        for(int i = 1; i < n; )
+        {
+            if(p_q.empty()) cout<<"error 1"<<endl;
+            info t = p_q.top();
+            p_q.pop();
+            if(t.val > ans[i - 1])
+            {
+                i++;
+                ans.push_back(t.val); // t.val == ans[i]
+            }
+            p_q.emplace((long)ans[t.index_ans + 1]*primes[t.prime_from], t.prime_from, t.index_ans + 1);
+            // 利用已构造出的ans[] 继续构造此路后续的部分
+        }
+        return ans[n - 1];
+    }
+};
+```
+</details>
+
+---
 ### &emsp; 659. 分割数组为连续子序列 MID
 关键思路：
 - 贪心

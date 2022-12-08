@@ -104,11 +104,21 @@ VAO（顶点数组对象）把这些状态配置储存在一个对象中，在�
 一旦顶点坐标已经在顶点着色器中处理过，它们就应该是标准化设备坐标了
 
 ---
-### &emsp; Shader
+### &emsp; <b>Shader</b>
 当今大多数显卡都有成千上万的小处理核心，它们在GPU上为每一个（渲染管线）阶段运行各自的小程序，从而在图形渲染管线中快速处理你的数据。这些小程序即着色器( <u>Shader</u> )  
+GLSL 使用 `in` 和 `out` 两个关键字定义输入输出  
+
+`uniform` cpu向gpu发送数据  
+uniform是<u><b> 全局变量 </b><</u>：uniform变量必须在每个着色器程序对象中都是独一无二的，而且它可以被着色器程序的任意着色器在任意阶段访问;无论把uniform值设置成什么，uniform会一直保存它们的数据，直到它们被重置或更新  
+需要找到着色器中uniform属性的索引/位置值。当我们得到uniform的索引/位置值后，我们就可以更新它的值了  
+`int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");`  
+设置一个在渲染迭代中会改变的属性
 
 ### &emsp; o 顶点着色器  
-处理我们在内存中指定数量的顶点  转换为标准化设备坐标。
+*处理我们在内存中指定数量的顶点  转换为标准化设备坐标。*  
+
+应该从顶点数据中直接接收输入  
+使用`location`这一元数据指定输入变量，这样我们才可以在CPU上配置顶点属性。`layout (location = 0)`：顶点着色器需要为它的输入提供一个额外的layout标识，这样我们才能把它链接到顶点数据   
 
 <br>
 
@@ -118,4 +128,145 @@ VAO（顶点数组对象）把这些状态配置储存在一个对象中，在�
 <br>
 
 ### &emsp; o 片段着色器  
-计算像素最后的颜色输出
+计算像素最后的颜色输出  
+vec4 颜色输出变量  
+<br>
+
+### 着色器类
+
+<details>
+<summary> &emsp; <b>code</b> </summary>
+
+``` c++
+#ifndef SHADER_H
+#define SHADER_H
+
+#include <glad/glad.h>
+
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
+class Shader
+{
+public:
+    unsigned int ID;
+    // constructor generates the shader on the fly
+    // ------------------------------------------------------------------------
+    Shader(const char* vertexPath, const char* fragmentPath)
+    {
+        // 1. retrieve the vertex/fragment source code from filePath
+        std::string vertexCode;
+        std::string fragmentCode;
+        std::ifstream vShaderFile;
+        std::ifstream fShaderFile;
+        // ensure ifstream objects can throw exceptions:
+        vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+        fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+        try 
+        {
+            // open files
+            vShaderFile.open(vertexPath);
+            fShaderFile.open(fragmentPath);
+            std::stringstream vShaderStream, fShaderStream;
+            // read file's buffer contents into streams
+            vShaderStream << vShaderFile.rdbuf();
+            fShaderStream << fShaderFile.rdbuf();
+            // close file handlers
+            vShaderFile.close();
+            fShaderFile.close();
+            // convert stream into string
+            vertexCode   = vShaderStream.str();
+            fragmentCode = fShaderStream.str();
+        }
+        catch (std::ifstream::failure& e)
+        {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << e.what() << std::endl;
+        }
+        const char* vShaderCode = vertexCode.c_str();
+        const char * fShaderCode = fragmentCode.c_str();
+        // 2. compile shaders
+        unsigned int vertex, fragment;
+        // vertex shader
+        vertex = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex, 1, &vShaderCode, NULL);
+        glCompileShader(vertex);
+        checkCompileErrors(vertex, "VERTEX");
+        // fragment Shader
+        fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment, 1, &fShaderCode, NULL);
+        glCompileShader(fragment);
+        checkCompileErrors(fragment, "FRAGMENT");
+        // shader Program
+        ID = glCreateProgram();
+        glAttachShader(ID, vertex);
+        glAttachShader(ID, fragment);
+        glLinkProgram(ID);
+        checkCompileErrors(ID, "PROGRAM");
+        // delete the shaders as they're linked into our program now and no longer necessary
+        glDeleteShader(vertex);
+        glDeleteShader(fragment);
+    }
+    // activate the shader
+    // ------------------------------------------------------------------------
+    void use() 
+    { 
+        glUseProgram(ID); 
+    }
+    // utility uniform functions
+    // ------------------------------------------------------------------------
+    void setBool(const std::string &name, bool value) const
+    {         
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+    }
+    // ------------------------------------------------------------------------
+    void setInt(const std::string &name, int value) const
+    { 
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+    }
+    // ------------------------------------------------------------------------
+    void setFloat(const std::string &name, float value) const
+    { 
+        glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+    }
+
+private:
+    // utility function for checking shader compilation/linking errors.
+    // ------------------------------------------------------------------------
+    void checkCompileErrors(unsigned int shader, std::string type)
+    {
+        int success;
+        char infoLog[1024];
+        if (type != "PROGRAM")
+        {
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
+        }
+        else
+        {
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success)
+            {
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
+        }
+    }
+};
+#endif
+
+```
+</details>
+
+---
+### &emsp; 纹理
+纹理是一个2D图片（甚至也有1D和3D的纹理），它可以用来添加物体的细节  
+存储图像或其他数据（送到着色器上）  
+顶点关联纹理坐标（采样） 在图形的其它片段上进行片段插值（Fragment Interpolation）
+
+纹理环绕方式处理当纹理坐标超出范围时的输出
