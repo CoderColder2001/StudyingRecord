@@ -263,10 +263,76 @@ private:
 ```
 </details>
 
+<br>
+
 ---
 ### &emsp; 纹理
 纹理是一个2D图片（甚至也有1D和3D的纹理），它可以用来添加物体的细节  
 存储图像或其他数据（送到着色器上）  
 顶点关联纹理坐标（采样） 在图形的其它片段上进行片段插值（Fragment Interpolation）
 
-纹理环绕方式处理当纹理坐标超出范围时的输出
+纹理环绕方式 处理当纹理坐标超出范围时的输出
+
+### 纹理过滤  
+物体很大但是纹理的分辨率很低时  
+`GL_NEAREST` 选择中心点最接近纹理坐标的那个像素  
+`GL_LINEAR` 基于纹理坐标附近的纹理像素，计算出一个插值  
+进行放大(Magnify)和缩小(Minify)操作的时候可以设置纹理过滤的选项，比如你可以在纹理被缩小的时候使用邻近过滤，被放大时使用线性过滤。我们需要使用glTexParameter*函数为放大和缩小指定过滤方式  
+``` c++
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```  
+
+MIPMAP：在渲染中切换多级渐远纹理级别(Level)时，Nearest / Linear?  
+MIPMAP主要是使用在纹理被缩小的情况下（`GL_TEXTURE_MIN_FILTER`）  
+
+和之前生成的OpenGL对象一样，纹理也是使用ID引用的
+```c++
+unsigned int texture;
+glGenTextures(1, &texture); // 纹理数量 纹理ID数组
+glBindTexture(GL_TEXTURE_2D, texture); //绑定 让之后任何的纹理指令都可以配置当前绑定的纹理
+
+// 为当前绑定的纹理对象设置环绕、过滤方式
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// 加载并生成纹理
+int width, height, nrChannels;
+unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+if (data)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+else
+{
+    std::cout << "Failed to load texture" << std::endl;
+}
+stbi_image_free(data); // 生成纹理后 释放图像的内存
+```
+<b>`glTexImage2D`</b>：
+* 第一个参数指定了纹理目标(Target)。设置为GL_TEXTURE_2D意味着会生成与当前绑定的纹理对象在同一个目标上的纹理（任何绑定到GL_TEXTURE_1D和GL_TEXTURE_3D的纹理不会受到影响）。
+* 第二个参数为纹理指定多级渐远纹理的级别，如果你希望单独手动设置每个多级渐远纹理的级别的话。这里填0，也就是基本级别。
+* 第三个参数告诉OpenGL我们希望把纹理储存为何种格式。我们的图像只有RGB值，因此我们也把纹理储存为RGB值。
+* 第四个和第五个参数设置最终的纹理的宽度和高度。我们之前加载图像的时候储存了它们，所以我们使用对应的变量。
+* 下个参数应该总是被设为0（历史遗留的问题）。
+* 第七第八个参数定义了源图的格式和数据类型。我们使用RGB值加载这个图像，并把它们储存为char(byte)数组，我们将会传入对应值。
+* 最后一个参数是真正的图像数据
+
+如果要使用多级渐远纹理，我们必须手动设置所有不同的图像（不断递增第二个参数）。或者，直接在生成纹理之后调用`glGenerateMipmap`  
+
+将纹理坐标添加到顶点属性，`glVertexAttribPointer` 修改顶点指针（对应顶点格式） 
+顶点着色器将纹理坐标传递给片段着色器
+声明一个`uniform sampler2D`把一个纹理添加到片段着色器中，把纹理赋值给这个uniform
+
+### 纹理单元
+一个纹理的位置值  
+
+给纹理采样器分配一个位置值，这样的话我们能够在一个片段着色器中设置多个纹理  
+通过使用glUniform1i设置每个采样器的方式告诉OpenGL每个着色器采样器属于哪个纹理单元
+```c++
+ourShader.use(); // 不要忘记在设置uniform变量之前激活着色器程序！
+glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // 手动设置
+ourShader.setInt("texture2", 1); // 或者使用着色器类设置
+``` 

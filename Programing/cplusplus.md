@@ -72,6 +72,41 @@ auto一般会忽略顶层const &emsp; 希望auto是顶层const时，需要明确
 
 size_t是 sizeof 关键字（注：sizeof是关键字，并非运算符）运算结果的类型  
 
+---
+### lambda表达式（C++11）
+*源于函数式编程 &emsp; 可以就地匿名定义目标函数或函数对象，不需要额外写一个命名函数或者函数对象*  
+
+lambda表达式定义了一个匿名函数（代替函数对象），并且可以捕获一定范围内的变量  
+`[ capture 捕获列表 ] ( params 参数列表 ) opt 函数选项-> ret 返回值类型 { body; 函数体 };`   
+* [] 不捕获任何变量。
+* [&] 捕获外部作用域中所有变量，并作为引用在函数体中使用（按引用捕获）。
+* [=] 捕获外部作用域中所有变量，并作为副本在函数体中使用（按值捕获）。
+* [=，&foo] 按值捕获外部作用域中所有变量，并按引用捕获 foo 变量。
+* [bar] 按值捕获 bar 变量，同时不捕获其他变量。
+* [this] 捕获当前类中的 this 指针，让 lambda 表达式拥有和当前类成员函数同样的访问权限。如果已经使用了 & 或者 =，就默认添加此选项。捕获 this 的目的是可以在 lamda 中使用当前类的成员函数和成员变量  
+
+lambda 表达式的类型在 C++11 中被称为“闭包类型（Closure Type）”。它是一个特殊的，匿名的非 nunion 的类类型。可以认为它是一个带有 operator() 的类，即仿函数。因此，我们可以使用 std::function 和 std::bind 来存储和操作 lambda 表达式：  
+
+```c++
+std::function<int(int)>  f1 = [](int a){ return a; };
+std::function<int(void)> f2 = std::bind([](int a){ return a; }, 123);
+```
+对于没有捕获任何变量的 lambda 表达式，还可以被转换成一个普通的函数指针：
+```c++
+using func_t = int(*)(int);
+func_t f = [](int a){ return a; };
+f(123);
+```
+<br>
+
+需要注意的是，没有捕获变量（没有状态）的 lambda 表达式可以直接转换为函数指针，而捕获变量（有状态）的 lambda 表达式则不能转换为函数指针。  
+lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它的捕获列表捕获住的任何外部变量，最终均会变为闭包类型的成员变量。而一个使用了成员变量的类的 operator()，如果能直接被转换为普通的函数指针，那么 lambda 表达式本身的 this 指针就丢失掉了。而没有捕获任何外部变量的 lambda 表达式则不存在这个问题。 
+
+按照 C++ 标准，lambda 表达式的 operator() 默认是 const 的。按值捕获时，一个 const 成员函数是无法修改成员变量的值。而 mutable 的作用，就在于取消 operator() 的 const  
+`auto f2 = [=]() mutable { return a++; };`
+
+· &emsp; 在priority_queue中使用lambda表达式时：  
+因为在初始化priority_queue时，三个参数必须是类型名，而cmp是一个对象，因此必须通过decltype()来转为类型名； 因为lambda这种特殊的class没有默认构造函数，pq内部排序比较的时候要使用的是一个实例化的lambda对象，通过lambda的copy构造进行实例化（pq构造函数的时候传入这个lambda对象）  
 <br>
 
 ------

@@ -109,7 +109,64 @@ public:
 </details>
 
 ---
-### &emsp; 1106. 解析布尔表达式 HARD
+### &emsp; 767. 重构字符串 MID
+关键思路：
+- 贪心
+- <b>优先队列 &emsp; 维护各字符优先级</b>
+- 当有一个字符数量超过`(length + 1)/2`时 重排肯定会相邻
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    string reorganizeString(string s) {
+        if(s.length() < 2)
+            return s;
+        vector<int> cnt(26, 0);
+        int maxCount = 0;
+        for(char c : s)
+        {
+            cnt[c - 'a']++;
+            maxCount = max(maxCount, cnt[c - 'a']);
+        }
+        if(maxCount > (s.length() + 1) / 2)
+            return "";
+        
+        auto cmp = [&](const char &c1, const char &c2){
+            return cnt[c1 - 'a'] < cnt[c2 - 'a'];
+        };
+        priority_queue<char, vector<char>, decltype(cmp)> p_q{cmp};
+        string res;
+        for(char c = 'a'; c <= 'z'; c++)
+        {
+            if(cnt[c - 'a'] > 0)
+                p_q.emplace(c);
+        }
+        while(p_q.size() > 1)
+        {
+            char c1 = p_q.top();
+            p_q.pop();
+            char c2 = p_q.top();
+            p_q.pop();
+            res += c1;
+            res += c2;
+            if(--cnt[c1 -'a'])
+                p_q.emplace(c1);
+            if(--cnt[c2 -'a'])
+                p_q.emplace(c2);
+        }
+        if(!p_q.empty())
+            res += p_q.top();
+        return res;
+    }
+};
+```
+</details>
+
+---
+### &emsp; 1106. 解析布尔表达式 :rage: HARD
 
 关键思路：
 - 使用<b>两个栈ops、value分别存放操作符和值</b>
