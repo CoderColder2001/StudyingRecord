@@ -128,7 +128,7 @@ lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它�
 ---  
 ### priority_queue  
 
-"<"构造大顶堆 &emsp; ">"（`greater<int>`）构造小顶堆
+"<" (`less<int>`) 构造大顶堆&emsp; ">"（`greater<int>`）构造小顶堆
 ``` c++
 struct cmp {
     bool operator()(const Tweet *a, const Tweet *b) {
