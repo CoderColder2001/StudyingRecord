@@ -166,6 +166,53 @@ public:
 </details>
 
 ---
+### &emsp; 857.雇佣K名工人的最低成本 :rage: HARD
+关键思路：
+- 对各个工人的 `wage[i]/quality[i]` 排序
+- 从[0,k-1]开始 向右 <b>枚举</b> 各个可选的子区间 判断是否能更新 `ans= q_sum * wage[i]/quality[i]`
+- <b>优先队列</b> &emsp; quality的大顶堆 计算当前可选的子区间最小的k个quality和
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    double mincostToHireWorkers(vector<int>& quality, vector<int>& wage, int k) {
+        int nums = quality.size();
+        vector<int> id(nums); // 记录下标的辅助数组 用于排序
+        iota(id.begin(), id.end(), 0); // 范围赋值 从0开始递增
+        sort(id.begin(), id.end(), [&](int i, int j){
+            return wage[i] * quality[j] < quality[i] * wage[j];}); // 按 r=w/q 从小到大排序 注意int用乘法比较
+        //总开销 q_sum*R 选定r[k-1]作为R
+
+        priority_queue<int, vector<int>, less<int>> p_q; // 大顶堆
+        int q_sum = 0; // 利用优先队列寻找最小化 q_sum
+        for(int i = 0; i < k; i++)
+        {
+            p_q.emplace(quality[id[i]]);
+            q_sum += quality[id[i]];
+        }
+        double ans = q_sum * (double)wage[id[k-1]] / quality[id[k-1]];
+        // 排序保证了r的单调增，向右枚举不同的r，看是否有更小q_sum的k子区间，再判断能否更新ans
+        for(int i = k; i < nums; i++)
+        {
+            int q = quality[id[i]];
+            if(q < p_q.top())
+            {
+                q_sum -= (p_q.top() - q);
+                p_q.pop();
+                p_q.push(q);
+                ans = min(ans, q_sum * (double)wage[id[i]] / quality[id[i]]); // 看是否能更新ans
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+
+---
 ### &emsp; 1106. 解析布尔表达式 :rage: HARD
 
 关键思路：

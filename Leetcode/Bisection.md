@@ -74,3 +74,64 @@ int right_bound(int[] nums, int target) {
     // 在结束时 *left > target或越界
 }
 ```
+## Leetcode中利用二分求解的题目
+
+---
+### &emsp; 215. 数组中第K大元素 MID
+关键思路：
+- 单侧降序快速排序模板题
+- 判断partition返回的划分位置与K的关系 更新区间
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    inline void swap(vector<int>& nums, int l, int r)
+    {
+        int t = nums[l];
+        nums[l] = nums[r];
+        nums[r] = t;
+    }
+    int partition(vector<int>& nums, int left, int right)
+    {
+        int pivot = nums[left]; // 取最左为基准
+        int l = left + 1;
+        int r = right;
+        while(true)
+        {
+            // 降序排序对应的快速选择
+            // 找左边第一个比pivot小的与右边第一个比pivot大的
+            while(l <= r && nums[l] > pivot)
+                l++;
+            while(r >= l && nums[r] < pivot)
+                r--;
+            if(l >= r)
+                break;
+            swap(nums, l, r);
+            l++;
+            r--;
+        }
+        swap(nums, left, r);
+        return r; // 返回划分位置
+    }
+    int findKthLargest(vector<int>& nums, int k) {
+        int left = 0, right = nums.size() - 1;
+        while(true)
+        {
+            int pivot_i = partition(nums, left, right);
+            if(pivot_i == k - 1)
+                return nums[k - 1];
+            else if(pivot_i < k - 1)
+                left = pivot_i + 1;
+            else if(pivot_i > k - 1)
+                right = pivot_i - 1;
+        }
+        return -1;
+    }
+};
+```
+</details>
+
+---
