@@ -62,6 +62,52 @@ public:
 </details>
 
 ---
+### &emsp; 373. 查找和最小的K对数字 MID
+关键思路：
+- 多路（`nums1.size()`）归并问题 取长度最小的为nums1 减小堆中数据量
+- <b>使用优先队列</b>
+- 堆中存放两个数组对应下标
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> kSmallestPairs(vector<int>& nums1, vector<int>& nums2, int k) {
+        vector<vector<int>> ans;
+        int n = nums1.size();
+        int m = nums2.size();
+        bool flag =true;
+        if(n > m) // 取长度较小的为nums1
+        {
+            swap(nums1, nums2);
+            swap(n, m);
+            flag = false;
+        }
+
+        auto cmp = [&](const auto& a, const auto& b){
+            return nums1[a.first] + nums2[a.second] > nums1[b.first] + nums2[b.second];
+        };
+        priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(cmp)> p_q(cmp);
+
+        for(int i = 0; i < min(n,k); i++)
+            p_q.emplace(i, 0);
+        while(ans.size() < k && p_q.size())
+        {
+            auto [a, b] = p_q.top();
+            p_q.pop();
+            flag ? ans.push_back({nums1[a], nums2[b]}) : ans.push_back({nums2[b], nums1[a]});
+            if(b + 1 < m)
+                p_q.emplace(a, b + 1);
+        }
+        return ans;
+    }
+};
+```
+</details>
+
+---
 ### &emsp; 659. 分割数组为连续子序列 MID
 关键思路：
 - 贪心
