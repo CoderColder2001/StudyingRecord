@@ -1,6 +1,62 @@
 ## Leetcode中利用STL中数据结构求解的题目
 
 ---
+### &emsp; 295. 数据流的中位数 :rage: HARD
+关键思路：
+- 设计可以快速获得中位数的数据流
+- 利用两个堆维护左右两边的数据 left为大顶堆 right为小顶堆
+- 定义并维护left 与 right的 size关系 &emsp; `left.size() = right.size() or right.size()+1`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class MedianFinder {
+public:
+    priority_queue<int, vector<int>, less<int>> left; // 大顶堆
+    priority_queue<int, vector<int>, greater<int>> right; // 小顶堆
+
+    MedianFinder() {
+
+    }
+    
+    void addNum(int num) {
+        if(left.size() == right.size())
+        {
+            if(!right.empty() && num > right.top())
+            {
+                int t = right.top();
+                right.pop();
+                left.push(t);
+                right.push(num);
+            }
+            else
+                left.push(num);
+        }
+        else
+        {
+            if(!left.empty() && num < left.top())
+            {
+                int t = left.top();
+                left.pop();
+                right.push(t);
+                left.push(num);
+            }
+            else
+                right.push(num);
+        }
+    }
+    
+    double findMedian() {
+        if(left.size() != right.size())
+            return (double)left.top();
+        return ((double)left.top() + right.top())/2;
+    }
+};
+```
+</details>
+
+---
 ### &emsp; 313. 超级丑数 MID
 关键思路：
 - 丑数列`ans` 是由各prime序列合并后的子集 &emsp; 使用「已有丑数」乘上「给定质因数」primes[i] 得到该prime序列
