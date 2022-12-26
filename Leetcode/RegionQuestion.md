@@ -1,7 +1,73 @@
 ### 概念
+* 滑动窗口
 * 前缀和
 * 差分
 * 单调队列 / 单调栈
+
+---
+* ### 滑动窗口： 
+O(n) 处理序列的连续子序列  
+滑动窗口的关键是问题对于序列具有<b>单调性</b>(类似于二分性质)  
+一般可以理解为，随着左端点位置的增加，其最优决策的右端点位置单调不减   
+<b>当一个指针位置固定时，能够确定另一个指针不需要再继续移动的位置</b>   
+（即能够知道 “什么时候移动右指针 什么时候移动左指针” ）   
+
+
+## 题目
+--- 
+### &emsp; 395. 至少有K个重复字符的最长子串 MID
+关键思路：
+- 假设有长度 t 的区间满足，无法确定长度 t+1 的区间是否满足，不能直接滑动窗口
+- <b>枚举</b> 窗口的字符类型数量
+- 当确定了窗口包含的字符种类数量时，<b>区间重新具有了二分性质</b>
+- <b>通过枚举 对问题条件加了一层约束</b>
+- 此时，右指针向右移动必然会导致字符类型数量增加（或不变），左指针往右移动必然会导致字符类型数量减少（或不变）  
+- 记录有多少字符符合要求（出现次数不少于 k），当区间内所有字符都符合时更新答案
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int longestSubstring(string s, int k) {
+        int ans = 0;
+        int n = s.length();
+        vector<int> cnt(26, 0);
+        for(int limit = 1; limit <= 26; limit++) // 枚举窗口内的字符数量
+        {
+            cnt.assign(26, 0);
+            for(int right = 0, left = 0, cnt_1 = 0, cnt_k = 0; right < n; right++)
+            {
+                int r = s[right] - 'a';
+                cnt[r]++;
+                if(cnt[r] == 1)
+                    cnt_1++; // 窗口内字符数量
+                if(cnt[r] == k)
+                    cnt_k++; // 窗口内满足条件的字符数量
+                while(cnt_1 > limit) // 移动左指针的情形
+                {
+                    int l = s[left] - 'a';
+                    cnt[l]--;
+                    if(cnt[l] == 0)
+                        cnt_1--;
+                    if(cnt[l] == k-1)
+                        cnt_k--;
+                    left++;
+                }
+                if(cnt_1 == cnt_k)
+                    ans = max(ans, right - left + 1);
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+
+<br>
+
+<br>
 
 ---
 * ### 前缀和： 

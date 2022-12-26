@@ -15,7 +15,7 @@
 ---
 ### 题目
 ---
-### &emsp; 864. 获取所有钥匙的最短路径 HARD
+### &emsp; 864. 获取所有钥匙的最短路径 :rage: HARD
 关键思路：
 - `int state` 存储二进制状态 表示当前是否持有某个钥匙  
 - 最终状态定义 <b>(x,y,keys)</b> &emsp; 即当前坐标与当前所持有的钥匙   
@@ -134,9 +134,10 @@ BFS思想 求单源最短路 不能有负边
 <br>
 
 - ### BellmanFord O(n*m)
-求单源最短路 可以有负边 可以判断存在负环（最短路不存在）  
+DP思想 求单源最短路 可以有负边 可以判断存在负环（最短路不存在）  
 迭代超过 V-1 次，就说明存在负权回路  
 使用邻接表或类存边  
+每一轮对所有边`e(a,b,w)`进行松弛操作，若`dis[b] > dis[a]+w` 则更新dis[b]  
 
 队列优化BellmanFord —— SPFA（使用邻接表）
 
@@ -145,4 +146,34 @@ BFS思想 求单源最短路 不能有负边
 ---
 ### 题目
 ---
-### &emsp; 1
+### &emsp; 787. K站中转内最便宜的航班 MID
+关键思路：
+- 有边数限制的最短路 使用 <b>BellmanFord</b>
+- 需要注意的是，在遍历所有的“点对/边”进行松弛操作前，需要先对 dis 进行备份，否则会出现「本次松弛操作所使用到的边，也是在同一次迭代所更新的」  
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k) {
+        int m = flights.size();
+        const int inf = INT_MAX>>1;
+        vector<int> dis(n, inf);
+        vector<int> _dis;
+        dis[src] = 0;
+        for(int limit = 0; limit < k + 1; limit++)
+        {
+            _dis = dis;
+            for(const auto &edge : flights)
+            {
+                int from = edge[0], to = edge[1], cost = edge[2];
+                dis[to] = min(dis[to], _dis[from] + cost);// 使用上一轮的_dis更新
+            }
+        }
+        return dis[dst] < inf ? dis[dst]:-1;
+    }
+};
+```
+</details>
