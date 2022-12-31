@@ -65,6 +65,44 @@ public:
 ```
 </details>
 
+---
+### &emsp; 424. 替换后的最长重复字符 MID
+关键思路：
+- 题目限定替换次数`k` 直观上指区间内有多少个字母与区间内出现次数最高的字母不同
+- 转化为 `区间长度len - 区间内出现次数最高字母出现次数maxCnt > k`
+- 计算某字母出现在某窗口中的最大次数`maxCnt`
+- 题目要 <b>寻找最长窗口，仅考虑窗口长度增大或者不变的转移情况</b>
+- 只有 <b>maxCnt增加</b> 的情况，窗口才会变长，`len`才可能取到最大值
+- 不满足条件的情况下，`left`和`right`一起移动，`len`不变（`left`只移动了0-1次）
+- 因为长度小于`right - left`的区间就没必要考虑了，所以`right - left`一直保持为当前的最大值（right会多走一步 不用 +1 了）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int characterReplacement(string s, int k) {
+        // 不同的字符 转化为考虑区间内出现最多的字符
+        vector<int> cnt(26, 0);
+        int maxCnt = 0;// 窗口中出现最多的字符出现次数
+        int left = 0, right = 0;
+        for(; right < s.length(); right++)
+        {
+            cnt[s[right] - 'A']++;
+            maxCnt = max(maxCnt, cnt[s[right] - 'A']);
+            while(right - left + 1 - maxCnt > k)
+            {
+                cnt[s[left] - 'A']--;
+                left++;
+            }
+        }
+        return right - left;// 因为最后right会多走一步 不用 +1 了
+    }
+};
+```
+</details>
+
 <br>
 
 <br>
