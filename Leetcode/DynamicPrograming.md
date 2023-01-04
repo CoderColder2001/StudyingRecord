@@ -1,7 +1,63 @@
 ## Content
+- 线性DP
 - 序列DP
 - 状压DP
 
+
+<br>
+
+---
+## 线性DP
+### 概念
+---
+* ### 线性DP
+    基于给定数组 描述状态和状态转移
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 978. 最长湍流子数组 MID
+关键思路：  
+- 定义两个状态量`up`，`down` 
+- 分别描述以arr[i]结尾上一动作是升高or降低的最长湍流子数组
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxTurbulenceSize(vector<int>& arr) {
+        int up = 1, down = 1; 
+        int res = 1;
+        for(int i = 1; i < arr.size(); i++)
+        {
+            if(arr[i] > arr[i - 1])
+            {
+                up = down + 1;
+                down = 1;
+            }
+            else if(arr[i] < arr[i - 1])
+            {
+                down = up + 1;
+                up = 1;
+            }
+            else
+            {
+                up = 1;
+                down = 1;
+            }
+            res = max(res, up);
+            res = max(res, down);
+        }
+        return res;
+    }
+};
+```
+</details> 
 
 <br>
 
