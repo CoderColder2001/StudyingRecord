@@ -103,7 +103,44 @@ public:
 ```
 </details>
 
-<br>
+---
+### &emsp; 1052. 爱生气的书店老板 MID
+关键思路：
+- 首先预处理customers数组 <b>统计原本就满意的顾客数并置相应 `customers[i] = 0`</b>
+- 转化为滑动窗口求解customers中长度为minutes的最大子数组
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxSatisfied(vector<int>& customers, vector<int>& grumpy, int minutes) {
+        int n = customers.size();
+        int ans = 0;
+        for(int i = 0; i < n; i++)
+        {
+            if(grumpy[i] == 0)
+            {
+                ans += customers[i];
+                customers[i] = 0;
+            }
+        }
+        int maxCnt = 0, currentCnt = 0;
+        for(int i = 0; i < n; i++)
+        {
+            currentCnt += customers[i];
+            if(i >= minutes)
+            {
+                currentCnt -= customers[i - minutes];
+            }
+            maxCnt = max(maxCnt, currentCnt);
+        }
+        return ans + maxCnt;
+    }
+};
+```
+</details>
 
 <br>
 
