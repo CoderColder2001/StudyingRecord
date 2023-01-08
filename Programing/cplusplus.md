@@ -122,8 +122,17 @@ lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它�
 
 ------
 * ## STL
+  - multiset
   - priority_queue
   - vector
+  - string
+
+---
+### multiset
+允许重复元素  
+与`unordered_xxx`不同 会对内部元素进行排序 基于红黑树  
+`*s.rbegin()` 访问最大元素  
+`*s.begin()` 访问最小元素
 
 ---  
 ### priority_queue  
@@ -162,3 +171,15 @@ for (auto &[ch, num] : vec) {
     }
 }
 ```
+
+---
+### string
+查找：  
+`find("xxx")` 返回首次出现位置（size_t类型） 若没有找到则返回 `string::npos`  
+`find("xxx", n)` 从n开始查找  
+`rfind("xxx")` 逆向查找  
+
+修改：  
+`erase(n)` 去掉从n开始所有字符  
+`resize(n, 'x')` 改变长度，如果超过了原有长度，后面补充x  
+`insert(2,"xxx")` 下标n处插入

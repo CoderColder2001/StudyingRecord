@@ -142,6 +142,42 @@ public:
 ```
 </details>
 
+---
+### &emsp; 1658. 将x减小到0的最小操作数 MID
+关键思路：
+- <b>逆向考虑问题</b>
+- 原操作区间为数组的前面一段与后面一段
+- 转换为求 数组中和为s-x最长连续子数组
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minOperations(vector<int>& nums, int x) {
+        int ans = -1, cnt = 0, s = accumulate(nums.begin(), nums.end(), 0);
+        int left = 0, right = 0;
+        int n = nums.size();
+
+        while(right < n)
+        {
+            cnt += nums[right];
+            while(left <= right && cnt > s-x)
+            {
+                cnt -= nums[left];
+                left++;
+            }
+            if(cnt == s-x)
+                ans = max(ans, right - left + 1);
+            right++;
+        }
+        return ans == -1? ans : n - ans;
+    }
+};
+```
+</details>
+
 <br>
 
 ---
@@ -308,7 +344,8 @@ public:
 
 ---
 * ### 单调队列/单调栈 ： 
-常用于<b>区间最值问题</b>  
+常用于<b>区间最值问题</b>   
+<b>用于快速定位数组区间中具有某个最值性质的位置</b>   
 单调队列使用`std::deque` &emsp; 单调栈可使用`std::stack`
 
 ## 题目
@@ -349,3 +386,50 @@ public:
 };
 ```
 </details>
+
+--- 
+### &emsp; 1438. 绝对差不超过限制的最长连续子数组 MID
+关键思路：
+- 两个单调队列
+- 使用 <b>单调减队列</b> 队头维护窗口最大值
+- 使用 <b>单调增队列</b> 队头维护窗口最小值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums, int limit) {
+        deque<int> queMax, queMin;
+        //单调减队列队头维护窗口最大值 单调增队列队头维护窗口最小值
+        int n = nums.size();
+        int left = 0, right = 0;
+        int ans = 0;
+        while(right < n)
+        {
+            while(!queMax.empty() && nums[queMax.back()] < nums[right])
+                queMax.pop_back();
+            while(!queMin.empty() && nums[queMin.back()] > nums[right])
+                queMin.pop_back();
+            queMax.push_back(right);
+            queMin.push_back(right);
+
+            while(!queMax.empty() && !queMin.empty() && nums[queMax.front()] - nums[queMin.front()] > limit)
+            {
+                if(queMax.front() == left)
+                    queMax.pop_front();
+                if(queMin.front() == left)
+                    queMin.pop_front();
+                left++;
+            }
+            ans = max(ans, right - left + 1);
+            right++;
+        }
+        return ans;
+    }
+};
+```
+</details>
+
+<br>
