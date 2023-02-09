@@ -504,3 +504,56 @@ Trigger集群模式如何避免多次触发：
 <br>
 
 ---
+## 消息队列
+保存消息的容器 本质上是一个队列 需要支持 <b>高吞吐、高并发、高可用</b>  
+
+### Kafka
+创建Kafka集群 -> 新增topic -> 编写生产者逻辑 -> 编写消费者逻辑  
+
+- Topic：逻辑队列（每一个不同的业务场景，对这个业务来说，所有数据存于Topic中）；内部partition分区，不同分区的消息可以并发处理   
+- Cluster：Broker的物理集群，每个集群中可以建立多个不同的Topic  
+- Producer：生产者，负责将业务消息发送到Topic中  
+- Consumer：消费者，负责消费Topic中的消息  
+- ConsumerGroup：消费者组，不同组的Consumer消费进度互不干涉   
+
+Offset：消息在partition中的相对位置（也是ID）  
+Replica：每个partition具有多个副本 Leader负责对外  
+
+Producer发送消息时，可以采用 <b>批量发送&数据压缩</b>  
+
+Broker中的消息文件结构：  
+<img src = "./pic/c13_1.png" width = "80%">  
+副本最终以日志的形式写到磁盘上  
+消息有过期机制  
+日志将切分成有序的日志段  
+Broker采用顺序写（末位添加），减少磁头运动寻道时间，提高写入效率  
+
+Consumer通过发送 FetchRequest 请求消息数据，Broker会将指定Offset处的消息，按照时间窗口和消息大小窗口发送给Consumer  
+<b>Broker拿到FetchRequest后如何处理、响应？</b>  
+
+ConsumerGroup中partition的分配问题（组内Consumer分别拉取哪些partition）  
+手动设置分配存在容灾问题，且扩缩容时麻烦（会带来数据中断）  
+自动分配 需要ConsumerRebalance  
+
+<br>
+
+### BMQ
+存算分离 底层增加分布式存储系统  
+
+<br>
+
+### RocketMQ
+面向低延时场景、业务峰值（秒杀）场景  
+
+较Kafka多一个 Tag字段 可以丰富消费的场景  
+存在ProducerGroup 以支持事务消息  
+
+NameServer提供路由  
+
+通过最终一致性保证事务  
+事务消息（类似两阶段提交）：  
+<img src = "./pic/c13_2.png" width = "100%">  
+
+<br>
+
+---
