@@ -146,3 +146,120 @@ const styleObject = reactive({
 ```
 
 如果样式对象需要更复杂的逻辑，也可以使用返回样式对象的计算属性  
+
+<br>
+
+---
+### 条件渲染
+`v-if` &emsp; `v-else-if` &emsp; `v-else`  
+可以在一个 `<template>` 元素（不可见的包装多个元素的包装器）上使用 `v-if`  
+
+`v-show` 会在 DOM 渲染中保留该元素；`v-show` 仅切换了该元素上名为 display 的 CSS 属性
+
+<br>
+
+---
+### 列表渲染
+基于一个数组来渲染一个列表  
+也可以在 `<template>` 标签上使用 `v-for` 来渲染一个包含多个元素的块  
+
+```javascript
+const parentMessage = ref('Parent')
+const items = ref([{ message: 'Foo' }, { message: 'Bar' }])
+```
+```html
+<li v-for="(item, index) in items">
+  {{ parentMessage }} - {{ index }} - {{ item.message }}
+</li>
+```
+
+也可以使用 `v-for` 来遍历一个对象的所有属性   
+```html
+<script setup>
+import { reactive } from 'vue'
+
+const myObject = reactive({
+  title: 'How to do lists in Vue',
+  author: 'Jane Doe',
+  publishedAt: '2016-04-10'
+})
+</script>
+
+<template>
+	<ul>
+    <li v-for="(value, key, index) in myObject">
+		  {{ index }}. {{ key }}: {{ value }}
+		</li>
+  </ul>
+</template>
+```
+
+<br>
+
+---
+### 侦听器
+使用 `watch` 函数在每次响应式状态发生变化时触发回调函数    
+第一个参数可以是不同形式的“数据源”：它可以是一个 **ref (包括计算属性)**、一个**响应式对象**、一个 **getter 函数:** `() => obj.count`、或 **多个数据源组成的数组**  
+
+```html
+<script setup>
+import { ref, watch } from 'vue'
+
+const question = ref('')
+const answer = ref('Questions usually contain a question mark. ;-)')
+
+watch(question, async (newQuestion, oldQuestion) => {
+  if (newQuestion.indexOf('?') > -1) {
+    answer.value = 'Thinking...'
+    try {
+      const res = await fetch('https://yesno.wtf/api')
+      answer.value = (await res.json()).answer
+    } catch (error) {
+      answer.value = 'Error! Could not reach the API. ' + error
+    }
+  }
+})
+</script>
+
+<template>
+  <p>
+    Ask a yes/no question:
+    <input v-model="question" />
+  </p>
+  <p>{{ answer }}</p>
+</template>
+```
+
+通过传入 `immediate: true` 选项来强制侦听器的回调在创建侦听器时立即执行  
+
+可以用 `watchEffect` 函数自动跟踪回调的响应式依赖  
+
+```javascript
+watchEffect(async () => {
+  const response = await fetch(
+    `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+  )
+  data.value = await response.json()
+})
+```
+回调会立即执行，不需要指定 `immediate: true`; 在执行期间，它会自动追踪 `todoId.value` 作为依赖（和计算属性类似）  
+
+当更改了响应式状态，它可能会同时触发 Vue 组件更新和侦听器回调。默认情况下，用户创建的侦听器回调，都会在 Vue 组件更新之前被调用。这意味着你在侦听器回调中访问的 DOM 将是被 Vue 更新之前的状态；如果想在侦听器回调中能访问被 Vue 更新之后的 DOM，你需要指明 `flush: 'post'` 选项  
+
+在 `setup()` 或 `<script setup>` 中用**同步**语句创建的侦听器，会自动绑定到宿主组件实例上，并且会在宿主组件卸载时自动停止； 如果用异步回调创建一个侦听器，那么它不会绑定到当前组件上，必须调用 `watch` 或 `watchEffect` 返回的函数（） 手动停止它，以防内存泄漏
+```javascript
+const unwatch = watchEffect(() => {})
+unwatch() // ...当该侦听器不再需要时
+```
+
+如果需要等待一些异步数据，你可以使用条件式的侦听逻辑：
+```javascript
+// 需要异步请求得到的数据
+const data = ref(null)
+
+watchEffect(() => {
+  if (data.value) {
+    // 数据加载后执行某些操作...
+  }
+})
+```
