@@ -188,6 +188,48 @@ public:
 
 ## 题目
 --- 
+### &emsp; 1590. 使数组和能被P整除
+关键思路：
+- 设所有元素和modP为`countModP` 问题转化为：寻找最短的一段区间，其区间和与所有元素和modP同余
+- “x y modP同余” 等价于 “x % p == y % p” （当x y 均非负数时）
+- 若x取任意整数 等价于 （x % p + p）% p == y % p
+- 遍历数组，存储 <b>当前遍历位置的前缀和 mod P</b>
+- <b>使用哈希表维护能得到这个值的下标</b>（遍历过程使得这个下标是当前最右的）：`{s[i] % P, index}`
+- 寻找 `s[r] - s[left] % P == count % P`，即寻找 `(s[r] - countModP) % P == s[left] mod P`
+- 遍历时，查找哈希表对应元素是否存在
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 前缀和 mod p 用哈希表缓存结果值对应的下标位置
+    int minSubarray(vector<int>& nums, int p) {
+        int n = nums.size();
+        int countModP = accumulate(nums.begin(), nums.end(), 0LL) % p; 
+        int ans = n , s = 0; // s维护当前计算到的modP前缀和
+        unordered_map<int, int> last;
+        last[0] = -1;
+        for(int i = 0; i < n; i++)
+        {
+            s = (s + nums[i]) % p;
+            last[s] = i;
+            auto it = last.find((s - countModP + p) % p); // +p 保证结果不为负数
+            if(it != last.end())
+            {
+                ans = min(ans, i - it->second);
+            }
+        }
+        return ans == n? -1: ans;
+    }
+};
+```
+</details>
+
+<br>
+
+--- 
 ### &emsp; 1703. 得到连续K个1的最少相邻交换次数 :rage: HARD
 关键思路：
 - 分析区间性质
