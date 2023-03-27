@@ -2,11 +2,11 @@
 - 线性DP
 - 序列DP
 - 状压DP
-
+- 数位DP
 
 <br>
 
----
+------
 ## 线性DP
 ### 概念
 ---
@@ -61,7 +61,7 @@ public:
 
 <br>
 
----
+------
 ## 序列DP
 ### 概念
 ---
@@ -221,3 +221,72 @@ public:
 };
 ```
 </details> 
+<br>
+
+------
+## 数位DP
+### 概念
+---
+* ### 数位DP
+    基于位运算描述状态 <b>按位遍历数字</b>  
+    以每一 “位” 为单位（转化为字符串）  
+    “数位” 与 “状态” 将带来限制
+
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 1012. 至少有一位重复的数字 :rage: HARD
+关键思路：  
+- 转换为求无重复数字的个数
+- 存储状态 <b>当前遍历到第几位数字 * 使用过的数字mask</b>
+- 终结状态的返回值也标示着一条合法搜索路径的结束
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 转换成求无重复数字的个数
+    int numDupDigitsAtMostN(int n) {
+        string s = to_string(n);
+        int len = s.length();
+        int dp[len][1 << 10]; // 存储状态 到第几位数字 * mask
+        memset(dp, -1, sizeof(dp));
+
+        // i:正在处理第i位 
+        // mask:标记已经用过的数字 
+        // is_limit:前i-1位的数字是否与n的前i-1位相同 当前填的位数字是否有上界约束
+        // is_num:是否已经开始填数字了 为false时 当前位可以继续跳过
+        function<int(int, int, bool, bool)> f = [&](int i, int mask, bool is_limit, bool is_num) -> int {
+            // is_limit 与 is_num 的变化在调用过程中都是单向的 不需要再dp里存储状态
+            if(i == len)
+                return is_num; // 为true时得到了一个合法数字 (一条搜索路径到结尾)
+            if(!is_limit && is_num && dp[i][mask] != -1) // 已经算过了
+                return dp[i][mask];
+            
+            int res = 0;
+            if(!is_num) // 还能继续跳过
+                res = f(i+1, mask, false, false); // 先统计继续跳过的res
+            int up = is_limit ? s[i] - '0' : 9;
+            for(int d = 1 - is_num; d <= up; d++) // 前面已有数字时 可以考虑填0
+            {
+                if((mask>>d & 1) == 0)
+                    res += f(i+1, mask | (1<<d), is_limit && (d == up), true);
+            }
+            if(!is_limit && is_num)
+                dp[i][mask] = res;
+            return res;
+        };
+
+        return n - f(0, 0, true, false);
+    }
+};
+```
+</details> 
+
+<br>
