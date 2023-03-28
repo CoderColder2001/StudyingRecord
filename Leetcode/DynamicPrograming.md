@@ -163,6 +163,69 @@ public:
 <br>
 
 ---
+
+### &emsp; 1092. 最短公共超序列 :rage: HARD
+关键思路：  
+- <b>dp数组记录描述状态的转移（状态间的关系）</b> 用dp数组递推构造出结果字符串
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    string shortestCommonSupersequence(string str1, string str2) {
+        int n = str1.length(), m = str2.length();
+        int dp[n+1][m+1]; // 以下标 i j 结束的子串的最短公共超序列长度
+        // 递归边界 -- 记忆化数组初始值
+        for(int i = 0; i < n; i++)
+            dp[i][0] = i;
+        for(int j = 0; j < m; j++)
+            dp[0][j] = j;
+
+        // 记忆化搜索改成dp 每个参数对应一层循环
+        for(int i = 0; i < n; i++)
+        {
+            for(int j = 0; j < m; j++)
+            {
+                if(str1[i] == str2[j]) // 此时最短公共子序列一定包含当前相同的末尾
+                    dp[i+1][j+1] = dp[i][j] + 1;
+                else
+                    dp[i+1][j+1] = min(dp[i][j+1], dp[i+1][j]) + 1;
+            }
+        }
+
+        string ans;
+        int i = n-1, j = m-1;
+        while(i >= 0 && j >= 0) // 找前驱状态
+        {
+            if(str1[i] == str2[j]) // 相当于继续递归 make_ans(i-1, j-1)
+            {
+                ans += str1[i];
+                i--;
+                j--;
+            }
+            else if(dp[i+1][j+1] == dp[i][j+1] + 1) // 相当于继续递归 make_ans(i-1, j)
+            {
+                ans += str1[i];
+                i--;
+            }
+            else // 相当于继续递归 make_ans(i, j-1)
+            {
+                ans += str2[j];
+                j--;
+            }
+        }
+        reverse(ans.begin(), ans.end());
+        return str1.substr(0, i+1) + str2.substr(0, j+1) + ans; // 记得加上剩余子串 相当于make_ans的边界返回值
+    }
+};
+```
+</details> 
+
+<br>
+
+---
 ## 状压DP
 ### 概念
 ---
