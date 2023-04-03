@@ -1,6 +1,7 @@
 ## Content
 - 线性DP
 - 序列DP
+- 区间DP
 - 状压DP
 - 数位DP
 
@@ -225,7 +226,55 @@ public:
 
 <br>
 
+------
+## 区间DP
+### 概念
 ---
+* ### 区间DP
+    线性DP一般再前缀/后缀上转移，而区间DP<b>从小区间转移到大区间</b>
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 1039 多边形三角形剖分的最低得分
+关键思路： 
+- <b>对于一条边，枚举另一个顶点</b> 等于枚举一个三角形 <b>（枚举划分点k）</b>
+- 定义 <b>从i到j</b> 区间，表示沿着顶点i顺指针到顶点j，再加上边ji组成的多边形
+- 由于需要从下标比`i`更大的`k`转移到`dp[i][]`，`i`需要倒序枚举
+- 由于需要从下标比`j`更小的`k`转移到`dp[][j]`，`j`需要正序枚举
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minScoreTriangulation(vector<int>& values) {
+        int n = values.size();
+        int dp[n][n];
+        for(int i = 0; i < n - 1; i++)
+            dp[i][i+1] = 0;
+
+        for(int i = n - 3; i >= 0; i--)
+        {
+            for(int j = i + 2; j < n; j++)
+            {
+                dp[i][j] = INT_MAX;
+                for(int k = i + 1; k < j;k++)
+                    dp[i][j] = min(dp[i][j], dp[i][k] + dp[k][j] + values[i]*values[j]*values[k]);
+            }
+        }
+        return dp[0][n-1];
+    }
+};
+```
+</details> 
+<br>
+
+------
 ## 状压DP
 ### 概念
 ---
