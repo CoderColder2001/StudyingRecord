@@ -239,7 +239,54 @@ public:
 
 ### 题目
 ---
-### &emsp; 1039 多边形三角形剖分的最低得分
+### &emsp; 1000. 合并石头的最低成本 :rage: HARD
+关键思路： 
+- 将一个区间的合并的问题划分为两个区间分别合并，枚举划分点
+- `dfs(i, j, p)`： 把`[i,j]` 合并成 `p` 堆的最低成本 （1 <= p <= k-1）
+- 枚举划分点时，保证`m-i`是`k-1`的倍数（`[i,m]`合并成一堆）
+- `p > 1`时，`j-i`不是`k-1`的倍数，否则可以合成一堆
+- 因此，可以省略对参数p的存储空间
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int mergeStones(vector<int>& stones, int k) {
+        int n = stones.size();
+        if((n-1) % (k-1)) // 无法合并成一堆
+            return -1;
+        
+        int s[n+1];
+        s[0] = 0;
+        for(int i = 0; i < n; i++)
+            s[i+1] = s[i] + stones[i]; // 前缀和
+
+        int dp[n][n];
+        for(int i = n - 1; i >= 0; i--)
+        {
+            dp[i][i] = 0; // 仅此一堆无需再合并
+            for(int j = i + 1; j < n; j++)
+            {
+                dp[i][j] = INT_MAX;
+                for(int m = i; m < j; m += k-1) // 枚举划分点 [i, m]合为一堆
+                {
+                    dp[i][j] = min(dp[i][j], dp[i][m] + dp[m+1][j]); 
+                }
+                if((j-i)%(k-1) == 0) // 可以合并成一堆
+                    dp[i][j] += s[j+1] - s[i];
+            }
+        }
+        return dp[0][n-1];
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 1039. 多边形三角形剖分的最低得分
 关键思路： 
 - <b>对于一条边，枚举另一个顶点</b> 等于枚举一个三角形 <b>（枚举划分点k）</b>
 - 定义 <b>从i到j</b> 区间，表示沿着顶点i顺指针到顶点j，再加上边ji组成的多边形
