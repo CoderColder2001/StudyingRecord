@@ -8,6 +8,9 @@
 
 可以通过一个节点的邻居查询相应连通块的性质
 
+---
+还可以使用并查集快速找到节点的下一个未访问可达节点（访问到一个节点时，将该节点的 fa 指针指向相邻的下一个节点，这样下次访问到这个节点时，可以跳到下一个未访问的节点）  
+
 ### **模板**
 <details>
 <summary> <b> C++ Code</b> </summary>
@@ -127,6 +130,80 @@ public:
             ans[query] = uf.judgeConnection(queries[query][0], queries[query][1]);
         }
         return ans;
+    }
+};
+```
+</details>
+
+---
+### &emsp; 2619. 网格图中最少访问的格子数 :rage: HARD
+关键思路：
+- 暴力BFS中需要遍历每个节点的下一个可达节点 n ，这些可达节点中可能已经经由其它节点访问过，此时再访问也不可能得到节点 n 的更优解。因此，应该跳过访问过的节点
+- <b>用并查集合并访问过的节点</b>（用应该遍历的下一个节点作这些节点的“代表”）
+- 访问到一个节点时，将该节点的 fa 指针指向相邻的下一个节点，这样下次访问到这个节点时，可以跳到下一个未访问的节点
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    using Node = tuple<int, int, int>; //step x y
+
+    int find(vector<int>& fa, int x)
+    {
+        return x == fa[x] ? x : fa[x] = find(fa, fa[x]);
+    }
+    void merge(vector<int>& fa, int x) // 标记fa[x]指向下一节点
+    {
+        fa[x] = x + 1;
+    }
+
+    int minimumVisitedCells(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+
+        vector<vector<int>> row_fas(m, vector<int>(n+1));
+        for(int i = 0; i < m; i++)
+        {
+            iota(row_fas[i].begin(), row_fas[i].end(), 0); // 从0开始递增填充
+        }
+        vector<vector<int>> col_fas(n, vector<int>(m+1));
+        for(int i = 0; i < n; i++)
+        {
+            iota(col_fas[i].begin(), col_fas[i].end(), 0);
+        }
+
+        queue<Node> q;
+        q.emplace(1, 0, 0);
+
+        while(!q.empty())
+        {
+            auto[d, x, y] = q.front();
+            q.pop();
+            if(x == m-1 && y == n-1)
+                return d;
+
+            int g = grid[x][y];
+            
+            // 使用find遍历下一访问节点
+            // right
+            for(int ny = find(row_fas[x], y + 1);
+                ny < min(y + g + 1, n);
+                ny = find(row_fas[x], ny + 1))
+            {
+                merge(row_fas[x], ny);
+                q.emplace(d + 1, x, ny);
+            }
+            // down
+            for(int nx = find(col_fas[y], x + 1);
+                nx < min(x + g + 1, m);
+                nx = find(col_fas[y], nx + 1))
+            {
+                merge(col_fas[y], nx);
+                q.emplace(d + 1, nx, y);
+            }
+        }
+        return -1;
     }
 };
 ```
