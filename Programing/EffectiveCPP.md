@@ -117,6 +117,52 @@ C++ 对 “定义在不同编译单元内的 non-local static 对象” 的初�
 
 注：C++当有异常被抛出，调用栈(call stack)，即栈中用来储存函数调用信息的部分，会被按次序搜索，直到找到对应类型的处理程序(exception handler)；这个寻找异常相应类型处理器的过程就叫做栈展开。同时在这一过程中，当从f1返回到f2时，f1里局部变量的资源会被清空，即调用了对象的析构函数。 &emsp; 栈展开会自动调用函数本地对象的析构函数，如果这时对象的析构函数时又抛出一个异常，现在就同时有两个异常出现，但C++最多只能同时处理一个异常，因此程序这时会自动调用std::terminate()函数，导致闪退或者崩溃
 
+<br>
+
+### 9. 绝不在构造和析构过程中调用virtual函数
+在base class构造期间，virtual函数不是virtual函数（而是base class的版本）  
+根本原因：在derived class对象的base class构造期间，对象的类型是base class而不是derived class  
+
+一旦derived class的析构函数开始执行，对象内的derived class成员变量便呈现未定义值   
+
+解决方案：改为non-virtual函数，并要求derived class构造函数传递必要信息给base class构造函数，用以作为调用此non-virtual函数的参数
+还可以通过一个static的函数用以构造要传给base class构造函数的信息    
+<br>
+
+### 10. 令 operator= 返回一个reference to *this
+为了实现 “连锁赋值 x=y=z=...”
+```c++
+Widget& operator=(const Widget& rhs)
+{
+    ...
+    return * this;
+}
+```
+<br>
+
+### 11. 在 operator= 中处理“自我赋值”
+自我赋值安全性 & 异常安全性（应对`new XXX(*rhs.xxx); `抛出异常）
+在复制东西之前不要删除  
+<br>
+
+### 12. 复制对象时勿忘其每一个成分
+让derived class的copying函数调用相应的base class函数
+```c++
+PriorityCustomer::PriorityCustomer(const PriorityCustomer& rhs)
+    : Customer(rhs),
+      priority(rhs.priority)
+{
+    ...
+}
+PriorityCustomer& PriorityCustomer::operator=(const PriorityCustomer& rhs)
+{
+    ...
+    Customer::operator=(rhs);
+    priority = rhs.priority;
+    return *this;
+}
+```
+<br>
 
 ------
 ## 存疑列表
