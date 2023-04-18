@@ -188,6 +188,35 @@ PriorityCustomer& PriorityCustomer::operator=(const PriorityCustomer& rhs)
 <br>
 
 ### 15. 在资源管理类中提供对原始资源的访问
+<b>通过资源管理类处理与资源之间的所有互动</b>  
+
+`shared_ptr`和`auto_ptr`都提供一个get成员函数，用来执行**显式转换**，返回智能指针内部的原始指针（的复件）   
+同时，重载了`operator->`和`operator *`，允许**隐式转换**到底部原始指针  
+<br>
+
+### 16. 成对使用new和delete时要采取相同形式
+使用`new`时：内存被分配；针对此内存有一个或多个构造函数被调用  
+使用`delete`时：针对此内存有一个或多个析构函数被调用；内存被释放  
+`delete`的最大问题在于：即将被删除的内存之内究竟存有多少对象？（有多少析构函数必须被调用？）  
+即将被删除的指针所指的是单一对象还是对象数组？  
+
+如果在`new`时使用`[]`，则`delete`时也使用`[]`  
+<br>
+
+### 17. 以独立语句将newed对象置入智能指针
+资源一旦被创建，就要转换为资源管理对象  
+反例如
+```c++
+processWidget(shared_ptr<Widget>(new Widget), priority());
+```
+在实际执行时，编译器可能将`priority()`部分语句插入到`new Widget`与`shared_ptr`的构造函数之间，这导致priority部分出现异常时，引发内存泄漏
+应改为：
+```c++
+shared_ptr<Widget> pw(new Widget);
+processWidget(pw, priority());
+```
+<br>
+
 
 
 ------
