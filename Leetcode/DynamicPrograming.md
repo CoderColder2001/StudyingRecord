@@ -167,6 +167,41 @@ public:
 
 ---
 
+### &emsp; 1043. 分隔数组以得到最大和
+关键思路：  
+- 枚举最后一段子数组的开始下标
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxSumAfterPartitioning(vector<int>& arr, int k) {
+        int n = arr.size();
+        int dp[n+1];
+        memset(dp, -1, sizeof(dp));
+        dp[0] = 0;
+        dp[1] = arr[0];
+        for(int i = 2; i <= n; i++)
+        {
+            int maxV = arr[i-1];
+            for(int j = 1; j <= k && i - j >= 0; j++) // 最后一个子数组大小
+            {
+                maxV = max(maxV, arr[i-j]);              
+                dp[i] = max(dp[i], dp[i-j] + j*maxV);
+            } 
+        }
+        return dp[n];
+    }
+};
+```
+</details> 
+
+<br>
+
+---
+
 ### &emsp; 1092. 最短公共超序列 :rage: HARD
 关键思路：  
 - <b>dp数组记录描述状态的转移（状态间的关系）</b> 用dp数组递推构造出结果字符串
