@@ -126,12 +126,15 @@ lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它�
 
 ------
 * ## STL
+- datastructure
   - multiset
   - priority_queue
   - vector
   - string
+- algorithm
 
----
+------
+## DataStructure
 ### multiset
 允许重复元素  
 与`unordered_xxx`不同 会对内部元素进行排序 基于红黑树  
@@ -176,6 +179,10 @@ for (auto &[ch, num] : vec) {
 }
 ```
 
+`vector.erase(const_iterator position);` 删除一个元素  
+`vector.erase(const_iterator first, const_iterator last);` 删除范围元素  
+返回一个迭代器指向下一元素
+
 ---
 ### string
 查找：  
@@ -186,4 +193,26 @@ for (auto &[ch, num] : vec) {
 修改：  
 `erase(n)` 去掉从n开始所有字符  
 `resize(n, 'x')` 改变长度，如果超过了原有长度，后面补充x  
-`insert(2,"xxx")` 下标n处插入
+`insert(2,"xxx")` 下标n处插入   
+
+<br>
+
+---
+## Algorithm
+### unique
+去除相邻重复元素（故使用前一般要先sort），将重复的元素放到容器的末尾，返回值是去重之后的尾地址  
+容器实现原地去重：
+```c++
+sort(xxx.begin(), xxx.end());
+xxx.erase(unique(xxx.begin(), xxx.end()), xxx.end());
+```
+
+### lower_bound
+底层为二分查找  
+有序容器中，返回 `[first,last)` 中指向第一个值不小于val的位置（第一个 >= val 的位置）  
+```c++
+// comp可以传仿函数对象，也可以传函数指针
+// 找第一个不符合 comp 规则的元素   模板中无此项时为 "<"
+template <class ForwardIterator, class T, class Compare>
+ForwardIterator lower_bound (ForwardIterator first, ForwardIterator last, const T& val, Compare comp);
+```

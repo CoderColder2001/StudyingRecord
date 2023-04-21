@@ -70,6 +70,7 @@ public:
 ---
 * ### 序列DP
     线性 DP 通常强调「状态转移所依赖的前驱状态」是由给定数组所提供的，即拓扑序是由原数组直接给出；而序列 DP 通常需要 <b>结合题意来寻找前驱状态</b>，即需要 <b>自身寻找拓扑序关系</b>
+    对于最长递增子序列问题（或者一般的序列DP问题），通常都可以用「选或不选」和「枚举选哪个」来启发思考
 ---
 
 * ### 最长递增子序列问题 LIS
@@ -166,7 +167,6 @@ public:
 <br>
 
 ---
-
 ### &emsp; 1043. 分隔数组以得到最大和
 关键思路：  
 - 枚举最后一段子数组的开始下标
@@ -201,7 +201,6 @@ public:
 <br>
 
 ---
-
 ### &emsp; 1092. 最短公共超序列 :rage: HARD
 关键思路：  
 - <b>dp数组记录描述状态的转移（状态间的关系）</b> 用dp数组递推构造出结果字符串
@@ -256,6 +255,59 @@ public:
         }
         reverse(ans.begin(), ans.end());
         return str1.substr(0, i+1) + str2.substr(0, j+1) + ans; // 记得加上剩余子串 相当于make_ans的边界返回值
+    }
+};
+```
+</details> 
+
+<br>
+
+---
+### &emsp; 1187. 使数组严格递增 :rage: HARD
+关键思路：  
+- <b>对于最长递增子序列问题（或者一般的序列DP问题），通常都可以用「选或不选」和「枚举选哪个」来启发思考</b> 
+- 本题解法为 “枚举选哪个”
+- 最终要寻找一个符合条件（不在其中的元素可以被替换）的LIS；把重点放在 LIS 上，关注哪些 a[i] 没有被替换，那么答案就是 n − length(lis)
+- <b>dp求a[i]能链上的最长的LIS链</b>
+- b[k]为 大于等于 a[i]的最小元素 则b[k-1]为 小于 a[i]的最大元素
+- dp[i] 表示以 a[i] 结尾的 LIS 的长度
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int makeArrayIncreasing(vector<int>& arr1, vector<int>& arr2) {
+        vector<int> a(arr1), b(arr2);
+        a.push_back(INT_MAX);
+        sort(b.begin(), b.end());
+        b.erase(unique(b.begin(), b.end()), b.end()); // 原地去重
+
+        int n = a.size();
+        int dp[n];
+        for(int i = 0; i < n; i++)
+        {
+            int k = lower_bound(b.begin(), b.end(), a[i]) - b.begin(); // b[k]为>= a[i]的最小元素 则b[k-1]为 < a[i]的最大元素
+            // 考察以a[i]作为lis的开始
+            int res = k < i ? INT_MIN : 0; // 不足以替换a[i]前所有数时，初始化为INT_MIN
+            
+            // 考察a[i]是否能链在某个lis末尾
+            if(i && a[i-1] < a[i]) // 递增 无需替换
+            {
+                res = max(dp[i-1], res);
+            }
+            for(int j = i - 2; j >= i-k-1 && j >= 0; j--)
+            {
+                if(b[k - (i-j-1)] > a[j]) // 往前找i-(j+1)个元素
+                {
+                    // a[j+1] 到 a[i-1] 可以替换成 b[k-(i-j-1)] 到 b[k-1]
+                    res = max(dp[j], res);
+                }
+            }
+            dp[i] = res + 1; // 取能链上的最长的lis 长度+1
+        }
+        return dp[n-1] > 0 ? n - dp[n-1] : -1;
     }
 };
 ```
