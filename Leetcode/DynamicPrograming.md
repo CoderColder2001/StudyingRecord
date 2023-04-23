@@ -263,6 +263,45 @@ public:
 <br>
 
 ---
+### &emsp; 1105. 填充书架
+关键思路：  
+- 观察题目条件，要求摆放书的顺序与整理好的顺序相同
+- 故枚举最后一层的第一本书的下标 j 即可
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minHeightShelves(vector<vector<int>>& books, int shelfWidth) {
+        int n = books.size();
+        int dp[n+1];
+        dp[0] = 0;
+        for(int i = 1; i <= n; i++)
+        {
+            dp[i] = INT_MAX;
+            int width = 0;
+            int height = 0;
+            for(int j = i; j >= 1 && width < shelfWidth; j--)
+            {
+                width += books[j-1][0];
+                if(width > shelfWidth)
+                    break;
+                height = max(height, books[j-1][1]);
+
+                dp[i] = min(dp[j-1] + height, dp[i]);
+            }
+        }
+        return dp[n];
+    }
+};
+```
+</details> 
+
+<br>
+
+---
 ### &emsp; 1187. 使数组严格递增 :rage: HARD
 关键思路：  
 - <b>对于最长递增子序列问题（或者一般的序列DP问题），通常都可以用「选或不选」和「枚举选哪个」来启发思考</b> 
