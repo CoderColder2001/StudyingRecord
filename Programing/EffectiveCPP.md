@@ -272,6 +272,58 @@ protect变量改变会影响使用它的derived class
 在c++中，让该函数成为一个non-member函数，并位于该类的同一个namespace内（不同函数可以跨越多个源码文件）   
 <br>
 
+### 24. 若所有参数皆需类型转换，请为此采用non-member函数
+只有当参数被列于参数列内，这个参数才是隐式类型转换的合格参与者  
+（作为成员函数时，被this所指向的隐式参数绝不是隐式转换的合格参与者）  
+<br>
+
+### 25. 考虑写出一个不抛异常的swap函数
+对于 “以指针指向一个对象，内含真正数据” 的情形   
+此时应只置换内部指针   
+```c++
+class Widget {
+public:
+    ...
+    void swap(Widget& other)
+    {
+        using std::swap; // 让std::swap在函数体内曝光
+        swap(pImpl, other.pImpl);
+    }
+    ...
+};
+namespace std {
+    template<>  // 特化版本
+    void swap<Widget>(Widget& a, Widget& b)
+    {
+        a.swap(b);
+    }
+}
+```  
+
+注意类模板的情形，C++只允许对class templates，而不允许对function templates（如swap）进行偏特化；此时，声明一个non-member swap调用member swap，但不将non-member swap声明为std::swap的特化版本或重载版本   
+```c++
+namespace WidgetStuff {
+    ...
+    template<typename T>
+    class Widget {...};
+    ...
+    template<typename T>
+    void swap(Widget<T>&a, Widget<T>&b)
+    {
+        a.swap(b);
+    }
+}
+```
+
+1. 提供一个public swap成员函数，实现高效置换
+2. 在该class或template所在命名空间内提供一个non-member swap，用以调用上述swap成员函数
+3. 如果正编写一个class（而非 class template），为其特化std::swap，并令它调用swap成员函数
+
+
+在编写一个需要用到swap的函数or函数模板时，调用前使用 `using std::swap` 曝光   
+<u>成员版的swap绝不可抛出异常</u>! swap的一个重大应用是帮助classes和class templates提供强烈的异常安全性保障  
+<br>
+
 ------
 ## 存疑列表
 c++异常处理 栈展开
