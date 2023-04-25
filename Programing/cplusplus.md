@@ -167,7 +167,7 @@ for (auto &it : mp)
 sort(vec.begin(), 
     vec.end(), 
     [](const pair<char, int> &a, const pair<char, int> &b) {
-        return a.second > b.second;
+        return a.second > b.second; // 降序
     }
 );
 
@@ -199,6 +199,13 @@ for (auto &[ch, num] : vec) {
 
 ---
 ## Algorithm
+### sort
+```c++
+sort(idx.begin(), idx.end(), [&](int i, int j) {
+    return heights[i] > heights[j]; // 按heights降序排序
+});
+```
+
 ### unique
 去除相邻重复元素（故使用前一般要先sort），将重复的元素放到容器的末尾，返回值是去重之后的尾地址  
 容器实现原地去重：
