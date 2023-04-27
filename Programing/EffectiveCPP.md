@@ -9,6 +9,7 @@
 - Part2. 构造/析构/赋值运算
 - Part3. 资源管理
 - Part4. 设计与声明
+- Part5. 实现
 ------
 ## 导读部分
 一个函数的类型：参数&返回类型  
@@ -325,5 +326,33 @@ namespace WidgetStuff {
 <br>
 
 ------
+## Part5. 实现
+### 26. 尽可能延后变量定义式的出现时间
+不要定义一个不使用的变量，在确实要用到它的时候再定义   
+甚至可以延后至它可以获得初值时，避免无意义的default构造  
+<br>
+
+### 27. 尽量少做转型动作
+C++提供的四种新式转型：  
+- `const_cast<T>(expression)`：通常用来将对象的常量性移除（唯一能将const转为non-const）
+- `dynamic_cast<T>(expression)`：“安全向下转型”，用来决定某对象是否归属继承体系中的某个类型（唯一可能耗费重大运行成本的转型动作） base -> derived
+- `reinterpret_cast<T>(expression)`：基本不会用到。意图执行低级转型，实际动作及结果可能取决于编译器（不可移植）
+- `static_cast<T>(expression)`：强迫隐式转换，如将non-const对象转换为const对象，或将int转为double等
+
+C++中，单一对象可能拥有一个以上的地址（以base* 指向它时与以derived* 指向它时）  
+对象的布局方式和它们的地址计算方式随编译器的不同而不同  
+
+易犯错误：派生类成员函数中执行 `static_cast<Base>(*this).onResize();` 调用的是转型动作所创建的另一个“*this对象的base class成分”的临时副本上的onResize  
+解决方案：使用`Window::onResize();`  
+
+避免dynamic_cast，替代方案：
+- 使用容器并在其中存储直接指向derived class对象的指针（通常是智能指针）
+- 在base class中提供virtual函数与一份“什么都不做”的缺省实现（基于virtual函数调用，将virtual函数往继承体系上方移动）
+
+<br>
+
+
+------
 ## 存疑列表
-c++异常处理 栈展开
+c++异常处理 栈展开  
+类型转换语句  
