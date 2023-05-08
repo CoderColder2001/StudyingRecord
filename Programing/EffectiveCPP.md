@@ -424,6 +424,61 @@ public继承意味着成员函数的接口总是会被继承
 <b>声明non-virtual函数的目的是为了令derived class继承它们的接口以及一份强制性实现</b>（不打算在derived class内有不同的行为）  
 <br>
 
+### 35. 考虑virtual函数以外的其他选择
+<b>Template Method 设计模式</b>  
+改为 Non-Virtual Interface，间接调用  
+让public成员函数为non-virtual（作为一个wrapper），在其中调用一个private virtual函数   
+这个wrapper确保可以在一个virtual函数被调用前设定好适当场景（如上锁、写日志、验证class约束条件、验证函数先决条件等），并在调用结束后清理场景（如解锁、验证函数事后条件、再次验证class约束条件等）  
+*NVI手法允许 derived class 重新定义virtual函数，从而赋予它们对 “ 如何实现机能 ” 的控制能力，但 base class 保留诉说 “ 函数何时被调用 ” 的权利*   
+<br>
+
+<b>Strategy 设计模式</b>  
+1 . 由函数指针实现   
+*构造函数接受一个指针，指向一个具体的函数实现*   
+```c++
+class GameCharacter; // 前置声明
+int defaultHealthCalc(const GameCharacter& gc);
+class GameCharacter {
+public:
+    typedef int (*HealthCalcFunc)(const GameCharacter&); //
+
+    explicit GameCharacter(HeathCalcFunc hcf = defaultHealthCalc)
+        : healthFunc(hcf)
+    {}
+
+    int heathValue() const
+    { return healthFunc(*this); } //
+    ...
+private:
+    HealthCalcFunc healthFunc; //
+}
+```
+优点：
+- 同一类型实体可以有不同的函数实现  
+- 某实体的函数可以在运行期变更
+
+缺点：
+- 该函数不再是继承体系内的成员函数，不能访问对象内部成分  
+- 除非弱化该类的封装（如声明该函数为friend，或提供某一部分的public访问函数）
+
+<br>
+
+2 . 由函数对象实现
+```c++
+typedef std::tr1::function<int (const GameCharacter&)> HealthCalcFunc;
+```
+`tr1::function` 类型的对象可以持有任何与模板签名式相兼容（参数类型、返回值类型可以隐式转换）的可调用物  
+甚至可以接受另一个类的成员函数（通过bind绑定一个该类实体作为this参数）  
+```c++
+GameLevel currentLevel; // ebg2的health计算函数总以currentLevel作为GameLevel对象
+EvilBadGuy ebg2(std::tr1::bind(&GameLevel::health, currentLevel), _1); // 绑定一个GameLevel的成员函数
+``` 
+
+3 . 将函数通过另一个分离的继承体系中维护  
+声明为另一个继承体系中的virtual成员函数  
+再通过类内维护一个指向该继承体系的基类指针  
+<br>
+
 
 ------
 ## 存疑列表

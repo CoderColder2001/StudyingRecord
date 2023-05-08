@@ -1,7 +1,96 @@
 ## Content
+- BFS/DFS
 - 状态压缩 + BFS/DFS
 - 图论
   
+<br>
+
+------
+## BFS/DFS
+### 概念
+---
+---
+### 题目
+---
+### &emsp; 1263. 推箱子 :rage: HARD
+关键思路：
+- <b>使用BFS寻找最短路</b>
+- 人的单点可达性问题：对人BFS，再判断人这次移动是否推动箱子
+- 因为是对人BFS而要求箱子最短路，<b>使用优先队列存状态</b>，比较箱子移动的距离
+- 使用`set` 记录已经访问过的 { 人的位置，箱子的位置 }
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int minPushBox(vector<vector<char>>& grid) {
+        // [0]最小步数 [1][2]人坐标 [3][4]箱子坐标
+        priority_queue<vector<size_t>, vector<vector<size_t>>, greater<vector<size_t>>> pq;
+        size_t m = grid.size();
+        size_t n = grid[0].size();
+
+        vector<size_t> start (5, 0);
+        for(size_t x = 0; x < m; x++)
+        {
+            for(size_t y = 0; y < n; y++)
+            {
+                if(grid[x][y] == 'S')
+                {
+                    start[1] = x;
+                    start[2] = y;
+                    grid[x][y] = '.';
+                }
+                else if(grid[x][y] == 'B')
+                {
+                    start[3] = x;
+                    start[4] = y;
+                    grid[x][y] = '.';
+                }
+            }
+        }
+        pq.push(start);
+        set<vector<size_t>> dist; // 记录走过的位置
+        dist.insert({start[1], start[2], start[3], start[4]});
+
+        int dx[4] = {0, 0, 1, -1};
+        int dy[4] = {1, -1, 0, 0};
+        while(!pq.empty()) // BFS人的移动 并判断是否能推动箱子
+        {
+            auto v = pq.top();
+            pq.pop();
+            for(int i = 0; i < 4; i++)
+            {
+                vector<size_t> next_s = {v[1] + dx[i], v[2] + dy[i]};
+                if (next_s[0] >= m || next_s[1] >= n || grid[next_s[0]][next_s[1]] == '#')
+				    continue;
+                vector<size_t> next_b = { v[3], v[4] };
+			    size_t dis = v[0];
+                if (next_s == next_b) // 推动箱子
+			    {
+				    next_b[0] += dx[i];
+				    next_b[1] += dy[i];
+				    if (next_b[0] >= m || next_b[1] >= n || grid[next_b[0]][next_b[1]] == '#')
+					    continue;
+				    dis++;
+                    if (grid[next_b[0]][next_b[1]] == 'T') // 是否到达终点
+				        return (int)dis;
+			    }
+
+                if (dist.find({next_s[0], next_s[1], next_b[0], next_b[1]}) != dist.end())
+				    continue;
+                
+                dist.insert({next_s[0], next_s[1], next_b[0], next_b[1]});
+			    pq.push({dis, next_s[0], next_s[1], next_b[0], next_b[1]});
+            }
+        }
+        return -1;
+    }
+};
+```
+</details>
+
 <br>
 
 ------
