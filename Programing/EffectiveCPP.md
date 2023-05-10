@@ -479,6 +479,44 @@ EvilBadGuy ebg2(std::tr1::bind(&GameLevel::health, currentLevel), _1); // 绑定
 再通过类内维护一个指向该继承体系的基类指针  
 <br>
 
+### 36. 绝不重新定义继承而来的non-virtual函数
+non-virtual函数是静态绑定的，根据指针类型调用  
+且违反了 32.  
+<br>
+
+### 37. 绝不重新定义继承而来的缺省参数值
+virtual函数是动态绑定，而缺省参数值是静态绑定   
+静态类型：在程序中被声明时所采用的类型  
+动态类型：目前所指对象的类型   
+
+需要在虚函数中指定缺省参数的替代方案：用 35 中的NVI手法；在non-virtual wrapper中指定原来的缺省参数  
+<br>
+
+### 38. 通过复合塑模出has-a或“根据某物实现出”
+复合composition：类型之间的一种关系；某种类型的对象内含其他类型的对象  
+<br>
+
+### 39. 明智而审慎地使用private继承
+如果继承关系是private，编译器不会自动将一个derived class对象转换为一个base class对象  
+由private base继承而来的所有成员，在derived class中都会变成private属性  
+
+private继承意味着：<b>"根据某物实现出"</b>  
+如果class D 以private继承class B，用意应是为了采用class B内已经备妥的某些特性，而不是B对象和D对象有任何观念上的联系  
+（只继承实现，不继承接口）  
+
+尽可能使用复合，必要时（涉及访问protected成员或需要重定义virtual函数时）才使用 private 继承   
+需要重定义虚函数时，另一种方案：*在class D内部声明一个嵌套式的private class DB，让这个class DB 以public继承 class B并重新定义虚函数；* 这种方案可以实现class D的派生类无法再度重定义这个虚函数。  
+同时，如果将DB移出D外，通过D内含一个DB的指针，D所在文件可以只带着一个DB的声明式（而非必须看到定义式，需要include），从而减小了程序的编译依存性
+
+尽管不带任何数据（没有non-static成员变量、没有virtual函数、也没有virtual base classes），独立对象的大小也不一定为0（通常会被安插占位符，或被要求对齐等）。但在private继承中，作为一个base class成分时除外！
+<br>
+
+### 40. 明智而审慎地使用多重继承
+不同base class中可能存在相同名称  
+继承体系中在只需要一份共同base class数据时，声明为virtual继承  
+使用virtual继承会引入额外的体积和访问时间；且vitual base的初始化责任由most derived class负责（若使用vitual继承，避免在vitual base classes中放置数据）  
+<br> 
+
 
 ------
 ## 存疑列表
