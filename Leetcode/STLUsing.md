@@ -1,5 +1,12 @@
 ## Leetcode中利用STL中数据结构求解的题目
+- 堆、栈、队列
+- 哈希表、哈希集合
+- map、set（平衡二叉树）？
 
+------
+## 堆、栈、队列
+
+### 题目
 ---
 ### &emsp; 295. 数据流的中位数 :rage: HARD
 关键思路：
@@ -485,6 +492,96 @@ public:
                 day++;
         }
         return day-day_napple;
+    }
+};
+```
+</details>
+
+<br>
+
+------
+## 哈希表、哈希集合
+
+### 题目
+---
+### &emsp; 1016. 子串能表示从1到N数字的二进制串 MID
+关键思路1： O（m logn）
+- 遍历所有子串 `j`右移扩展子串`[i, j]`： `x = (x << 1) | (s[j] - '0');`
+- 使用哈希集合记录子串对应的数字
+- 最终集合大小为n时，满足 “ [1,n] 内所有整数的二进制串都是 S 的子串 ”
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    bool queryString(string s, int n) {
+        unordered_set<int> seen;
+        int m = s.length();
+        for(int i = 0; i < m; i++)
+        {
+            int x = s[i] - '0';
+            if(x == 0)  // 从1开始
+                continue;
+            for(int j = i + 1; x <= n; j++) // 记录以s[i]开头的子串对应数字
+            {
+                seen.insert(x);
+                if(j == m) // 要先记录上一次的
+                    break;
+                x = (x << 1) | (s[j] - '0'); // 子串 [i, j]
+            }
+        }
+        return seen.size() == n;
+    }
+};
+```
+</details>
+
+关键思路2： O（m）
+- S 长度需满足的条件，不满足直接 return false：
+  - 设 n 的二进制长度为 `k+1`；则区间 `[2^k, n] `中数字长度均为 `k+1`，共 `n - 2^k + 1`个数字；S长度应满足 `m > k + 1 + (n - 2^k + 1) = n - 2^k + k + 1`
+  - 区间 `[2^(k-1), 2^k - 1]` 中数字长度均为 `k`，共 `2^(k-1)`个数字；S长度还应满足 `m > k + 2^(k-1) - 1`
+- 注意到，对于区间`[2^(k-1), 2^k - 1]`中的数字，右移一位（子串的子串）可以得到更小值的区间`[2^(k-2), 2^(k-1) - 1]` 中的所有数字
+- 故只需判断那两个区间中的数字 在S中是否都存在子串相对应 即可。
+- <b>使用长度k 和 k+1的滑动窗口</b>
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    bool queryString(string s, int n) {
+        if (n == 1)
+            return s.find('1') != string::npos;
+
+        int m = s.length();
+        // __builtin_clz: 返回前导0个数
+        int k = 31 - __builtin_clz(n); // n 的二进制长度减一
+        if (m < max(n - (1 << k) + k + 1, (1 << (k - 1)) + k - 1))
+            return false;
+
+        // 对于长为 k 的在 [lower, upper] 内的二进制数，判断这些数 s 是否都有
+        auto check = [&](int k, int lower, int upper) -> bool {
+            if (lower > upper)
+                return true;
+
+            unordered_set<int> seen;
+            int mask = (1 << (k - 1)) - 1; 
+            int x = stoi(s.substr(0, k - 1), nullptr, 2);
+            for (int i = k - 1; i < m; i++) 
+            {
+                // & mask 可以去掉长度k串的最高比特位，从而实现滑窗的「出」
+                // << 1 | (s[i] - '0') 即为滑窗的「入」
+                x = ((x & mask) << 1) | (s[i] - '0');
+                if (lower <= x && x <= upper)
+                    seen.insert(x);
+            }
+            return seen.size() == upper - lower + 1;
+        };
+
+        return check(k, n / 2 + 1, (1 << k) - 1) && check(k + 1, 1 << k, n);
     }
 };
 ```
