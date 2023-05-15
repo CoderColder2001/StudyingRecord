@@ -586,3 +586,37 @@ public:
 };
 ```
 </details>
+<br>
+
+---
+### &emsp; 1072. 按列翻转得到最大值等行数 MID
+关键思路： 
+- 矩阵中元素相同or互补的两行可以通过翻转各自变成相等行
+- <b>这样的两行通过边相连接 答案就是最大连通块的大小</b>
+- 无需建图。<b>用哈希表计数统计这些 “连通行”</b> 当以1开头时 翻转为以0开头后记入哈希表
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxEqualRowsAfterFlips(vector<vector<int>>& matrix) {
+        int ans = 0, n = matrix[0].size();
+        unordered_map<vector<bool>, int> cnt;
+        for(const auto &row : matrix)
+        {
+            vector<bool> t(row.begin(), row.end());
+            if(t[0])
+            {
+                t.flip();
+            }
+            ans = max(ans, ++cnt[std::move(t)]);
+            //std::move 将一个左值强制转化为右值引用
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
