@@ -11,6 +11,7 @@
 - Part4. 设计与声明
 - Part5. 实现
 - Part6. 继承与面向对象设计
+- Part7. 模板与泛型编程
 ------
 ## 导读部分
 一个函数的类型：参数&返回类型  
@@ -517,6 +518,32 @@ private继承意味着：<b>"根据某物实现出"</b>
 使用virtual继承会引入额外的体积和访问时间；且vitual base的初始化责任由most derived class负责（若使用vitual继承，避免在vitual base classes中放置数据）  
 <br> 
 
+------
+## Part7. 模板与泛型编程
+### 41. 了解隐式接口和编译期多态
+显示接口通常由函数的签名式（函数名称、参数类型、返回类型）构成；隐式接口而是由有效表达式组成（表达式决定约束条件）  
+对于一个模板类对象 w：
+- 隐式接口：w 必须支持哪一种接口，系由template 中执行于 w 的操作来决定  
+- 编译期多态：凡涉及 w 的任何函数调用，例如 `operator >` 和 `operator !=`，有可能造成在编译期的template的具现化；“以不同的template参数具现化function templates” 会导致调用不同的函数  
+
+注意隐式接口类型中的表达式内可能的 **隐式类型转换** （类型兼容性）  
+<br>
+
+### 42. 了解typename的双重意义
+声明template参数时，前缀关键字`class`和`typename`无差别  
+typename告诉C++解析器 一个嵌套从属名称（如`T::const_iterator`）是一个类型  
+但是typename不可以出现在base classes list 内的嵌套从属名称之前，也不可在成员初值列中作base class修饰符  
+<br>
+
+### 43. 学习处理模板化基类内的名称
+为避免全特化的模板类不提供和一般性template相同的接口，C++编译器往往不会在 templatized base class（模板化基类）中寻找继承而来的名称  
+在定义式中，编译器并不知道一个 class template Derived继承自具体什么样的类（不到具现化时，不知模板参数）  
+三种方法让编译器进入templatized base class中寻找名称：  
+- 在base class 函数调用动作前加 `this->`
+- 使用语句 `using XXX<ABC>::dosomething;` （类似于33. ）
+- 调用动作加`XXX<ABC>::` 明确指出被调用函数位于base class内；*然而，这种方法会关闭virtual绑定*
+
+<br>
 
 ------
 ## 存疑列表

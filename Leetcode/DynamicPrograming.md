@@ -61,7 +61,52 @@ public:
 };
 ```
 </details> 
+<br>
 
+---
+### &emsp; 1335. 工作计划的最低难度 :rage:HARD
+关键思路：  
+- <b>区间分段最大值之和的最小值</b>
+- `f[d][n]`： `d`为剩余天数，控制区间遍历的范围
+- 根据`d`的控制 枚举最后一天进行工作的开始下标`k` 并求最后一天工作难度的最大值`mx`，再更新`f[i][j]`
+- dp数组更新顺序为斜向下，只用到上一行的数据；但由于斜向下，在空间优化省略第一维时，第二维要倒序遍历
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minDifficulty(vector<int>& jobDifficulty, int d) {
+        int n = jobDifficulty.size();
+        if(n < d)
+            return -1;
+
+        int f[d][n]; // d天 [0,n]
+        f[0][0] = jobDifficulty[0];
+        for(int j = 1; j < n; j++)
+        {
+            f[0][j] = max(f[0][j-1], jobDifficulty[j]);
+        }
+        for(int i = 1; i < d; i++)
+        {
+            for(int j = n-1; j >= i; j--) // 倒序遍历j 可以空间优化省去第一维 但若不倒序遍历f[k-1]会被覆盖
+            {
+                f[i][j] = INT_MAX;
+                int mx = 0;
+                // 枚举最后一段工作的开始下标k
+                for(int k = j; k >= i; k--)
+                {
+                    mx = max(mx, jobDifficulty[k]); // 从 a[k] 到 a[j] 的最大值
+                    f[i][j] = min(f[i][j], f[i-1][k-1] + mx);
+                }
+            }
+        }
+        return f[d-1][n-1];
+    }
+};
+```
+</details> 
 <br>
 
 ------
