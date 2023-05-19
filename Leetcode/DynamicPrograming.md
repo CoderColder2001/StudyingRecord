@@ -4,6 +4,7 @@
 - 区间DP
 - 状压DP
 - 数位DP
+- 计数DP
 
 有重叠子问题 -> 用 DP 优化
 
@@ -616,6 +617,72 @@ public:
         };
 
         return n - f(0, 0, true, false);
+    }
+};
+```
+</details> 
+
+<br>
+
+------
+## 计数DP
+### 概念
+---
+* ### 计数DP
+    统计选择项（用于“构造”的素材）的数目，枚举选或不选   
+    <b>DP数组描述构造方式</b>  
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 1079. 活字印刷 MID
+关键思路：  
+- 统计各字符（材料）的个数
+- `dp[i][j]`表示用前`i`种字符构造长度为`j`的序列的方案数
+- 遍历各类字符，并枚举每个字符选`k`个去构造长度为`j`的序列（方案数相当于乘上组合数 `C(j, k)`）
+- 对于组合数的预处理计算，本质是考虑`j`个数中选`k`个，可以考虑其状态转移为当前数选or不选
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+const int MX = 8;
+int c[MX][MX];
+int init = []() { // 预处理 计算组合数c
+    for(int i = 0; i < MX; i++)
+    {
+        c[i][0] = c[i][i] = 1;
+        for(int j = 1; j < i; j++)
+            c[i][j] = c[i-1][j-1] + c[i-1][j]; // 第i个数选或不选 
+    }
+    return 0;
+}();
+
+class Solution {
+public:
+    int numTilePossibilities(string tiles) {
+        unordered_map<char, int> counts;
+        for(char c : tiles)
+            counts[c]++;
+        int n = tiles.size(); // 序列最大长度
+        int m = counts.size();// 字母数
+        int dp[m+1][n+1];
+        memset(dp, 0 ,sizeof(dp));
+        dp[0][0] = 1; // 构造空序列的方案数
+        int i = 1;
+        for(auto &[_, cnt] : counts) // 枚举第i种字母
+        {
+            for(int j = 0; j <= n; j++) // 枚举序列长度
+            {
+                for(int k = 0; k <= j && k <= cnt; k++) // 枚举这个字母选多少个
+                    dp[i][j] += dp[i-1][j-k] * c[j][k];
+            }
+            i++;
+        }
+        return accumulate(dp[m] + 1, dp[m] + n + 1, 0);
     }
 };
 ```

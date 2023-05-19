@@ -545,6 +545,61 @@ typename告诉C++解析器 一个嵌套从属名称（如`T::const_iterator`）�
 
 <br>
 
+### 44. 将与参数无关的代码抽离templates
+当template被具现化很多次时可能发生的重复  
+
+如，对一个`template<typename T, std::size_t n>`，让其继承一个`template<typename T>`，`n` 作为参数传递，inline调用base class版本的方法  
+```c++
+template<typename T, std::size_t n>
+class SquareMatrix: private SquareMatrixBase<T> {
+private:
+    using SquareMatrixBase<T>:: invert; // 避免名称遮掩，见33.
+public:
+    ...
+    void invert() { this->invert(n) }; // this-> 保证进入模板化基类寻找名称
+}
+```
+private继承表明 基类只是为了帮助派生类实现  
+
+基类如何知道该操作哪些数据？如何知道数据存放位置？  
+令Base存一个指针指向数据所在内存位置与大小；这允许Derived决定内存分配方式，然后在其构造函数中再通知Base  
+```c++
+SquareMatrix()
+    : SquareMatrix<T>(n, 0), // 基类维护大小与指针
+      pData(new T[n*n])
+{
+    this->setDataPtr(pData.get); // 基类中方法
+}
+```
+
+优劣：这样抽离出具有共性的代码，减少了可执行文件大小（强化了指令cache的引用集中化），但往往会降低了编译优化率，并增加了对象的大小  
+<br>
+
+### 45. 运用成员函数模板接受所有兼容类型
+以自定义智能指针模仿原始指针在同一继承体系下的类型转化为例：  
+```c++
+template<typename T>
+class SmartPtr {
+public:
+    template<typename U>
+    SmartPtr(const SmartPtr<U>& other) // 为不同的类型 生成相应构造函数
+        : heldPtr(other.get()) { ... } // 利用原始指针间的类型转化约束U的类型
+    T* get() const {return heldPtr};
+private:
+    T* heldPtr
+}
+```
+对满足转化要求的任何类型 T 和 U，都可以根据`SmartPtr<U>` 生成一个 `SmartPtr<T>`  
+
+声明泛化的copy构造函数并不会阻止编译器生成non-template的copy构造函数，对赋值操作也相同  
+<br>
+
+### 46. 需要类型转换时请为模板定义非成员函数
+条款24. 对模板类要支持隐式类型转换的运算时，定义为 “class template 内部的friend 函数” ，使编译器总能在`class XXX<T>`具现化时得知 `T`，并具现化该模板函数  
+具现化后，作为一个函数而非函数模板，编译器可以在调用它时执行隐式转换函数  
+
+*为了让类型转换可能发生于所有实参上，需要是non-member函数（条款24.）；为了令这个函数模板被自动具现化，需要将它声明在class内部；而在class内部声明non-member函数的唯一办法就是 —— 让它成为一个friend*
+
 ------
 ## 存疑列表
 c++异常处理 栈展开  
