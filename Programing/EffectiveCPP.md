@@ -598,9 +598,64 @@ private:
 条款24. 对模板类要支持隐式类型转换的运算时，定义为 “class template 内部的friend 函数” ，使编译器总能在`class XXX<T>`具现化时得知 `T`，并具现化该模板函数  
 具现化后，作为一个函数而非函数模板，编译器可以在调用它时执行隐式转换函数  
 
-*为了让类型转换可能发生于所有实参上，需要是non-member函数（条款24.）；为了令这个函数模板被自动具现化，需要将它声明在class内部；而在class内部声明non-member函数的唯一办法就是 —— 让它成为一个friend*
+*为了让类型转换可能发生于所有实参上，需要是non-member函数（条款24.）；为了令这个函数模板被自动具现化，需要将它声明在class内部；而在class内部声明non-member函数的唯一办法就是 —— 让它成为一个friend*  
+<br>
+
+### 47. 请使用traits classes 表现类型信息
+input迭代器和output迭代器都只能一次一步地向前移动，且只能读or写其所指物最多一次，它们只适合“一次性操作算法”  
+
+如何取得类型信息？  
+traits技术 在编译期间取得某些类型信息  
+因为我们无法将信息嵌套于原始指针内，因此类型的traits信息必须位于类型自身之外。标准技术是把它放进一个template及其一个或多个特化版本中  
+```c++
+template<typename IterT>
+struct iterator_traits {
+    typedef typename IterT::iterator_category iterator_category;
+    ...
+};
+```
+`iterator_traits`的运作方式：针对每一个类型`IterT`，在结构内一定声明某个`typedef`名为 `iterator_category`，这个`typedef`用来确认迭代器分类，如：  
+```c++
+template<...>
+class myDeque {
+public:
+    class iterator {
+    public:
+        typedef random_access_iterator_tag iterator_category; // xxx_tag是一个空struct
+        ...
+    };
+    ...
+};
+```   
+为了支持指针迭代器，针对指针类型提供偏特化版本：  
+```c++
+template<typename IterT>
+struct iterator_traits<IterT*> {
+    typedef random_access_iterator_tag iterator_category;
+    ...
+};
+```
+
+使用 **函数重载** 在编译期间完成条件分支（函数重载是一个针对类型而发生的“编译期条件语句”）   
+建立一个统一的控制函数或函数模板，再建立一组重载函数或函数模板；控制函数通过额外传递一个不同的类型参数对象，调用相应版本的重载函数  
+```c++
+template<typename IterT, typename DistT>
+void advance(IterT& iter, DistT d)
+{
+    doAdvance(iter, d,
+              typename std::iterator_traits<IterT>::iterator_category());
+}
+```
+
+<br>
+
+### 48. 认识template元编程
+可以在编译期间找到错误  
+<br>
 
 ------
 ## 存疑列表
 c++异常处理 栈展开  
 类型转换语句  
+template相关   
+
