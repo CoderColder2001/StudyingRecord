@@ -90,7 +90,57 @@ public:
 };
 ```
 </details>
+<br>
 
+---
+### &emsp; 1377. T秒后青蛙的位置 :rage: HARD
+关键思路：
+- <b>DFS 从根节点出发搜索target</b>
+- 如何避免浮点数精度丢失：由于答案由若干分子为1的分数相乘得到，改为计算分母的乘积，最后再求倒数
+- 两种DFS的实现：
+  - 自顶向下：“递”；一边计算乘积，一边看是否到达target
+  - 自底向上： 在“归”的过程中做乘法；在不含target的子树中搜索时，不会盲目地做乘法
+- 把根节点1添加一个0号邻居，避免了特判根节点的情况。
+- DFS 中的时间不是从 0 开始增加到 t，而是从 `leftT=t` 开始减小到 0，这样代码中只需和 0 比较，无需和 t 比较，从而减少一个 DFS 之外变量的引入。
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    double frogPosition(int n, vector<vector<int>>& edges, int t, int target) {
+        vector<vector<int>> g(n+1); // 邻接表
+        g[1] = {0}; //把节点1添加一个0号邻居 从而避免判断当前节点为根节点1，也避免了特判n=1 的情况。
+        for(auto &e : edges) {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        function<long long(int, int, int)> dfs = [&](int x, int fa, int left_t) -> long long {
+            if(left_t == 0)
+                return x == target;
+            if(x == target)
+                return g[x].size() == 1; // 恰好t秒后到达 或叶节点留在原地
+            
+            for(int y : g[x])
+            {
+                if(y != fa)
+                {
+                    auto prod = dfs(y, x, left_t - 1);
+                    if(prod != 0)
+                        return prod * (g[x].size() - 1); // 乘上孩子个数返回
+                }
+            }
+            return 0;
+        };
+        auto prod = dfs(1, 0, t);
+        return prod ? 1.0/prod : 0;
+    }
+};
+```
+</details>
 <br>
 
 ------
