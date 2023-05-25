@@ -1,5 +1,6 @@
 ## Content
 - 线性DP
+- 树形DP
 - 序列DP
 - 区间DP
 - 状压DP
@@ -104,6 +105,56 @@ public:
             }
         }
         return f[d-1][n-1];
+    }
+};
+```
+</details> 
+<br>
+
+------
+## 树形DP
+### 概念
+---
+* ### 树形DP
+    基于左右子树描述状态 在树上状态转移  
+    树形DP的出发点：思考 **如何通过递归去计算，如何由子问题算出原问题** （选或不选、枚举选哪个 等）
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 337. 打家劫舍 MID
+关键思路：  
+- <b>树上最大独立集问题的变形</b>
+- 对当前节点 考虑选或不选
+- <b>把 “选/不选” 作为两个状态</b> 来影响状态转移
+- 选当前节点，则左右孩子都不能选；不选当前节点，左右孩子可选可不选
+- 提炼状态为：选当前节点时，子树最大点权和 & 不选当前节点时，子树最大点权和
+- 最终取 `max（选根节点， 不选根节点）`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+    pair<int, int> dfs(TreeNode* node) // 抢 or 不抢
+    {
+        if(node == nullptr)
+            return {0,0};
+        auto[l_rob, l_not_rob] = dfs(node->left);
+        auto[r_rob, r_not_rob] = dfs(node->right);
+        
+        // 状态转移方程
+        int rob = l_not_rob + r_not_rob + node->val;
+        int not_rob = max(l_rob, l_not_rob) + max(r_rob, r_not_rob);
+        return {rob, not_rob};
+    }
+public:
+    int rob(TreeNode* root) {
+        auto [root_rob, root_not_rob] = dfs(root);
+        return max(root_rob, root_not_rob);
     }
 };
 ```

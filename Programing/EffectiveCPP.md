@@ -12,6 +12,7 @@
 - Part5. 实现
 - Part6. 继承与面向对象设计
 - Part7. 模板与泛型编程
+- Part8. 定制new和delete
 ------
 ## 导读部分
 一个函数的类型：参数&返回类型  
@@ -41,6 +42,7 @@ define不能够提供任何封装性
 
 常量定义式通常被放在头文件内（以便被不同的源码含入）  
 为将常量的作用域限制于class内，且至多有一份实体：成为class的一个static成员  
+static成员必须在class定义式之外被定义（除非是整数型const）  
 
 `enum { NumTurns = 5}; `其行为更像 #define，一个属于枚举类型的数值可权充int被使用（如在数组声明时），不能取地址或引用  
 
@@ -651,6 +653,49 @@ void advance(IterT& iter, DistT d)
 
 ### 48. 认识template元编程
 可以在编译期间找到错误  
+<br>
+
+---
+## Part8. 定制new和delete
+### 49. 了解new-handler的行为
+当`operator new`抛出异常以反映一个未获满足的内存需求之前，它会先调用一个客户指定的错误处理函数（new-handler）；客户调用`set_new_handler`指定这个“用以处理内存不足”的函数  
+`new_handler`是一个typedef，定义出一个指针指向函数，该函数没有参数也不返回任何东西；`set_new_handler`则是“获得一个 new_handler 并返回被调用前的 new_handler ”的函数  
+
+一个设计良好的new-handler函数：
+- 让更多内存被使用
+- 安装另一个new-handler（若目前这个无法取得更多内存，或许它知道另外哪个new-handler有此能力）
+- 卸除new-handler（将`null`传递给`set_new_handler`） 一旦没有安装任何new-handler，`operator new`会在内存分配失败时抛出异常
+- 抛出`bad_alloc`或派生自`bad_alloc`的异常；这样的异常不会被`operator new`捕捉，因此会传播到内存索求处
+- 不返回，通常调用`abort`或`exit`
+
+为自定义类指定new-handler 声明一个类型为`new_handler`的static成员:  
+```c++
+class Widget {
+public:
+    static std::new_handler set_new_handler(std::new_handler p) throw(); // 将获得的指针存到currentHandler并返回之前的指针
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+    // 安装currentHandler为global new-handler
+    // 无法分配内存抛出bad_alloc时，恢复原本的global new-handler，然后再传播该异常
+    // 为确保原本的new-handler总能被重新安装回去，Widget将global new-handler视作资源，运用资源管理对象防止资源泄露
+    // 若成功分配，由Widget析构函数恢复new-handler
+private:
+    static std::new_handler currentHandler;
+}; 
+```
+抽象成基类：  
+```c++
+template<typename T>
+class NewHandlerSupport {
+public:
+    static std::new_handler set_new_handler(std::new_handler p) throw();
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+    ...
+private:
+    static std::new_handler currentHandler;
+};
+// template机制会自动为每一个T（NewHandlerSupport赖以具现化的根据）生成一份currentHandler
+```
+让derived class继承它们所需的`set_new_handler`和`operator new`（让`Widget`继承`NewHandlerSupport<Widget>`），而template部分保证 *每一个derived class获得一个实体间互异的currentHandler成员变量*  
 <br>
 
 ------
