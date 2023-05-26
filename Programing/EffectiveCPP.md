@@ -1,6 +1,8 @@
 # Effective C++ 阅读笔记
 
-本书关于 <b>“C++ 如何行为、为什么那样行为，以及如何运用其行为形成优势”</b>
+本书关于 <b>“C++ 如何行为、为什么那样行为，以及如何运用其行为形成优势”</b>  
+
+2023-05-26初读毕  
 
 ------
 ## Content
@@ -13,6 +15,7 @@
 - Part6. 继承与面向对象设计
 - Part7. 模板与泛型编程
 - Part8. 定制new和delete
+- Part9. 杂项讨论
 ------
 ## 导读部分
 一个函数的类型：参数&返回类型  
@@ -655,7 +658,7 @@ void advance(IterT& iter, DistT d)
 可以在编译期间找到错误  
 <br>
 
----
+------
 ## Part8. 定制new和delete
 ### 49. 了解new-handler的行为
 当`operator new`抛出异常以反映一个未获满足的内存需求之前，它会先调用一个客户指定的错误处理函数（new-handler）；客户调用`set_new_handler`指定这个“用以处理内存不足”的函数  
@@ -698,9 +701,59 @@ private:
 让derived class继承它们所需的`set_new_handler`和`operator new`（让`Widget`继承`NewHandlerSupport<Widget>`），而template部分保证 *每一个derived class获得一个实体间互异的currentHandler成员变量*  
 <br>
 
+### 50. 了解new和delete的合理替换时机
+为什么要自定义`operator new`和`operator delete`？
+- 用以检测运用上的错误；
+- 为了强化性能；
+- 为了收集使用上的统计数据
+
+C++要求所有`operator new`返回的指针都有适当的对齐（取决于数据类型）  
+<br>
+
+### 51. 编写new和delete时需固守常规
+只有当指向new-handling函数的指针是`null`，operator new才会抛出异常  
+operator new内含一个无限循环。退出此循环的唯一办法是：内存被成功分配、或new-handling函数做了描述于条款49.的事   
+
+class专属版本的`new`、`delete`应该处理“比正确大小更大的（错误）申请”  
+
+C++需保证删除null指针永远安全（operater delete在收到null指针时不做任何事）   
+<br>
+
+### 52. 写了placement new也要写placement delete
+一个new表达式中对应两个函数调用：`operator new`和构造函数；若构造函数抛出异常，指针尚未被赋值，客户没有能力归还内存，此时需要C++运行期系统调用相应的`delete`奕以恢复旧观   
+
+placement new：接受的参数中，除了一定会有的`size_t`外还有其他（即存在额外实参）的 `operator new` 版本  
+如果一个带额外参数的`operator new`没有对应带相同额外参数的`operator delete`，当`new`的内存分配动作需要取消并恢复旧观时就没有任何`delete`会被调用   
+
+placement delete只有在“伴随placement new调用而触发的构造函数”出现异常时才会被调用  
+
+缺省情况下C++在global作用域提供一下形式的`operator new`：
+```c++
+void* operator new(std::size_t) throw(std::bad_alloc); //normal new
+void* operator new(std::size_t, void*) throw(); //placement new
+void* operator new(std::size_t, const std::nothrow_t&) throw(); //nothrow new
+```
+如果在class内声明任何`operator new`，会遮掩上述这些标准形式。为确保标准形式仍可用的简单做法是：建立一个base class内含所有正常形式的`new`和`delete`，再利用继承机制和using声明式（条款33.）取得标准形式  
+<br>
+
+------
+## Part9. 杂项讨论
+### 53. 不要轻忽编译器的警告
+
+<br>
+
+### 54. 让自己熟悉包括TR1在内的标准程序库
+
+<br>
+
+### 55. 让自己熟悉Boost
+boost是一个“可被加入标准C++之各种功能”的测试场  
+<br>
+
 ------
 ## 存疑列表
 c++异常处理 栈展开  
 类型转换语句  
 template相关   
+内存分配与管理  
 
