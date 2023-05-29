@@ -520,5 +520,50 @@ public:
 };
 ```
 </details>
+<br>
 
+--- 
+### &emsp; 1498. 满足条件的子序列数目 MID
+关键思路：
+- 首先对数组排序
+- 对于某一个左端点（最小值），存在一个满足条件的最大右端点
+- 使用<b>双指针</b> 从首尾开始 
+- 统计当前左右端点对应区间中 包含左端点（最小值）的子序列数目
+- 左端点必选（1种状态），其他点选or不选（2种状态）
+- pow数组预处理计算`2^i`，否则会爆long long
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    const int MOD = 1e9 + 7;
+    int numSubseq(vector<int>& nums, int target) {
+        sort(nums.begin(), nums.end());
+        int n = nums.size();
+        int pow[n]; // 预处理幂 否则会爆longlong
+        pow[0] = 1;
+        for(int i = 1; i < n; i++)
+        {
+            pow[i] = (pow[i-1]*2) % MOD;
+        }
+        int left = 0, right = nums.size() - 1;
+        int cnt = 0;
+        while(left <= right)
+        {
+            if(nums[left] + nums[right] > target)
+            {
+                right--;
+                continue;
+            }
+            // 包含left的子数组数目 left必选 其它的选or不选
+            cnt = (cnt + pow[right - left]) % MOD; // 2^(n-1)
+            left++;
+        }
+        return cnt;
+    }
+};
+```
+</details>
 <br>
