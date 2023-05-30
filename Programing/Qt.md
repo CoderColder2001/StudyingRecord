@@ -1,9 +1,24 @@
 # QT 5
 ## Content
 - 事件循环
+- QObject
 - UI、元对象系统
 - 信号槽机制
 
+<br>
+
+------
+## QObject
+通过对象树 自动、有效地组织和管理继承自QObject的Qt对象  
+
+<br>
+
+------
+## UI、元对象系统
+moc读取一个c++头文件。如果它找到包含Q_OBJECT宏的一个或多个类声明，它会生成一个包含这些类的元对象代码的c++源文件，并且以moc_作为前缀  
+
+信号和槽机制、运行时类型信息和动态属性系统 需要元对象代码   
+信号槽，属性系统，运行时类信息都存储在静态对象`staticMetaObject`中  
 <br>
 
 ------
@@ -28,9 +43,18 @@
 
 推荐使用函数指针连接： 许编译器检查信号的参数是否与槽的参数兼容。当然，编译器还可以隐式地转换参数  
 ```c++
-connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed);
+connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed, Qt::ConnectionType type = Qt::AutoConnection);
 ```
 
+声明信号 `signals:` :
+- 所有的信号声明都是公有的，所以Qt规定不能在signals前面加public,private, protected  
+- 所有的信号都没有返回值，所以返回值都用void  
+- 所有的信号都不需要定义
+- 必须直接或间接继承自`QObject`类，并且开头私有声明包含`Q_OBJECT`
+
+声明槽 `public/protected/private slots:` :
+- 槽其实就是普通的C++函数，它可以是虚函数，static函数
+- 必须直接或间接继承自`QObject`类，并且开头私有声明包含`Q_OBJECT`
 
 ------
 ## 存疑列表
