@@ -511,7 +511,7 @@ public:
 <br>
 
 ---
-### &emsp; 1039. 多边形三角形剖分的最低得分
+### &emsp; 1039. 多边形三角形剖分的最低得分 MID
 关键思路： 
 - <b>对于一条边，枚举另一个顶点</b> 等于枚举一个三角形 <b>（枚举划分点k）</b>
 - 定义 <b>从i到j</b> 区间，表示沿着顶点i顺指针到顶点j，再加上边ji组成的多边形
@@ -540,6 +540,44 @@ public:
             }
         }
         return dp[0][n-1];
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 1130. 叶值的最小代价生成树 MID
+关键思路： 
+- 考虑 树的“结构”与“生成”
+- 将数组（当前区间）划分为左右两个非空子数组（子区间），分别对应树的左右子树
+- 用一个二维数组`g[][]`记录数组区间最大值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int mctFromLeafValues(vector<int>& arr) {
+        int n = arr.size();
+        int g[n][n];
+        int f[n][n];
+        memset(f, 0, sizeof(f));
+        for(int i = n - 1; i >= 0; i--)
+        {
+            g[i][i] = arr[i];
+            for(int j = i + 1; j < n; j++) // 区间[i, j]
+            {
+                g[i][j] = max(g[i][j-1], arr[j]);
+                f[i][j] = 0x3f3f3f3f;
+                for(int k = i; k < j; k++) // 枚举左右子树划分点 生成一个新的非叶节点
+                {
+                    f[i][j] = min(f[i][j], f[i][k] + f[k+1][j] + g[i][k]*g[k+1][j]);
+                }
+            }
+        }
+        return f[0][n-1];
     }
 };
 ```
