@@ -76,7 +76,7 @@ int right_bound(int[] nums, int target) {
 ```
 ## Leetcode中利用二分求解的题目
 
----
+------
 ### &emsp; 215. 数组中第K大元素 MID
 关键思路：
 - 单侧降序快速排序模板题
@@ -133,5 +133,52 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
+### &emsp; 2517. 礼盒的最大甜蜜度 MID
+关键思路：
+- 如果一个甜蜜度为 `x` 的礼盒是可行的，那么甜蜜度小于 `x` 的礼盒也是可行的；<b>问题存在着单调性</b>
+- 因此可以使用二分查找答案的方法，找到最大的可行甜蜜度
+- 二分寻找满足条件的最大值 即右侧边界
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maximumTastiness(vector<int>& price, int k) {
+        sort(price.begin(), price.end());
+        int n = price.size();
+
+        int l = 0, r = price.back() - price[0];
+        auto check = [&price, k](int x) -> bool {
+            int cnt = 0;
+            int pre = -x; // 上一个选取的糖果价格 初始使 cur - pre >= x 恒成立
+            for(int cur : price)
+            {
+                if(cur - pre >= x)
+                {
+                    pre = cur;
+                    if(++cnt >= k)
+                        return true;
+                }
+            }
+            return false;
+        };
+        // 二分寻找满足条件的最大值 右侧边界
+        while(l <= r)
+        {
+            int mid = (l + r) >> 1;
+            if(check(mid)) // [, l-1]满足条件
+                l = mid + 1;
+            else //[mid, old_r]不满足条件
+                r = mid - 1;
+        }
+        return l - 1;
+    }
+};
+```
+</details>
+<br>
