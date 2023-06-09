@@ -316,3 +316,89 @@ public:
 };
 ```
 </details>
+<br>
+
+---
+### &emsp; 2699. 修改图中的边权 :rage: HARD
+关键思路：
+- 坑：改变边权后 最短路的选择可能改变
+- <b>两遍 Dijkstra</b>，第一遍求出差值`delta`，第二遍修改边
+- 由于 <b>Dijkstra 算法保证每轮拿到的点的最短路就已经是最终的最短路</b>；按照 Dijkstra 算法遍历点/边的顺序去修改 就不会对已确定的最短路产生影响
+- 为使 `dis[x][1] + wt + (dis[des][0] - dis[y][0]) = target`，故修改 `wt = delta + dis[y][0] - dis[x][1]`
+- 在计算权值时，无需考虑最短路还走不走这条边（不考虑这条边增大到多少时开始对 `dis[des]`不产生影响）
+- 如果第二遍 Dijkstra 跑完后，从起点到终点的最短路仍然小于`target`，那么就说明无法修改，返回空数组
+- 注意在建图的数据结构定义（如链式前向星、邻接表）上，如何在修改边权的时候更新图上双向边权（如何快速找到反向边的存放位置）
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> modifiedGraphEdges(int n, vector<vector<int>>& edges, int source, int destination, int target) {
+        vector<pair<int, int>> g[n]; // 邻接表 {to, edgeID}
+        for(int i = 0; i < edges.size(); i++)
+        {
+            int x = edges[i][0], y = edges[i][1];
+            g[x].emplace_back(y, i); // 额外记录边的ID 用于访问or修改权值
+            g[y].emplace_back(x, i);
+        }
+
+        int dis[n][2]; // 两次dijkstra
+        int delta = -1; // 第一次最短路与target的差值
+        int vis[n];
+        memset(dis, 0x3f3f3f3f, sizeof(dis));
+        dis[source][0] = dis[source][1] = 0;
+
+        auto dijkstra = [&](int k) {
+            memset(vis, 0, sizeof(vis));
+            for(int i = 0; i < n; i++)
+            {
+                // 找到当前节点最短路 去更新其邻居的最短路
+                int x = -1;
+                for(int i = 0; i < n; i++) // 找一个尚未vis中已求dis最近的节点
+                {
+                    if(!vis[i] && (x < 0 || dis[i][k] < dis[x][k]))
+                        x = i;
+                }
+
+                if(x == destination)
+                    return;
+
+                vis[x] = true;
+                for(auto [y, eid] : g[x]) // 边xy
+                {
+                    int wt = edges[eid][2];
+                    if(wt == -1)
+                        wt = 1;
+                    if(k == 1 && edges[eid][2] == -1)
+                    {
+                        // 第二次 Dijkstra，改成 w
+                        int w = delta + dis[y][0] - dis[x][1];
+                        // y后面的边还没修改 用第一遍dijkstra的结果
+                        if (w > wt)
+                            edges[eid][2] = wt = w; // 直接在 edges 上修改
+                    }
+                    dis[y][k] = min(dis[y][k], dis[x][k] + wt); // 更新y的最短路
+                }
+            }
+        };
+
+        dijkstra(0);
+        delta = target - dis[destination][0];
+        if(delta < 0)
+            return {}; // 全改成1也大于target
+        
+        dijkstra(1);
+        if(dis[destination][1] < target)
+            return {}; // 最短路无法再变大
+        
+        for (auto &e: edges)
+            if (e[2] == -1) // 剩余没修改的边全部改成 1
+                e[2] = 1;
+        return edges;
+    }
+};
+```
+</details>
+<br>
