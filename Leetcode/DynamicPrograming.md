@@ -111,6 +111,131 @@ public:
 </details> 
 <br>
 
+---
+### &emsp; 1483. 树节点的第K个祖先 :rage:HARD
+关键思路：  
+- <b>倍增</b>支持快速查询：使用DP预处理 存储 node 节点距离为 `2^i` 的祖先是谁
+- 第k个祖先 将k拆解成二进制（2的n次项 之和）
+- 查询时 取二进制数位 根据这个跳步查询
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class TreeAncestor {
+public:
+    vector<vector<int>> pa_dp;
+    TreeAncestor(int n, vector<int>& parent) {
+        int m = 32 - __builtin_clz(n); // n 的二进制长度
+        pa_dp.resize(n, vector<int>(m, -1));
+
+        for(int i = 0; i < n; i++)
+            pa_dp[i][0] = parent[i];
+        for(int i = 0; i < m-1; i++) // dp 二进制倍增
+        {
+            for(int x = 0; x < n; x++)
+            {
+                if(int p = pa_dp[x][i]; p != -1)
+                    pa_dp[x][i+1] = pa_dp[p][i];
+            }
+        }
+    }
+    
+    int getKthAncestor(int node, int k) {
+        int m = 32 - __builtin_clz(k); // k 的二进制长度
+        for(int i = 0; i < m; i++)
+        {
+            // 取二进制数位 根据这个跳步查询
+            if((k >> i) & 1) 
+            { // k 的二进制从低到高第 i 位是 1
+                node = pa_dp[node][i];
+                if(node < 0)
+                    break;
+            }
+        }
+        return node;
+    }
+};
+```
+</details> 
+
+### 扩展：LCA问题（求xy最近公共祖先）的解法模板  
+- DFS预处理各节点深度
+- 假设`depth[x] < depth[y]`（否则交换两点），先将 y 更新为 y 的第`depth[y] - depth[x]`个祖先节点，使 x、y 处于同一深度
+- 如果此时`x == y`，得解；否则一起往上跳
+- 先尝试大步跳，再尝试小步跳；设 `i=⌊log2(n)⌋`，循环直到 `i == 0`（*类似于二分*）：
+  - 若`2^i`个祖先不存在；跳大了，`i--`
+  - 若存在，但依然`pa[x][i] != pa[y][i]`，更新x、y，`i--`
+  - 若存在且`pa[x][i] == pa[y][i]`，为防止跳大了，不更新x、y，`i--`
+  - 循环最终`lca = pa[x][0]`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class TreeAncestor {
+    vector<int> depth;
+    vector<vector<int>> pa;
+public:
+    TreeAncestor(vector<pair<int, int>> &edges) {
+        int n = edges.size() + 1;
+        int m = 32 - __builtin_clz(n); // n 的二进制长度
+        vector<vector<int>> g(n);
+        for(auto [x, y]: edges)
+        { // 节点编号从 0 开始
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        depth.resize(n);
+        pa.resize(n, vector<int>(m, -1));
+        function<void(int, int)> dfs = [&](int x, int fa) {
+            pa[x][0] = fa;
+            for(int y: g[x]) {
+                if(y != fa) {
+                    depth[y] = depth[x] + 1;
+                    dfs(y, x);
+                }
+            }
+        };
+        dfs(0, -1);
+
+        for(int i = 0; i < m - 1; i++)
+            for(int x = 0; x < n; x++)
+                if(int p = pa[x][i]; p != -1)
+                    pa[x][i + 1] = pa[p][i];
+    }
+
+    int get_kth_ancestor(int node, int k) {
+        for(; k; k &= k - 1)
+            node = pa[node][__builtin_ctz(k)];
+        return node;
+    }
+
+    // 返回 x 和 y 的最近公共祖先（节点编号从 0 开始）
+    int get_lca(int x, int y) {
+        if(depth[x] > depth[y])
+            swap(x, y);
+        // 使 y 和 x 在同一深度
+        y = get_kth_ancestor(y, depth[y] - depth[x]);
+        if (y == x)
+            return x;
+        for(int i = pa[x].size() - 1; i >= 0; i--) 
+        {
+            int px = pa[x][i], py = pa[y][i];
+            if(px != py) 
+            {
+                x = px;
+                y = py;
+            }
+        }
+        return pa[x][0];
+    }
+};
+```
+</details> 
+<br>
+
 ------
 ## 树形DP
 ### 概念

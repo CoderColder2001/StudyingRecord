@@ -620,3 +620,38 @@ public:
 ```
 </details>
 <br>
+
+---
+### &emsp; 2475. 数组中不等三元组的数目 EASY
+关键思路： 
+- 注意<b>数组元素的相对顺序不影响结果</b> 即在枚举过程中无需想哪个是i，哪个是j，哪个是k，只需考虑枚举出一个不同数字组成的三元组（n1，n2，n3）
+- 用哈希表记录各数字的个数（个数 即意味着有多少个可选位序）
+- 遍历哈希表（保证元素间不同） 枚举三元组的中间数字及其个数
+- 这里遍历哈希表无需考虑大小顺序，只需枚举不同数字
+- 迭代更新三元组可选左边数字 计算得到右边数字的个数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int unequalTriplets(vector<int>& nums) {
+        unordered_map<int, int> cnt;
+        for(int v:nums)
+        {
+            cnt[v]++;
+        }
+        int ans = 0, leftNum = 0, n = nums.size();
+        for(auto& [_, midNum] : cnt) // 枚举中间数字及其个数 遍历哈希表保证元素间不同
+        {
+            int rightNum = n - leftNum - midNum;
+            ans += leftNum * midNum * rightNum;
+            leftNum += midNum; // 去当左侧元素
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
