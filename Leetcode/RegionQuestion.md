@@ -178,7 +178,6 @@ public:
 };
 ```
 </details>
-
 <br>
 
 ------
@@ -190,7 +189,49 @@ public:
 
 ## 题目
 --- 
-### &emsp; 1590. 使数组和能被P整除
+### &emsp; 1177. 构建回文串检测 MID
+关键思路：
+- 可以重新排列成回文意味着什么？ 偶数长度串时，各字母出现次数都是偶数；奇数长度串时，只有一个字母出现次数是奇数 
+- 对于可修改次数`k`，如果有`m`个字母出现次数是奇数,修改其中 `⌊m/2⌋` 个字母满足`⌊m/2⌋ <= k` 时，可以构成回文串  
+- 如何快速求出子串中每种字母的个数？
+- 故使用 <b>前缀和（异或前缀和）&emsp;  统计并维护区间各字母出现次数的奇偶性</b>
+- 压缩状态空间 一种字母对应一个bit
+- 两个int异或，统计结果中1的个数，即区间出现奇数次的字母个数
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 如何快速求出子串中每种字母的个数
+    vector<bool> canMakePaliQueries(string s, vector<vector<int>>& queries) {
+        int n = s.length(), nq = queries.size();
+        int sum[n+1]; // 位运算 压缩存储26个字母对应的状态bit
+        sum[0] = 0;
+        for(int i = 0; i < n; i++)
+        {
+            int bit = 1 << (s[i] - 'a'); // 哪个bit
+            sum[i+1] = sum[i] ^ bit; // 1、0对应某字母出现次数的奇偶性
+        }
+
+        vector<bool> ans(nq);
+        for(int i = 0; i < nq; i++)
+        {
+            auto& query = queries[i];
+            int left = query[0], right = query[1], k = query[2];
+            int m = __builtin_popcount(sum[right + 1] ^ sum[left]); // 1的个数
+            ans[i] = (m / 2 <= k);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
+### &emsp; 1590. 使数组和能被P整除 MID
 关键思路：
 - 设所有元素和modP为`countModP` 问题转化为：寻找最短的一段区间，其区间和与所有元素和modP同余
 - “x y modP同余” 等价于 “x % p == y % p” （当x y 均非负数时）
@@ -228,7 +269,6 @@ public:
 };
 ```
 </details>
-
 <br>
 
 --- 
