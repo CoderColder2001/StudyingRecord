@@ -722,6 +722,62 @@ public:
 
 ### 题目
 ---
+### &emsp; 1494. 并行课程II :rage: HARD
+关键思路： 
+- <b>集合论&位运算</b> 使用bit位状态表示集合 标识已修课程的状态
+- <b>子集状压DP</b> &emsp; `dp[i]`：修完`i`中所有课程需要的最少学期数
+- 定义`pre[j]` 为课程`j` 的先修课程的并集
+- 枚举`i` 的大小不超过`k`的非空子集，作为一个学期内需要学完的课程，进行 <b>集合间的状态转移</b>
+- 注意这些子集中的课程`j` 的先修课程必须要在`i`的补集内，表示之前学期中已经学完，才可以在当前轮次（当前学期）进行状态转移
+- 即得到了枚举可选课程的条件：`j属于i && pre[j]在i的补集中`
+- 遍历可选课程的子集：<b>`for(int j = lessons; j; j = (j-1) & lessons)`</b>
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minNumberOfSemesters(int n, vector<vector<int>>& relations, int k) {
+        int pre[n]; // 各课程的先修课程集合
+        memset(pre, 0, sizeof(pre));
+        for(auto &r : relations)
+            pre[r[1] - 1] |= 1 << (r[0] - 1);
+
+        int u = (1<<n) -1; // 全集
+        int dp[1<<n];
+        dp[0] = 0;
+        for(int i = 1; i < 1<<n; i++)
+        {
+            dp[i] = INT_MAX;
+            int lessons = 0; // 可选课程的集合
+            int ci = u ^ i; // i的补集
+            for(int j = 0; j < n; j++) // 枚举课程
+            {
+                if(((i >> j) & 1) && (pre[j] | ci) == ci) // j属于i && pre[j]在i的补集 可以学
+                {
+                    lessons |= 1 << j;
+                }
+            }
+            if(__builtin_popcount(lessons) <= k) // 如果可学课程少于k 则可以全部学习 不再枚举子集
+            {
+                dp[i] = dp[i ^ lessons] + 1;
+                continue;
+            }
+            for(int j = lessons; j; j = (j-1) & lessons) // 枚举lessons的子集
+            {
+                if(__builtin_popcount(j) == k)
+                    dp[i] = min(dp[i], dp[i ^ j] + 1); // 顺序枚举状态i 已经保证了此时dp[i^j]是计算完毕的
+            }
+        }
+        return dp[u];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1799. N次操作后的最大分数和 :rage: HARD
 关键思路： 
 - 设计状态：指示 <b>当前有哪些元素已经参与了计算</b>
