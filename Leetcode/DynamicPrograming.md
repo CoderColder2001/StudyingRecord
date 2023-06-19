@@ -66,6 +66,48 @@ public:
 <br>
 
 ---
+### &emsp; 1262. 可被三整除的最大和 MID
+关键思路：  
+- 考虑 <b>选或不选</b>
+- 选择了之后 mod的条件`j'`将变成 `x + j mod 3 == j'`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxTurbulenceSize(vector<int>& arr) {
+        int up = 1, down = 1; 
+        int res = 1;
+        for(int i = 1; i < arr.size(); i++)
+        {
+            if(arr[i] > arr[i - 1])
+            {
+                up = down + 1;
+                down = 1;
+            }
+            else if(arr[i] < arr[i - 1])
+            {
+                down = up + 1;
+                up = 1;
+            }
+            else
+            {
+                up = 1;
+                down = 1;
+            }
+            res = max(res, up);
+            res = max(res, down);
+        }
+        return res;
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1335. 工作计划的最低难度 :rage:HARD
 关键思路：  
 - <b>区间分段最大值之和的最小值</b>
