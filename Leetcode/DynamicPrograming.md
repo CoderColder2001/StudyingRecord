@@ -820,6 +820,62 @@ public:
 <br>
 
 ---
+### &emsp; 1595. 连通两组点的最小成本 :rage: HARD
+关键思路： 
+- 由 <b>枚举选哪个</b> 切入思考，枚举第一组的每个点连接第二组的所有情况 再用贪心的思路处理第二组剩余没有连的点
+- 定义<b>状态</b>：第二组中点的连接情况
+- DP的边界条件：第二组还有子集j中的点没连上
+- 状态转移：当第一组的点`i`连上第二组的点`k`，第二组剩余子集`j ` 的前驱状态为`j & ~(1 << k)`（`j∖{k}`，从集合`j` 中去掉元素`k`）
+- 遍历第二组点对应的所有状态，寻找 *在第一组的每种枚举连接情况下* 的前驱状态
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int connectTwoGroups(vector<vector<int>>& cost) {
+        int n = cost.size(), m = cost[0].size(); // 注意 n >= m
+        vector<int> min_cost(m, INT_MAX); // 连接第二组最后还没连上的点
+        for(int j = 0; j < m; j++) // 计算第二组每个点的最小连接成本
+        {
+            for(auto &c : cost)
+            {
+                min_cost[j] = min(min_cost[j], c[j]);
+            }
+        }
+
+        vector<vector<int>> dp(n + 1, vector<int>(1 << m));// 第二维描述第二组的状态
+        // 计算dp边界条件 第二组还有集合j的点没连上
+        for(int j = 0; j < 1 << m; j++) // 第二组的所有子集
+        {
+            for(int k = 0; k < m; k++)
+            {
+                if(j >> k & 1)
+                    dp[0][j] += min_cost[k];
+            }
+        }
+
+        for(int i = 0; i < n; i++) // 顺序遍历第一组 枚举第一组的点如何连接
+        {
+            for(int j = 0; j < 1 << m; j++) // 遍历第二组的状态
+            {
+                int res = INT_MAX;
+                for(int k = 0; k < m; k++) // 枚举第一组i与第二组k连接
+                {
+                    res = min(res, dp[i][j & ~(1 << k)] + cost[i][k]); // j的第k位置零
+                }
+                dp[i+1][j] = res;
+            }
+        }
+        return dp[n][(1 << m) - 1];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1799. N次操作后的最大分数和 :rage: HARD
 关键思路： 
 - 设计状态：指示 <b>当前有哪些元素已经参与了计算</b>
