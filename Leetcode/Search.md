@@ -143,6 +143,80 @@ public:
 </details>
 <br>
 
+---
+### &emsp; LCP41. 黑白翻转棋 MID
+关键思路：
+- 枚举空余位置放置黑棋
+- 放置后，沿八个方向上BFS扩展，看是否能翻转
+- 成功翻转后的新黑棋位置入队列，继续BFS
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int flipChess(vector<string>& chessboard) {
+        int m = chessboard.size(), n = chessboard[0].size();
+        auto bfs = [&](int i, int j) -> int {
+            queue<pair<int, int>> q;
+            q.emplace(i, j);
+            auto g = chessboard;
+            g[i][j] = 'X';
+            int cnt = 0;
+            while(!q.empty())
+            {
+                auto p = q.front();
+                int i = p.first, j = p.second;
+                q.pop();
+                // 遍历八个方向 看是否满足翻转条件
+                for(int h = -1; h <= 1; h++)
+                {
+                    for(int v = -1; v <= 1; v++)
+                    {
+                        if(h == 0 && v == 0)
+                            continue;
+                        int x = i + v, y = j + h;
+                        while(x >= 0 && x < m && y >= 0 && y < n && g[x][y] == 'O') // 沿着已有的白棋前行
+                        {
+                            x += v;
+                            y += h;
+                        }
+                        if(x >= 0 && x < m && y >= 0 && y < n && g[x][y] == 'X') // 以黑棋结尾
+                        {
+                            x -= v;
+                            y -= h;
+                            cnt += max(abs(x - i), abs(y - j));
+                            while(x != i || y != j)
+                            {
+                                g[x][y] = 'X';
+                                q.emplace(x, y); // 相当于新落一个黑子
+                                x -= v;
+                                y -= h;
+                            }
+                        }
+                    }
+                }
+            }
+            return cnt;
+        };
+
+        int ans = 0;
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+            {
+                if(chessboard[i][j] == '.')
+                    ans = max(ans, bfs(i, j));
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 状态压缩 + BFS/DFS
 ### 概念
