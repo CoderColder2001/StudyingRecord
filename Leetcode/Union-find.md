@@ -20,7 +20,7 @@ class UnionFind {
 public:
     vector<int> father; // 代表元
     vector<int> size; // 秩
-    int n; // 节点树
+    int n; // 节点数
     int comp_cnt; // 集合数
 
     UnionFind(int _n) : n(_n), comp_cnt(_n), father(_n), size(_n, 1){
