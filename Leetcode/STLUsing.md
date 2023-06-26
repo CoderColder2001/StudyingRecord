@@ -62,6 +62,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 313. 超级丑数 MID
@@ -123,6 +124,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 373. 查找和最小的K对数字 MID
@@ -169,6 +171,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 659. 分割数组为连续子序列 MID
@@ -216,6 +219,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 767. 重构字符串 MID
@@ -273,6 +277,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 857.雇佣K名工人的最低成本 :rage: HARD
@@ -320,6 +325,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 1106. 解析布尔表达式 :rage: HARD
@@ -409,13 +415,14 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 1642. 可以到达的最远建筑 MID
 关键思路：
-贪心，尽可能在高度差大的地方使用梯子 &emsp; <b>使用优先队列维护高度差</b>  
-问题在于在无法抵达末尾时，`如何判断各高度差的 “先后次序”`  
-解决方案：使用<b>size有限的优先队列（小顶堆）</b>即可，当大小超出size时，取出堆顶，将这个高度差改为使用砖块  
+- 贪心，尽可能在高度差大的地方使用梯子 &emsp; <b>使用优先队列维护高度差</b>  
+- 问题在于在无法抵达末尾时，`如何判断各高度差的 “先后次序”`  
+- 解决方案：使用<b>size有限的优先队列（小顶堆）</b>即可，当大小超出size时，取出堆顶，将这个高度差改为使用砖块  
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -445,13 +452,14 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 1705 吃苹果的最大数目 MID
 关键思路：  
-<b>使用优先队列，贪心，优先吃过期日期早的苹果</b>  
-不再产生新苹果后，看还能再吃多少天（这时候不用考虑“不吃苹果”的选项了）
-需要注意的是，优先队列中存放 `pair<ddl，num>` 以减少堆操作数目，节约时间  
+- <b>使用优先队列，贪心，优先吃过期日期早的苹果</b>  
+- 不再产生新苹果后，看还能再吃多少天（这时候不用考虑“不吃苹果”的选项了）
+- 需要注意的是，优先队列中存放 `pair<ddl，num>` 以减少堆操作数目，节约时间  
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -496,7 +504,67 @@ public:
 };
 ```
 </details>
+<br>
 
+---
+### &emsp; 2751 机器人碰撞 :rage: HARD
+关键思路：  
+- <b>使用栈</b>维护向右运动（等待被碰撞的机器人）  
+- 遇到向左的机器人，考虑与栈中机器人依次碰撞
+- 返回最终 `health[i]` 不为 0 的机器人
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> survivedRobotsHealths(vector<int>& positions, vector<int>& healths, string directions) {
+        int n = positions.size(), id[n];
+        iota(id, id + n, 0);
+        sort(id, id + n, [&](const int i, const int j) {
+            return positions[i] < positions[j];
+        }); // id根据position排序
+
+        stack<int> st;
+        for(int i : id)
+        {
+            if(directions[i] == 'R') 
+            { // 向右，存入栈中
+                st.push(i);
+                continue;
+            }
+
+            // 向左，与栈中向右的机器人碰撞
+            while(!st.empty())
+            {
+                int top = st.top();
+                if(healths[top] > healths[i])
+                {
+                    healths[top]--;
+                    healths[i] = 0;
+                    break;
+                }
+                else if(healths[top] == healths[i])
+                {
+                    healths[top] = healths[i] = 0;
+                    st.pop();
+                    break;
+                }
+                else
+                {
+                    healths[top] = 0;
+                    healths[i]--;
+                    st.pop();
+                }
+            }
+        }
+        healths.erase(remove(healths.begin(), healths.end(), 0), healths.end()); // 删除0
+        return healths;
+    }
+};
+```
+</details>
 <br>
 
 ------

@@ -219,7 +219,11 @@ for (auto &[ch, num] : vec) {
 
 `vector.erase(const_iterator position);` 删除一个元素  
 `vector.erase(const_iterator first, const_iterator last);` 删除范围元素  
-返回一个迭代器指向下一元素
+返回一个迭代器指向下一元素  
+
+`std::remove` 不会改变输入vector的长度。其过程相当于去除指定的字符，剩余字符往前靠；  
+返回新范围的末尾迭代器的下一个（指向第一个无效值）；同`erase`搭配使用删除指定条件的元素   
+如`xxx.erase(remove(xxx.begin(), xxx.end(), 0), xxx.end());` 删除0  
 
 ---
 ### string
