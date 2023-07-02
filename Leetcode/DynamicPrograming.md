@@ -904,6 +904,82 @@ public:
 <br>
 
 ---
+### &emsp; 1681. 最小不兼容性 :rage: HARD
+关键思路： 
+- 要使同一个子集里面没有两个相同的元素
+- 枚举所有的子集`i`，若`i` 对应状态有m个1 且没有重复元素 则计算不兼容性 
+- `f[i]`：当前已经划分的集合状态为`i` 时，其子集不兼容性之和 的最小值
+- 找出所有未被划分且不重复的元素 用一个状态`mask`表示
+- DP把不同的合法子集状态拼成“更大的”状态
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumIncompatibility(vector<int>& nums, int k) {
+        int n = nums.size();
+        int m = n / k; // 子集大小
+
+        int g[1 << n]; // 预处理计算所有合法子集的不兼容性
+        memset(g, -1, sizeof(g));
+        for(int i = 1; i < 1<<n; i++)
+        {
+            if(__builtin_popcount(i) != m)
+                continue;
+            
+            unordered_set<int> s; // set用于判断重复元素
+            int mi = 0x3f3f3f3f, mx = 0;
+            for(int j = 0; j < n; j++) // 子集元素
+            {
+                if(i >> j & 1)
+                {
+                    if(s.count(nums[j])) // 重复
+                        break;
+                    s.insert(nums[j]);
+                    mx = max(mx, nums[j]);
+                    mi = min(mi, nums[j]);
+                }
+            }
+            if(s.size() == m) // 合法子集
+                g[i] = mx - mi;
+        }
+
+        int dp[1 << n];
+        memset(dp, 0x3f3f3f3f, sizeof(dp));
+        dp[0] = 0;
+        for(int i = 0; i < 1 << n; i++)
+        {
+            if(dp[i] == 0x3f3f3f3f)
+                continue;
+            
+            unordered_set<int> s;
+            int mask = 0;
+            for(int j = 0; j < n; j++) // 不在i中（未被划分）且没有与其重复的元素
+            {
+                if((i >> j & 1) == 0 && !s.count(nums[j]))
+                {
+                    s.insert(nums[j]);
+                    mask |= 1 << j; // 加入mask
+                }
+            }
+            if(s.size() < m)
+                continue;
+            for(int j = mask; j; j = (j - 1) & mask) // mask的所有子集
+            {
+                if(g[j] != -1) // 合法子集
+                    dp[i|j] = min(dp[i|j], dp[i] + g[j]); // 拼起来 计算一个“更大的”状态的结果
+            }
+        }
+        return dp[(1 << n) - 1] == 0x3f3f3f3f? -1: dp[(1 << n) - 1];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1799. N次操作后的最大分数和 :rage: HARD
 关键思路： 
 - 设计状态：指示 <b>当前有哪些元素已经参与了计算</b>
