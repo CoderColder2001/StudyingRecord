@@ -180,6 +180,119 @@ public:
 </details>
 <br>
 
+---
+### &emsp; 2762. 不间断子数组 MID
+关键思路：
+- 滑动窗口 使用<b>平衡树or哈希表</b> 维护窗口内最大值与最小值
+- 由于绝对值之差至多为2，至多维护3个数，添加和删除可以视为O（1）的
+- 对每一个`right`记一次数；当前满足条件的`left`对应`[left, right]`的子数组个数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long continuousSubarrays(vector<int>& nums) {
+        long long ans = 0;
+        multiset<int> s;
+        int left = 0, n = nums.size();
+        for(int right = left; right < n; right++)
+        {
+            s.insert(nums[right]);
+            while(*s.rbegin() - *s.begin() > 2)
+            {
+                s.erase(s.find(nums[left++])); // 先find 只去掉一个数
+            }
+            ans += right - left + 1; // 以right作为右端点的[left, right]的子数组个数
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2763. 所有子数组中不平衡数字之和 :rage: HARD
+关键思路：
+- 遍历左端点，枚举右端点 维护当前不平衡度`cnt`
+- 使用一个`vis[]`数组记录当前窗口中的数字
+- 若`x=nums[i]` 之前出现过，那么排序后必然与另一个`x`相邻，`cnt`不变
+- 否则看是否出现过`x-1`与`x+1`；都没出现过时，`cnt++`;只有一个时，`cnt`不变；都出现过时，`cnt--`
+- 优化：可以用`int vis[n+1]`，值为当前遍历的左端点`i`，这样就无需每次都`memset`了
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int sumImbalanceNumbers(vector<int> &nums) {
+        int ans = 0, n = nums.size();
+        bool vis[n + 2];
+        for(int i = 0; i < n; i++)
+        {
+            memset(vis, 0, sizeof(vis));
+            vis[nums[i]] = true;
+            int cnt = 0;
+            for(int j = i + 1; j < n; j++)
+            {
+                int x = nums[j];
+                if(!vis[x])
+                {
+                    cnt += 1 - vis[x - 1] - vis[x + 1];
+                    vis[x] = true;
+                }
+                ans += cnt;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>  
+<br>
+
+关键思路2：
+- <b>贡献法</b>：对一个元素，若其所在排序子数组的左侧元素与它差值大于1 则贡献1个不平衡数字
+- *重复数字如何计算贡献？* 规定当有多个相同元素`x`时 由最右侧`x`提供贡献（假定最右侧的`x`排序后排到最前）
+- 对一个`x=nums[i]` 计算左右边界：求右边最近的`x`或`x-1` 左边最近的`x-1`（左边可以有相同的）；否则`left[i] = -1`、 `right[i] = n`
+- 最后减去`x`作为子数组最小值的情况 总和即为子数组个数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int sumImbalanceNumbers(vector<int>& nums) {
+        int n = nums.size();
+        int right[n]; // 满足条件的右端点
+        int idx[n+1]; // x to id
+        fill(idx, idx + n + 1, n);
+        for(int i = n-1; i >= 0; i--) // 计算各元素右边界 从右向左遍历
+        {
+            int x = nums[i];
+            right[i] = min(idx[x], idx[x-1]); // 右边最近的x或x-1作为右边界 不存在时为n
+            idx[x] = i;
+        }
+
+        int ans = 0;
+        memset(idx, -1, sizeof(idx)); // 维护左端点
+        for(int i = 0; i < n; i++) // 统计能产生多少贡献
+        {
+            int x = nums[i];
+            ans += (i - idx[x - 1]) * (right[i] - i); // 包含i的子数组个数 可选左端点数*可选右端点数
+            idx[x] = i;
+        }
+        return ans - n*(n+1)/2;
+    }
+};
+```
+</details>
+<br>
+
 ------
 * ### 前缀和： 
 可以快速求子数组的和（转换为两个前缀和的差）  

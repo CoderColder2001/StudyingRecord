@@ -84,3 +84,57 @@ public:
 ```
 </details> 
 <br>
+
+---
+
+### &emsp; 2671. 和等于目标值的质数对 MID
+关键思路：  
+- 预处理 `(1，MX]` 的所有质数
+- 使用一个 `bool[MX] prime` 快速打表（遍历到一个质数时，以其作为因子记录一些非质数）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+const int MX = 1e6;
+vector<int> primes;
+bool np[MX + 1]; // 非质数时true
+
+// 预处理计算质数
+int init = []() {
+    for (int i = 2; i <= MX; i++)
+    {
+        if(!np[i])
+        {
+            primes.push_back(i);
+            for(int j = i; j <= MX / i; j++) // 避免溢出的写法
+                np[i * j] = true; // i作为质因子 打表
+        }
+    }
+    return 0;
+}();
+
+class Solution {
+public:
+    vector<vector<int>> findPrimePairs(int n) {
+        vector<vector<int>> ans;
+        if(n % 2)
+        {
+            if (n > 4 && !np[n - 2])
+                ans.push_back({2, n - 2});
+            return ans;
+        }
+        for(int x: primes) // 遍历质数
+        {
+            int y = n - x;
+            if(y < x)
+                break;
+            if(!np[y])
+                ans.push_back({x, y});
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>
