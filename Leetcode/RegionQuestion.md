@@ -636,6 +636,73 @@ public:
 
 ## 题目
 --- 
+### &emsp; 16. 最接近的三数之和 MID
+关键思路：
+- 先排序 枚举第一个数 然后双指针枚举第二个第三个数
+- 注意优化：先计算枚举当前第一个数i时的最大和 最小和；并跳过重复数字（与之前枚举过的情况等价）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+        sort(nums.begin(), nums.end());
+        int minDiff= 0x3f3f3f3f;
+        int ans = 0;
+        int n = nums.size();
+        for(int i = 0; i < n - 2; i++)
+        {
+            if(i > 0 && nums[i] == nums[i - 1]) // 之前枚举过
+                continue;
+
+            int s = nums[i] + nums[i + 1] + nums[i + 2];
+            if(s > target) // 最小的情况比target大
+            {
+                if(s - target < minDiff)
+                {
+                    ans = s;
+                    break;
+                }
+            }
+
+            s = nums[i] + nums[n - 2] + nums[n - 1];
+            if (s < target) { // 最大的情况比target小
+                if (target - s < minDiff)
+                {
+                    minDiff = target - s;
+                    ans = s;
+                }
+                continue;
+            }
+
+            int j = i + 1, k = n - 1;
+            while(j < k)
+            {
+                int sum = nums[i] + nums[j] + nums[k];
+                if(abs(sum - target) < minDiff)
+                {
+                    minDiff = abs(sum - target);
+                    ans = sum;
+                }
+
+                if(sum == target)
+                    return sum;
+                else if(sum < target)
+                    j++;
+                else
+                    k--;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 1163. 按字典序排在最后的子串 :rage: HARD
 关键思路：
 - 寻找字典序最大的后缀子串
