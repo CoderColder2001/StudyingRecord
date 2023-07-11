@@ -646,6 +646,35 @@ public:
 </details> 
 <br>
 
+---
+### &emsp; 1911. 最大子序列交替和 MID
+关键思路：  
+- <b>选或不选</b> 描述状态转移
+- `f[i]`：从前i个元素选 最后一个下标为奇数时的最大交替和
+- `g[i]`：从前i个元素选 最后一个下标为偶数时的最大交替和
+- 注意当前状态`i`只与上一步状态`i-1`有关，可空间优化
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long maxAlternatingSum(vector<int>& nums) {
+        int n = nums.size();
+        vector<long long> f(n + 1), g(n + 1);
+        for(int i = 1; i <= n; i++)
+        {
+            f[i] = max(g[i - 1] - nums[i - 1], f[i - 1]);
+            g[i] = max(f[i - 1] + nums[i - 1], g[i - 1]);
+        }
+        return max(f[n], g[n]);
+    }
+};
+```
+</details> 
+<br>
+
 ------
 ## 区间DP
 ### 概念
