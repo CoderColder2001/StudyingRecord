@@ -174,6 +174,98 @@ public:
 <br>
 
 ---
+### &emsp; 480. 查找和最小的K对数字 :rage: HARD
+关键思路：
+- 思考中位数的性质：数组中，大于中位数的数目和小于中位数的数目，要么相等，要么相差一
+- 取窗口中第 `k/2`小以及 `(k-1)/2`小的值
+- <b>双堆对顶</b> 保证两个堆的数目相差小于等于1
+- 将所有小于等于中位数的元素放到small堆中（是一个大顶堆） 将所有大于中位数的元素放到big堆中（是一个小顶堆） small元素个数大于等于big
+- 左侧元素出窗口时 只需维护 <b>堆顶对应中位数</b> 这一性质
+- `balance`表示因本次窗口滑动导致small堆元素数目与big堆元素个数差值的增量（通过balance记录两个堆的平衡，实现延迟删除）
+- 延迟删除：使用一个hashmap记录，当该元素成为堆顶元素时再真正删除
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    priority_queue<int> small; // 小于等于中位数 大顶堆
+    priority_queue<int, vector<int>, greater<int>> big; // 大于中位数 小顶堆
+    unordered_map<int, int> del; // 记录延迟删除
+    inline double get(int k)
+    {
+        if(k % 2)
+            return small.top();
+        else
+            return ((long long)small.top() + big.top())*0.5;
+    }
+
+    vector<double> medianSlidingWindow(vector<int>& nums, int k) {
+        // 先全部入small 再弹k/2个去big
+        for(int i = 0; i < k; i++)
+            small.push(nums[i]);
+        for(int i = 0; i < k / 2; i++)
+        {
+            big.push(small.top());
+            small.pop();
+        }
+
+        vector<double> ans;
+        ans.push_back(get(k));
+        for(int i = k; i < nums.size(); i++)
+        {
+            int balance = 0;
+            int left_del = nums[i - k], right_add = nums[i];
+            del[left_del]++;
+            if(!small.empty() && left_del <= small.top()) // 删除的数在small这一半
+                balance--;
+            else 
+                balance++;
+            
+            if(!small.empty() && right_add <= small.top()) // 加入的数在small这一半
+            {
+                balance++;
+                small.push(right_add);
+            }
+            else
+            {
+                balance--;
+                big.push(right_add);
+            }
+
+            // 调整两个堆的大小 balance 可能为0，-2，2
+            if(balance > 0)
+            {
+                big.push(small.top());
+                small.pop();
+            }
+            else if(balance < 0)
+            {
+                small.push(big.top());
+                big.pop();
+            }
+
+            while(!small.empty() && del[small.top()] > 0)
+            {
+                del[small.top()]--;
+                small.pop();
+            }
+            while(!big.empty() && del[big.top()] > 0)
+            {
+                del[big.top()]--;
+                big.pop();
+            }
+            ans.push_back(get(k));
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 659. 分割数组为连续子序列 MID
 关键思路：
 - 贪心
