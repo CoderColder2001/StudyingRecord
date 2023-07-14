@@ -11,6 +11,43 @@
 ---
 ### 题目
 ---
+### &emsp; 979. 在二叉树中分配硬币 MID
+关键思路：
+- 每枚硬币移动的路径长度并不好计算，但是若把这些路径叠起来，**转换成 每条边经过了多少枚硬币** ，就容易计算了
+- 所有路径长度之和，等同于把「每条边出现在多少条路径中」相加
+- <b>DFS + 贡献法</b> DFS计算节点贡献
+- 硬币在节点上移动 思考对于一个非根节点（子树而言）要向其父节点移入or移出多少硬币
+- 注意对根节点有`abs(coins - nodes) == 0` 不影响ans，无需特判
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int ans = 0;
+    pair<int, int> dfs(TreeNode* node) // 返回硬币数和节点数
+    {
+        if(node == nullptr)
+            return {0, 0};
+        auto [coins_l, nodes_l] = dfs(node->left);
+        auto [coins_r, nodes_r] = dfs(node->right);
+        int coins = coins_l + coins_r + node->val;
+        int nodes = nodes_l + nodes_r + 1;
+        ans += abs(coins - nodes); // 产生贡献
+        return {coins, nodes};
+    }
+
+    int distributeCoins(TreeNode* root) {
+        dfs(root);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 1080. 根到叶路径上的不足节点 MID
 关键思路：
 - <b>DFS</b> 递归调用自身 每次调用把limit减去当前节点值
