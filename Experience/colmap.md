@@ -38,6 +38,7 @@ Reconstruction-》Dense reconstruction &emsp; select 选择`sparse`文件夹，�
 
 File-》export model as text 选择`sparse\sparse`文件夹，以txt格式导出sfm相关的文件  
 Q：去畸变后，如何导出相机为PINHOLE模型？  
+undistortion结束后 需要先import加载 再导出  
 
 <br>
 

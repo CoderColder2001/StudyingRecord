@@ -36,7 +36,6 @@ public:
 <br>
 
 ---
-
 ### &emsp; 1330. 翻转子数组得到的最大数组值 :rage:HARD
 关键思路：  
 - <b>绝对值运算转化</b>
@@ -86,7 +85,6 @@ public:
 <br>
 
 ---
-
 ### &emsp; 2671. 和等于目标值的质数对 MID
 关键思路：  
 - 预处理 `(1，MX]` 的所有质数
@@ -138,3 +136,36 @@ public:
 ```
 </details> 
 <br>
+
+---
+### &emsp; 2681. 英雄的力量 :rage:HARD
+关键思路：  
+- <b>贡献法</b> 枚举作为最大值时带来的贡献 
+- 由于元素的顺序不影响答案（求最大最小与顺序无关），先从小到大排序 *(有序 是一个很好的性质)*
+- 子序列、子集 的问题往往对应着 “选或不选”
+- 当一个数`x`作为最大值时，`x`及其左侧元素（假设从小到大a、b、c）带来的贡献为`x^3 + x^2 * (a*2^2 + b*2^1 + c*2^0)` （对于a，中间两个数字b、c可选可不选，共`2^2`种情况）
+- （<b>增量法</b>）设`s = (a*2^2 + b*2^1 + c*2^0)`，`x`的贡献即`x^2 * (d + x)`
+- 只需要枚举最大值，O（1）递推计算`s`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int sumOfPower(vector<int>& nums) {
+        const int MOD = 1e9+7;
+        sort(nums.begin(), nums.end());
+        int ans = 0, s = 0;
+        for(long long x : nums) // x 作为最大值
+        {
+            ans = (ans + (x * x % MOD) * (s + x)) % MOD; // 中间模一次 防止溢出
+            s = (s * 2 + x) % MOD; // 递推下一个s
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>  
+
