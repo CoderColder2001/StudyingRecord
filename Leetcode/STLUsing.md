@@ -664,6 +664,44 @@ public:
 
 ### 题目
 ---
+### &emsp; 822. 翻转卡片游戏 MID
+关键思路：
+- 转化题意 卡牌正面or背面的一个数字要能成为答案，要求是不与其他卡牌的当前正面数字相同
+- 由于所有卡牌都可以翻转，只有正面数字与背面数字相同时，这个数字将不能成为答案
+- 用一个哈希集合记录即可
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int flipgame(vector<int>& fronts, vector<int>& backs) {
+        unordered_set<int> forbidden;
+        for(int i = 0; i < fronts.size(); i++)
+        {
+            if(fronts[i] == backs[i])
+                forbidden.insert(fronts[i]);
+        }
+        int ans = INT_MAX;
+        for(int x : fronts)
+        {
+            if(!forbidden.count(x))
+                ans = min(ans, x);
+        }
+        for(int x : backs)
+        {
+            if(!forbidden.count(x))
+                ans = min(ans, x);
+        }
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 1016. 子串能表示从1到N数字的二进制串 MID
 关键思路1： O（m logn）
 - 遍历所有子串 `j`右移扩展子串`[i, j]`： `x = (x << 1) | (s[j] - '0');`
