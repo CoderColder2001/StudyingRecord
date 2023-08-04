@@ -279,6 +279,7 @@ public:
         fill(idx, idx + n + 1, n);
         for(int i = n-1; i >= 0; i--) // 计算各元素右边界 从右向左遍历
         {
+            // 从右向左 此时idx存放最左侧值为x的id
             int x = nums[i];
             right[i] = min(idx[x], idx[x-1]); // 右边最近的x或x-1作为右边界 不存在时为n
             idx[x] = i;
@@ -288,6 +289,7 @@ public:
         memset(idx, -1, sizeof(idx)); // 维护左端点
         for(int i = 0; i < n; i++) // 统计能产生多少贡献
         {
+            // 从左向右 此时idx存放最右侧值为x的id
             int x = nums[i];
             ans += (i - idx[x - 1]) * (right[i] - i); // 包含i的子数组个数 可选左端点数*可选右端点数
             idx[x] = i;

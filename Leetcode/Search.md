@@ -313,7 +313,99 @@ public:
 };
 ```
 </details>
+<br>
 
+---
+### &emsp; 980. 不同路径III :rage: HARD
+关键思路：
+- <b>DFS</b> `dfs(grid, x, y, left)` `left`表示当前还剩下`left`个格子要走
+- 对于走过的格子 修改 `grid[x][y] = -1`， 回溯时再复原
+- 到达终点时判断 `left == 0`
+- 向上下左右移动，累加四个方向递归的返回值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int dfs(vector<vector<int>> &grid, int x, int y, int left)
+    {
+        if(x < 0 || x >= grid.size() || y < 0 || y >= grid[x].size() || grid[x][y] < 0)
+            return 0;
+        if(grid[x][y] == 2)
+            return left == 0;
+        grid[x][y] = -1; // dfs子树中 标记为访问过
+        int ans = dfs(grid, x - 1, y, left - 1) + dfs(grid, x, y - 1, left - 1) +
+                  dfs(grid, x + 1, y, left - 1) + dfs(grid, x, y + 1, left - 1);
+        grid[x][y] = 0; // 回溯时恢复
+        return ans;
+    }
+    int uniquePathsIII(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size(), cnt0 = 0, sx, sy;
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+            {
+                if(grid[i][j] == 0)
+                    cnt0++;
+                else if(grid[i][j] == 1)
+                    sx = i, sy = j;
+            }
+        }
+        return dfs(grid, sx, sy, cnt0 + 1); // +1是把起点也算上
+    }
+};
+```
+</details>
+
+修改为状态压缩：
+- 使用位运算进行状态压缩 用`二进制数vis`表示访问过的坐标集合
+- 在递归中去修改 `vis`，不去修改 `grid[x][y]`，做到无后效性，从而可以使用记忆化搜索
+- 二维坐标`(x, y)` 映射为 `nx + y`
+- 把障碍方格也加到 `vis` 中，这样递归到终点时，只需要判断 `vis` 是否为全集，即可知道是否已访问所有格子
+- 由于有大量状态是无法访问到的，相比数组，用哈希表记忆化更好 
+- （实际上，并没有太多重复递归调用，使用哈希表反而拖慢了速度，方法一可能更快）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int uniquePathsIII(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size(), vis = 0, sx, sy;
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+            {
+                if(grid[i][j] < 0)
+                    vis |= 1 << (i * n + j); // 障碍
+                else if(grid[i][j] == 1)
+                    sx = i, sy = j;
+            }
+        }
+
+        int all = (1 << m * n) - 1;
+        unordered_map<int, int> memo;
+        function<int(int, int, int)> dfs = [&](int x, int y, int vis) -> int {
+            int p = x * n + y;
+            if(x < 0 || x >= m || y < 0 || y >= n || vis >> p&1)
+                return 0;
+            vis |= 1 << p;
+            if(grid[x][y] == 2)
+                return vis == all;
+            int key = (p << m * n) | vis; // 压缩dfs的参数 左移m*n是因为vis至多有m*n个bit
+            if(memo.count(key))
+                return memo[key];
+            return memo[key] = dfs(x - 1, y, vis) + dfs(x, y - 1, vis) +
+                               dfs(x + 1, y, vis) + dfs(x, y + 1, vis);
+        };
+        return dfs(sx, sy, vis);
+    }
+};
+```
+</details>
 <br>
 
 ------
