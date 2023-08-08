@@ -6,7 +6,9 @@
 路径压缩：每个节点直接指向代表元  
 按秩合并：把简单的集合（树）往复杂的集合（树）上合并  
 
-可以通过一个节点的邻居查询相应连通块的性质
+可以通过一个节点的邻居查询相应连通块的性质  
+
+可以在条件单调变化的场景下动态地增加新的边  
 
 ---
 还可以使用并查集快速找到节点的下一个未访问可达节点（访问到一个节点时，将该节点的 fa 指针指向相邻的下一个节点，这样下次访问到这个节点时，可以跳到下一个未访问的节点）  
@@ -134,6 +136,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 2619. 网格图中最少访问的格子数 :rage: HARD
@@ -208,3 +211,83 @@ public:
 };
 ```
 </details>
+<br>
+
+---
+### &emsp; 2812. 找出最安全路径 MID
+关键思路：
+- 并查集优点：可以（在枚举答案过程中）动态地连边 动态地判断连通性
+- <b>从大到小倒序枚举答案</b> 枚举答案的过程中<b>动态连边</b>（连边的条件对于枚举过程是单调的）
+- <b>多源BFS预处理</b> 从小偷单元格出发 记录到每一个格子的步数
+- 使用滚动数组进行分组 数组长度即为当前走了多少步（当前格子的安全系数）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+    static constexpr int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+public:
+    int maximumSafenessFactor(vector<vector<int>>& grid) {
+        int n = grid.size();
+        vector<pair<int, int>> q;
+        vector<vector<int>> dis(n, vector<int>(n, -1));
+        for(int i = 0; i < n; i++) 
+        {
+            for(int j = 0; j < n; j++) 
+            {
+                if(grid[i][j])
+                {
+                    q.emplace_back(i, j);
+                    dis[i][j] = 0;
+                }
+            }
+        }
+
+        vector<vector<pair<int, int>>> groups = {q}; // step0
+        while(!q.empty()) // 多源BFS
+        {
+            vector<pair<int, int>> nq; // 对应step+1的分组
+            for(auto &[i, j]: q) 
+            {
+                for(auto &d: dirs)
+                {
+                    int x = i + d[0], y = j + d[1];
+                    if(0 <= x && x < n && 0 <= y && y < n && dis[x][y] < 0) // dis为-1时还没有标记
+                    {
+                        nq.emplace_back(x, y);
+                        dis[x][y] = groups.size();
+                    }
+                }
+            }
+            groups.push_back(nq); // 相同dis分组记录
+            q = move(nq);
+        }
+
+        // 并查集模板
+        vector<int> fa(n * n);
+        iota(fa.begin(), fa.end(), 0);
+        function<int(int)> find = [&](int x) -> int { 
+            return fa[x] == x ? x : fa[x] = find(fa[x]);
+        };
+
+        for(int ans = (int) groups.size() - 2; ans > 0; ans--) // 枚举答案
+        {
+            for(auto &[i, j]: groups[ans]) // 访问该dis的分组
+            {
+                for(auto &d: dirs) // 相邻点
+                {
+                    int x = i + d[0], y = j + d[1];
+                    if(0 <= x && x < n && 0 <= y && y < n && dis[x][y] >= ans) // 连接满足条件的边
+                        fa[find(x * n + y)] = find(i * n + j);
+                }
+            }
+            if(find(0) == find(n * n - 1)) // 写这里判断更快些
+                return ans;
+        }
+        return 0;
+    }
+};
+```
+</details>
+<br>
