@@ -21,25 +21,44 @@ wsl2配置环境：
 
 旋转矩阵的逆就是旋转矩阵的转置（*旋转矩阵是正交矩阵*）  
 三维空间中的旋转   
-旋转矩阵不适合做插值  
+<img src = "./pic/c4_1.png" width = "80%">  
+绕任意轴的选择（分解为x、y、z轴上的选择）：  
+<img src = "./pic/c4_2.png" width = "80%">  
+默认起点在原点上；若不在原点上，先平移到原点上 再平移回来  
+
+旋转矩阵不适合做插值 四元数适合作旋转与旋转之间的插值    
 <br>
 
 ---
 模型变换M => 视图变换V => 投影变换P => `[-1,1]^3` 立方体    
 ### 视图变换 View/Camera Transformation
 相机的定义（观测矩阵）：一个向量表示位置、一个向量表示观测方向、一个向量表示向上方向   
-假设相机是固定的（at Origin, up at Y, look at -Z） 而是去移动场景（模型变换）  
-<img src = "./pic/c4_1.png" width = "80%">  
+约定假设相机是固定的（at Origin, up at Y, look at -Z） 而是去移动场景（模型变换）  
+<img src = "./pic/c4_3.png" width = "80%">  
+（模型变换与视图变换常常是一起的 都作用于物体）  
 
 ### 投影变换 Projection Transformation  
 - 正交投影 Orthographic Projection
 - 透视投影 Perspective Projection
 
-正交投影：映射一个cuboid（[l,r] * [b,t] * [f, n]）到 标准canonical cube（[-1, 1]^3）  
-<img src = "./pic/c4_2.png" width = "80%">   
+### **正交投影**：映射一个cuboid（[l, r] * [b, t] * [f, n]）到 标准canonical cube（[-1, 1]^3） 
+<img src = "./pic/c4_4.png" width = "80%">  
 
-透视投影（视锥）：先保持近平面不变，缩放远平面及中间平面（z不变，收缩x、y），得到一个cuboid；再作正交投影（两个矩阵相乘）  
+先平移、再缩放  
+look at -z（右手系）导致了 `n > f` （near > far）  
+
+### **透视投影（视锥）**：映射一个视锥到标准canonical cube（[-1, 1]^3）
+先**保持近平面不变，缩放远平面及中间平面**（z不变，收缩x、y），得到一个cuboid；再作**正交投影**（两个矩阵相乘）  
+<img src = "./pic/c4_5.png" width = "80%">   
 利用 *近平面上的点不变、远平面的中心点不变*， 求解出透视投影矩阵   
+``` c++
+Mpersp2otho << zNear,0,0,0,
+               0,zNear,0,0,
+               0,0,zNear + zFar,-zNear*zFar,
+               0,0,1,0;
+```
+处于视锥中间的点，在透视投影变换后会被推向远平面  
+可参考<https://zhuanlan.zhihu.com/p/445801392>   
 <br>
 
 ------
