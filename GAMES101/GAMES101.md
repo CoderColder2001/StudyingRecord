@@ -7,6 +7,7 @@ wsl2配置环境：
 ## Content
 - 1 Transformation
 - 2 Rasterization
+- 3 Shading
 
 ------
 ## 1 Transformation
@@ -89,3 +90,14 @@ Mpersp2otho << zNear,0,0,0,
 傅里叶变换（展开）：将任意函数分解成不同的频率（从时域到频域）   
 <img src = "./pic/c6_1.png" width = "80%">   
 时域的卷积对应频域的乘积  
+
+### 可见性（遮挡）问题
+画家算法：先画远的； 但无法解决几个互相遮挡的三角形的绘制，故不可用  
+
+Z-Buffer深度缓存：对每个像素（或采样点），记录最近的深度  
+光栅化时，同时生成绘制图（frame-buffer）与深度图（z-buffer）  
+
+<br>
+
+------
+## 3 Shading
