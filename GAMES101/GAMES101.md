@@ -101,3 +101,16 @@ Z-Buffer深度缓存：对每个像素（或采样点），记录最近的深度
 
 ------
 ## 3 Shading
+对不同的物体应用不同的材质（和光线相互作用的不同方法）  
+把着色分为三个部分：镜面反射 + 漫反射 + 环境光照  
+
+Shading is local（对于一个shading point 视作一个小平面）
+<img src = "./pic/c7_1.png" width = "80%">   
+
+shading的局部性：shading并不考虑阴影（不考虑其他物体的存在，只考虑自己）  
+
+对于一个点单位面积接收到的光的能量与传播距离成反比   
+Lambertian(Diffuse) Shading 漫反射项与观察方向无关（光线被均匀地反射出去）    
+<img src = "./pic/c7_2.png" width = "80%">   
+kd漫反射系数 定义对光线的吸收（等于0时为黑）  
+

@@ -95,6 +95,12 @@ auto一般会忽略顶层const &emsp; 希望auto是顶层const时，需要明确
 ```
   
 ---
+### enum class (C++11)
+enum class 将 { } 内的变量，加上 class 限制其在 { } 作用域内可见，是"域内枚举" (scoped enums)，可以防止命名空间污染  
+```auto c = Color::yellow;```
+域内的枚举成员，不能隐式的转换为广义整型；需使用类型转换符如`static_cast<>()`  
+
+---
 ### size_t
 <b>不同平台移植性问题 &emsp; 表示字节大小或数组索引</b>  
 参数中带有size_t的函数通常会含有局部变量用来对数组的大小或者索引进行计算，在这种情况下，size_t是个不错的选择
