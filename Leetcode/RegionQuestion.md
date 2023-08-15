@@ -71,6 +71,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 424. 替换后的最长重复字符 MID
@@ -109,6 +110,7 @@ public:
 };
 ```
 </details>
+<br>
 
 ---
 ### &emsp; 1052. 爱生气的书店老板 MID
@@ -295,6 +297,39 @@ public:
             idx[x] = i;
         }
         return ans - n*(n+1)/2;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2817. 限制条件下元素之间的最小绝对差 MID
+关键思路：
+- <b>有序集合问题 平衡树 + 双指针</b>
+- 左右指针距离x 右指针遍历右边节点 左边不断加入集合
+- 有序集合中初始加入一个很大的元素与一个很小的元素 确保一定可以找到一个大于等于y的元素与一个小于y的元素
+- *PS：如果题目改为距离x以内 变为维护 滑动窗口内的性质 的相关问题 用multiset维护（需要考虑元素重复）*
+- *PS：如果要求最大绝对差 需要用两个单调队列维护滑动窗口内的最大值和最小值*
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minAbsoluteDifference(vector<int>& nums, int x) {
+        int ans = INT_MAX;
+        int n = nums.size();
+        set<int> s = {INT_MIN/2, INT_MAX}; // 哨兵 防止iter或--iter不存在 除2防止减法溢出
+        for(int i = x; i < n; i++) // 遍历右端点 这样可取的左端点是越来越多的 不需从s中弹出元素
+        {
+            s.insert(nums[i - x]);
+            int y = nums[i];
+            auto it = s.lower_bound(y); // 用 set 自带的 lower_bound
+            ans = min(ans, min(*it - y, y - *--it)); // 大于y的最小数和小于y的最大数
+        }
+        return ans;
     }
 };
 ```
@@ -551,7 +586,10 @@ public:
 * ### 单调队列/单调栈 ： 
 常用于<b>区间最值问题</b>   
 <b>用于快速定位数组区间中具有某个最值性质的位置</b>   
-单调队列使用`std::deque` &emsp; 单调栈可使用`std::stack`
+单调队列使用`std::deque` &emsp; 单调栈可使用`std::stack`  
+
+单调栈：`nums[i]`左右比它最近的数的下标   
+单调队列：滑动窗口最大值 （*窗口：左右端点是单调的*）   
 
 ## 题目
 --- 
@@ -636,7 +674,87 @@ public:
 };
 ```
 </details>
+<br>
 
+--- 
+### &emsp; 2818. 操作使得分最大 :rage: HARD
+关键思路：
+- 预处理 计算每个数字的不同质因子数目（omega） 
+- 每一个元素能选几次？（出现在多少个能够选它的子数组中）
+- 找到 右边质数分数**大于**的最近数字 的下标 与 左边指数分数**大于等于**它的最近数字 的下标； 使用<b>单调栈</b>
+- 子数组个数 `total[i] = (i - left[i])*(right[i] - i)`
+- 贪心地 从大到小遍历`nums[i]` 每个可贡献 `nums[i]^min(k, total[i])`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+const int MX = 1e5 +1 ;
+int omega[MX]; // 预处理不同质因子数目
+int init = []() {
+    for(int i = 2; i < MX; i++)
+        if(omega[i] == 0) //只当i是质数时
+            for(int j = i; j < MX; j += i) // i是j的质因子
+                omega[j]++;
+    return 0;
+}();
+
+class Solution {
+    const long long MOD = 1e9 + 7;
+
+    long long pow(long long x, int n) // 带取MOD的快速幂 递归的思路
+    {
+        long long res = 1;
+        for(; n; n /= 2)
+        {
+            if(n % 2)
+                res = res*x % MOD;
+            x = x*x % MOD;
+        }
+        return res;
+    }
+
+public:
+    int maximumScore(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> left(n, -1);
+        vector<int> right(n, n);
+        stack<int> st; // 单调递减栈
+        for(int i = 0; i < n; i++)
+        {
+            while(!st.empty() && omega[nums[st.top()]] < omega[nums[i]])
+            {
+                right[st.top()] = i; // 出单调栈时记录右边界
+                st.pop();
+            }
+            if(!st.empty())
+                left[i] = st.top();
+            st.push(i);
+        }
+        
+        // 从大到小遍历nums[i]
+        vector<int> id(n); // 排序下标数组
+        iota(id.begin(), id.end(), 0);
+        sort(id.begin(), id.end(), [&](const int i, const int j) {
+            return nums[i] > nums[j];
+        });
+        long long ans = 1;
+        for(int i : id)
+        {
+            long long total = (long long) (i - left[i])*(right[i] - i);
+            if(total >= k)
+            {
+                ans = ans * pow(nums[i], k) % MOD;
+                break;
+            }
+            ans = ans * pow(nums[i], total) % MOD;
+            k -= total; // 剩余操作次数
+        }
+        return ans;
+    }
+};
+```
+</details>
 <br>
 
 ------

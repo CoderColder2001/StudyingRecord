@@ -185,6 +185,8 @@ lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它�
 `*s.rbegin()` 访问最大元素  
 `*s.begin()` 访问最小元素
 
+`set::lower_bound(key)` 返回指向大于等于key的下一个元素的迭代器；超过最大值时返回`s.end()`    
+
 ---  
 ### priority_queue  
 

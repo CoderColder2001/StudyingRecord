@@ -853,3 +853,40 @@ public:
 ```
 </details>
 <br>
+
+------
+## map、set（平衡二叉树）
+
+### 题目
+---
+### &emsp; 2817. 限制条件下元素之间的最小绝对差 MID
+关键思路：
+- <b>有序集合问题 平衡树 + 双指针</b>
+- 左右指针距离x 右指针遍历右边节点 左边不断加入集合
+- 有序集合中初始加入一个很大的元素与一个很小的元素 确保一定可以找到一个大于等于y的元素与一个小于y的元素
+- *PS：如果题目改为距离x以内 变为维护 滑动窗口内的性质 的相关问题 用multiset维护（需要考虑元素重复）*
+- *PS：如果要求最大绝对差 需要用两个单调队列维护滑动窗口内的最大值和最小值*
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minAbsoluteDifference(vector<int>& nums, int x) {
+        int ans = INT_MAX;
+        int n = nums.size();
+        set<int> s = {INT_MIN/2, INT_MAX}; // 哨兵 防止iter或--iter不存在 除2防止减法溢出
+        for(int i = x; i < n; i++) // 遍历右端点 这样可取的左端点是越来越多的 不需从s中弹出元素
+        {
+            s.insert(nums[i - x]);
+            int y = nums[i];
+            auto it = s.lower_bound(y); // 用 set 自带的 lower_bound
+            ans = min(ans, min(*it - y, y - *--it)); // 大于y的最小数和小于y的最大数
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>

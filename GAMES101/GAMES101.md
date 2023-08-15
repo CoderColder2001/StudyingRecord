@@ -102,7 +102,7 @@ Z-Buffer深度缓存：对每个像素（或采样点），记录最近的深度
 ------
 ## 3 Shading
 对不同的物体应用不同的材质（和光线相互作用的不同方法）  
-把着色分为三个部分：镜面反射 + 漫反射 + 环境光照  
+把着色分为三个部分（Bling-Phong着色模型）：镜面反射 + 漫反射 + 环境光照  
 
 Shading is local（对于一个shading point 视作一个小平面）
 <img src = "./pic/c7_1.png" width = "80%">   
@@ -110,7 +110,13 @@ Shading is local（对于一个shading point 视作一个小平面）
 shading的局部性：shading并不考虑阴影（不考虑其他物体的存在，只考虑自己）  
 
 对于一个点单位面积接收到的光的能量与传播距离成反比   
-Lambertian(Diffuse) Shading 漫反射项与观察方向无关（光线被均匀地反射出去）    
+Lambertian(Diffuse) Shading <b>漫反射项<b> 与观察方向无关（光线被均匀地反射出去）    
 <img src = "./pic/c7_2.png" width = "80%">   
 kd漫反射系数 定义对光线的吸收（等于0时为黑）  
 
+<b>高光项</b> 观察方向和镜面反射方向接近，即法向量方向与半程向量方向接近  
+<img src = "./pic/c8_1.png" width = "80%">   
+<b>通过向量点乘衡量两个向量是否接近</b>  
+夹角余弦加一个指数幂操作  
+
+<b>环境光项</b> 本质是一个常数（的颜色）  
