@@ -110,7 +110,7 @@ Shading is local（对于一个shading point 视作一个小平面）
 shading的局部性：shading并不考虑阴影（不考虑其他物体的存在，只考虑自己）  
 
 对于一个点单位面积接收到的光的能量与传播距离成反比   
-Lambertian(Diffuse) Shading <b>漫反射项<b> 与观察方向无关（光线被均匀地反射出去）    
+Lambertian(Diffuse) Shading <b>漫反射项</b> 与观察方向无关（光线被均匀地反射出去）    
 <img src = "./pic/c7_2.png" width = "80%">   
 kd漫反射系数 定义对光线的吸收（等于0时为黑）  
 
@@ -121,3 +121,23 @@ kd漫反射系数 定义对光线的吸收（等于0时为黑）
 
 <b>环境光项</b> 本质是一个常数（的颜色）   
 
+### 着色频率  
+<img src = "./pic/c8_2.png" width = "80%">   
+
+着色应用在每一个像素上   
+插值计算三角形内部点的颜色  
+法线在三角形内部进行插值（每一个像素都有自己的法线）  
+
+### Real-time Rendering Pipeline
+<img src = "./pic/c8_3.png" width = "80%">   
+
+Shader对每一个顶点或每一个fragment（如像素）都会执行一次  
+- Program vertex and fragment processing stages
+- Describe operation on a single vertex（or fragment）
+
+<https://www.shadertoy.com/>  
+
+### 纹理映射
+定义不同物体表面不同位置的任意点的属性  
+空间中的三角形（顶点）映射到纹理（二维坐标`(u, v)`）上  
+不同位置可以映射到相同纹理上  
