@@ -160,6 +160,134 @@ public:
 <br>
 
 ---
+### &emsp; 1444. 切披萨的方案数 :rage:HARD
+关键思路：  
+- 注意到 “切一刀” 这个动作 代表从原问题到一个规模更小的子问题
+- 无论怎么切 右下角始终为`(m-1, n-1)`
+- 二维前缀和 预处理子矩形中苹果数
+- `dp[c][i][j]` 表示左上角在`(i, j)` 右下角在`(m-1, n-1)`的子矩形切 `c` 刀，每块都包含至少一个苹果的方案数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class MatrixSum { // 二维前缀和模板
+private:
+    vector<vector<int>> sum;
+public:
+    MatrixSum(vector<string> &matrix) {
+        int m = matrix.size(), n = matrix[0].length();
+        sum = vector<vector<int>>(m + 1, vector<int>(n + 1));
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+                sum[i + 1][j + 1] = sum[i + 1][j] + sum[i][j + 1] - sum[i][j] + (matrix[i][j] & 1);
+        }
+    }
+
+    // 返回左上角在 (r1,c1) 右下角在 (r2-1,c2-1) 的子矩阵元素和（类似前缀和的左闭右开）
+    int query(int r1, int c1, int r2, int c2) {
+        return sum[r2][c2] - sum[r2][c1] -sum[r1][c2] + sum[r1][c1];
+    }
+};
+
+class Solution {
+public:
+    int ways(vector<string>& pizza, int k) {
+        const int MOD = 1e9 + 7;
+        MatrixSum ms(pizza);
+        int m = pizza.size(), n = pizza[0].length();
+        int dp[k][m][n];
+        for(int c = 0; c < k; c++) // 从切0刀开始
+        {
+            for(int i = 0; i < m; i++)
+            {
+                for(int j = 0; j < n; j++)
+                {
+                    if(c == 0)
+                    {
+                        dp[c][i][j] = ms.query(i, j, m, n) ? 1 : 0; // 是否有苹果
+                        continue;
+                    }
+                    int res = 0; // 累加方案数 枚举切的位置
+                    for(int j2 = j + 1; j2 < n; j2++) // 垂直切
+                    {
+                        if(ms.query(i, j, m, j2))
+                            res = (res + dp[c - 1][i][j2]) % MOD;
+                    }
+                    for(int i2 = i + 1; i2 < m; i2++) // 水平切
+                    {
+                        if(ms.query(i, j, i2, n))
+                            res = (res + dp[c - 1][i2][j]) % MOD;
+                    }
+                    dp[c][i][j] = res;
+                }
+            }
+        }
+        return dp[k - 1][0][0];
+    }
+};
+```
+</details> 
+
+优化思路：  
+- 若左边界没有苹果，`sum[i][j]=sum[i][j+1]`；若上边界没有苹果，`sum[i][j]=sum[i+1][j]`
+- 观察状态转移方程；计算的就是 `dp[c−1]` 第 `i` 行的后缀和，以及第 `dp[c−1]` 第 `j` 列的后缀和；可以预处理出来或一边计算 `dp[c][i][j]` 一边更新
+- 此外，将二维前缀和改为二维后缀和
+- 由于`dp[c]` 只依赖于 `dp[c-1]`，还可以空间压缩
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int ways(vector<string>& pizza, int k) {
+        const int MOD = 1e9 + 7;
+        int m = pizza.size(), n = pizza[0].size();
+        vector<vector<int>> sum(m + 1, vector<int>(n + 1)); // 二维后缀和
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1));
+        for(int i = m-1; i >= 0; i--)
+        {
+            for(int j = n-1; j >= 0; j--)
+            {
+                sum[i][j] = sum[i][j + 1] + sum[i + 1][j] - sum[i + 1][j + 1] + (pizza[i][j] & 1);
+                if(sum[i][j])
+                    dp[i][j] = 1; // 在这初始化
+            }
+        }
+
+        while(--k)
+        {
+            vector<int> col_s(n, 0); // dp数组第j列的后缀和
+
+            // 倒序遍历的过程中 更新后缀和
+            for(int i = m-1; i >= 0; i--)
+            {
+                int row_s = 0; // dp[i]的后缀和
+                for(int j = n-1; j >= 0; j--)
+                {
+                    int temp = dp[i][j];
+                    if(sum[i][j] == sum[i][j + 1]) // 左边界没有苹果
+                        dp[i][j] = dp[i][j + 1];
+                    else if(sum[i][j] == sum[i + 1][j]) // 上边界没有苹果
+                        dp[i][j] = dp[i + 1][j];
+                    else 
+                        dp[i][j] = (row_s + col_s[j]) % MOD;
+
+                    row_s = (row_s + temp) % MOD;
+                    col_s[j] = (col_s[j] + temp) % MOD;
+                }
+            }
+        }
+        return dp[0][0];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1483. 树节点的第K个祖先 :rage:HARD
 关键思路：  
 - <b>倍增</b>支持快速查询：使用DP预处理 存储 node 节点距离为 `2^i` 的祖先是谁
