@@ -160,6 +160,48 @@ public:
 <br>
 
 ---
+### &emsp; 1388. 3n块披萨 :rage:HARD
+关键思路：  
+- 注意 `n >= 2` 时 要选择的数中一定存在一个数x有一侧至少有连续两个数没有被选择（假设所有选中不相邻数的间隔为 `1`，即中间只有一个数没有被选择，那么总数为 `2n`，与总数为 `3n` 矛盾
+- *问题转化为 在一个长度3n的环形数组中选择n个不相邻的数使得和最大*
+- 选择一个数字后 两侧的数也一起删去 变为子问题
+- 对于问题描述 可以表示为定义函数 `g(nums)` 表示在 `nums` 中选取 `n` 个不相邻的数 使得其和最大
+- 对于环形数组 展开；如果选择了第一个数，那么最后一个数就不能选择，如果选择了最后一个数，那么第一个数就不能选择
+- 因此可以 <b>将环形数组拆成两个数组</b> ，一个是去掉第一个数的，一个是去掉最后一个数的，然后分别求解这两个数组的g的最大值
+- 定义 `dp[i][j]` 表示在 `nums` 前 `i` 个数中选择 `j` 个不相邻的数的最大和
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxSizeSlices(vector<int>& slices) {
+        int n = slices.size() / 3;
+        auto g = [&](vector<int> &nums) -> int {
+            int m = nums.size();
+            int dp[m + 1][n + 1];
+            memset(dp, 0, sizeof dp);
+            for(int i = 1; i <= m; i++)
+            {
+                for(int j = 1; j <= n; j++)
+                    dp[i][j] = max(dp[i - 1][j], (i >= 2 ? dp[i - 2][j - 1] : 0) + nums[i - 1]);
+            }
+            return dp[m][n];
+        };
+
+        vector<int> nums(slices.begin(), slices.end() - 1);
+        int a = g(nums);
+        nums = vector<int>(slices.begin() + 1, slices.end());
+        int b = g(nums);
+        return max(a, b);
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1444. 切披萨的方案数 :rage:HARD
 关键思路：  
 - 注意到 “切一刀” 这个动作 代表从原问题到一个规模更小的子问题

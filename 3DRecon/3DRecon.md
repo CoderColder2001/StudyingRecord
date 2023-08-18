@@ -1,8 +1,16 @@
 # 三维重建
 ------
 ## Content
+- 相关数学概念
 - SFM
 - MVS
+
+<br>
+
+------
+## 相关数学概念
+单应矩阵H(Homography)，约束了同一 3D 空间点在两个像素平面的 2D 齐次坐标   
+<a href = "https://zhuanlan.zhihu.com/p/138266214">单应矩阵的推导与理解</a>
 
 <br>
 
@@ -21,6 +29,7 @@
 可参考：
 - <a href = "https://zhuanlan.zhihu.com/p/377230002"> 解读PatchMatch: A Randomized Correspondence Algorithm for Structural Image Editing </a> 
 - <a href = "https://zhuanlan.zhihu.com/p/562577568">78. 三维重建13-立体匹配9，经典算法PatchMatchStereo</a> 
+- <a href = "https://zhuanlan.zhihu.com/p/357071173">传统多视图立体算法：PatchMatchStereo详解</a>
 
 PatchMatch与ADCensus等算法不一样的地方的地方在于，视差的计算不是直接进行的，而是通过平面参数计算而来的——立体匹配的过程；不是在一维的水平极线上进行搜索得到视差值，而是在3D空间中搜索最佳平面，再通过平面参数反算出视差。这意味着在匹配过程中就可以得到亚像素精度的视差值和正确的平面  
 
