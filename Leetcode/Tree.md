@@ -119,3 +119,42 @@ public:
 ```
 </details>
 <br>
+
+---
+### &emsp; 1123. 最深叶节点的最近公共祖先 MID
+关键思路：
+- 思考问题转化 *要找的这个节点是在当前节点的左子树，还是右子树，还是就是当前节点*
+- 递归这棵树，同时维护一个全局最大深度
+- 在“递”的过程中，向下传递深度`depth`
+- 在“归”的过程中，上传当前子树最深叶节点的深度
+- 设左子树最深叶节点的深度为 `leftMaxDepth`，右子树最深叶节点的深度为 `rightMaxDepth`。如果 `leftMaxDepth == rightMaxDepth == maxDepth`，那么更新答案为当前节点。注意这并不代表我们找到了答案，如果后面发现了更深的叶节点，那么答案还会更新
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    TreeNode* lcaDeepestLeaves(TreeNode* root) {
+        TreeNode *ans = nullptr;
+        int max_depth = -1; // 全局最大深度 
+        function<int(TreeNode*, int)> dfs = [&](TreeNode *node, int depth) {
+            if(node == nullptr)
+            {
+                max_depth = max(max_depth, depth);
+                return depth;
+            }
+            int left_max_depth = dfs(node->left, depth + 1);
+            int right_max_depth = dfs(node->right, depth + 1);
+            if(left_max_depth == right_max_depth && left_max_depth == max_depth)
+                ans = node;
+
+            return max(left_max_depth, right_max_depth);
+        };
+        dfs(root, 0);
+        return ans;
+    }
+};
+```
+</details>
+<br>

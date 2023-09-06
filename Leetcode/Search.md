@@ -144,6 +144,55 @@ public:
 <br>
 
 ---
+### &emsp; 1654. 到家的最少跳跃次数 MID
+关键思路：
+- <b>BFS记忆化搜索最短路径</b>
+- 搜索边界可进一步缩小为 `max(f + a + b, x + b)`，其中 `f` 为最远的禁止点；
+  - 当 a > b 时，搜索边界为 x + b
+  - 当 a <= b 是，搜索边界为 `max(f + a + b, x)`， 这是因为任何超出该边界的路径都可以通过调换操作顺序“平移”到 `(f, max(f + a + b, x))` 中  
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int minimumJumps(vector<int>& forbidden, int a, int b, int x) {
+        unordered_set<int> s(forbidden.begin(), forbidden.end());
+        queue<pair<int, int>> q;
+        q.emplace(0, 1);
+        const int n = 6000;
+        bool vis[n][2];
+        memset(vis, false, sizeof(vis));
+        for(int ans = 0; q.size(); ans++)
+        {
+            for(int t = q.size(); t; t--)
+            {
+                auto [i, k] = q.front();
+                q.pop();
+                if(i == x)
+                    return ans;
+                vector<pair<int, int>> nxts = {{i + a, 1}};
+                if(k & 1)
+                    nxts.emplace_back(i - b, 0);
+                for(auto [j, l] : nxts)
+                {
+                    if(j >= 0 && j < n && !s.count(j) && !vis[j][l])
+                    {
+                        q.emplace(j, l);
+                        vis[j][l] = true;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; LCP41. 黑白翻转棋 MID
 关键思路：
 - 枚举空余位置放置黑棋
