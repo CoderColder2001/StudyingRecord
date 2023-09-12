@@ -480,8 +480,8 @@ public:
 - ###  Dijkstra O(n^2)
 BFS思想 求单源最短路 不能有负边  
 `dis[N]`：保存当前最短路长度  
-`vis[N]`：保存已经找到最短路的节点  
-每一轮最小`dis`的顶点在`vis`中标记 &emsp; 再用它的边来更新`dis`
+`vis[N]`：保存已经找到最短路的节点集合（划分节点集）  
+每一轮最小`dis`的顶点在`vis`中标记（加入集合） &emsp; 再用它的边来更新`dis`
 
 堆优化Dijkstra（优先队列存放） O(mlogn)  
 
@@ -494,6 +494,11 @@ DP思想 求单源最短路 可以有负边 可以判断存在负环（最短路
 每一轮对所有边`e(a,b,w)`进行松弛操作，若`dis[b] > dis[a]+w` 则更新dis[b]  
 
 队列优化BellmanFord —— SPFA（使用邻接表）
+
+- ### Floyd O(n^3) 
+贪心 + DP 求所有节点对间的最短路  
+以每个点为「中转站」，刷新所有「入度」和「出度」的距离   
+外层枚举中转节点：枚举到第 `i` 轮时，可以理解为“已经计算完可将节点 `0` ~ `i-1` 作为中间节点”的情况  
 
 <br>
 
@@ -527,6 +532,63 @@ public:
             }
         }
         return dis[dst] < inf ? dis[dst]:-1;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 1462. 课程表IV MID
+关键思路：
+- 在 <b>拓扑排序问题</b> 的基础上 维护先后关系
+- 使用二维数组记录节点间可达性，用邻接表建图，并计算各节点入度
+- 入度为0，代表已经计算完毕了所有至它的可达性  
+- 队头元素（入度为0）作为中间节点，根据邻接表与当前计算的可达性，更新至其下一节点的可达性
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<bool> checkIfPrerequisite(int numCourses, vector<vector<int>>& prerequisites, vector<vector<int>>& queries) {
+        int n = numCourses;
+        bool f[n][n]; // 可达性
+        memset(f, false, sizeof(f));
+        vector<int> g[n]; // 二维邻接表
+        vector<int> indeg(n); // 入度
+        for(auto& p : prerequisites)
+        {
+            g[p[0]].push_back(p[1]);
+            indeg[p[1]]++;
+        }
+        queue<int> q; // 一个节点进入队列时入度为0，代表已经计算完毕了所有至它的可达性
+        for(int i = 0; i < n; i++)
+        {
+            if(indeg[i] == 0)
+                q.push(i);
+        }
+
+        while(!q.empty())
+        {
+            int i = q.front();
+            q.pop();
+            for(int j : g[i])
+            {
+                f[i][j] = true;
+                for(int h = 0; h < n; h++) // i 作为中间节点
+                {
+                    f[h][j] |= f[h][i];
+                }
+                if(--indeg[j] == 0)
+                    q.push(j);
+            } 
+        }
+        vector<bool> ans;
+        for(auto& qry : queries)
+            ans.push_back(f[qry[0]][qry[1]]);
+        return ans;
     }
 };
 ```
