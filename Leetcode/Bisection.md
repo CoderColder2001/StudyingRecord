@@ -1,12 +1,23 @@
 ## 二分法
 ---
+<b>最大化最小值</b> 或 <b>最小化最大值</b> => 二分答案  
+利用数组的有序性和目标问题的单调性  
+
 三种形式：
 - 寻找一个数
 - 寻找左侧边界
 - 寻找右侧边界
 
+<br>  
+
+一些条件转化：
+- 最基本：`>= x`
+- `> x` => `>= x + 1`
+- `< x` => `>= x` 的左边一个数
+- `<= x` => `> x` 的左边一个数
+
 关键：
-- 确定搜索区间 `[left, right] 、 [left, right) 、 (left, right)` &emsp;这决定了循环结束条件以及转移方程  
+- 确定搜索区间 `[left, right] 、 [left, right) 、 (left, right)`三种写法 &emsp;这决定了循环结束条件以及转移方程  
 - 确定循环不变量（区间满足的性质，或者说L R满足的性质）
 
 ---
@@ -17,7 +28,7 @@ int binarySearch(int[] nums, int target) {
     int left = 0; 
     int right = nums.length - 1; // 注意
 
-    while(left <= right) {
+    while(left <= right) { // [left, right] 闭区间写法
         int mid = left + (right - left) / 2;
         if(nums[mid] == target)
             return mid; 
@@ -30,7 +41,9 @@ int binarySearch(int[] nums, int target) {
 }
 ```
 
-### 寻找左侧边界
+### 寻找左侧边界（第一个xxx）
+
+循环不变量： <b>`left-1` 一定指向小于它的数</b> （半闭半开写法）  
 
 ```c++
 int left_bound(int[] nums, int target) {
@@ -52,7 +65,9 @@ int left_bound(int[] nums, int target) {
 }
 ```
 
-### 寻找右侧边界
+### 寻找右侧边界（最后一个xxx）
+
+循环不变量： <b>`right` 一定指向大于它的数</b>  （半闭半开写法）  
 
 ```c++
 int right_bound(int[] nums, int target) {
@@ -182,3 +197,50 @@ public:
 ```
 </details>
 <br>
+
+---
+### &emsp; 2560. 打家劫舍IV MID
+关键思路：
+- 二分 + DP &emsp; 取二分中点为`mx`，check函数通过dp实现
+- `f[i]` 表示从下标`[0， i]` 偷金额不超过 `mx` 的房屋，至多能偷几间
+- `f[i]`仅仅依赖于`f[i-1]`和`f[i-2]`，可以空间优化
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+    bool check(vector<int>& nums, int k, int mx)
+    {
+        int f0 = 0, f1 = 0; // 两个状态
+        for(int x : nums)
+        {
+            if(x > mx)
+                f0 = f1;
+            else
+            {
+                int tmp = f1;
+                f1 = max(f1, f0 + 1); // f[i] = max(f[i-1], f[i-2] + 1)
+                f0 = tmp;
+            }
+        }
+        return f1 >= k;
+    }
+public:
+    int minCapability(vector<int>& nums, int k) {
+        int left = 0, right = *max_element(nums.begin(), nums.end());
+        while(left <= right) // [l, r]
+        {
+            int mid = left + (right - left) / 2;
+            if(check(nums, k, mid))
+                right = mid - 1;
+            else
+                left = mid + 1;
+        }
+        return right + 1;
+    }
+};
+```
+</details>
+<br>
+
