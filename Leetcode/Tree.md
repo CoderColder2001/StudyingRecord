@@ -158,3 +158,62 @@ public:
 ```
 </details>
 <br>
+
+---
+### &emsp; 2003. 每棵子树内缺失的最小基因值 :rage: HARD
+关键思路：
+- 思考问题转化： 以每个节点为根的子树中，权重集合在 [1,n+1] 范围内缺失的最小数
+- <b>从节点 1 开始往根找（从深到浅）</b> 记录并更新<b>以节点 i 为根的子树包含的所有基因值</b>； 这条路径以外的点 ans 都为 1
+- 可以用数组代替哈希表标记 即使nums包括了1到n所有数，ans[i]也不会超过n+1（即对于超过n+1的nums[i]来说都可以视为n+2）
+- 进一步地，也可以视作n+1，因为如果有nums[i]超过n，那么ans[i]最大不会超过n（因为前面一定有一个数不是任何一个nums[i]）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    vector<int> smallestMissingValueSubtree(vector<int>& parents, vector<int>& nums) {
+        int n = parents.size();
+        vector<int> ans(n, 1);
+        auto it = find(nums.begin(), nums.end(), 1);
+        if(it == nums.end()) // 不存在基因值为 1 的点
+            return ans;
+        
+        vector<vector<int>> g(n);
+        for(int i = 1; i < n; i++)
+            g[parents[i]].push_back(i);
+
+        vector<int> vis(n + 2);
+        stack<int> nodes; // dfs 子树的节点
+        int mex = 2; // 缺失的最小基因值
+        int pre = -1;
+        int node = it - nums.begin(); // 节点 1
+        while(node >= 0)
+        {
+            vis[min(nums[node], n + 1)] = true; // 标记基因值
+            for(int son : g[node])
+            {
+                if(son != pre) // pre的子树这一边就无需遍历了
+                    nodes.push(son); // 接下来需要遍历的点
+            }
+            while(!nodes.empty()) // dfs每个son
+            {
+                int x = nodes.top();
+                nodes.pop();
+                vis[min(nums[x], n + 1)] = true;
+                for(int son : g[x])
+                    nodes.push(son);
+            }
+            while(vis[mex])
+                mex++;
+            ans[node] = mex;
+            pre = node;
+            node = parents[node]; // 往上走
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
