@@ -596,6 +596,88 @@ public:
 <br>
 
 ---
+### &emsp; 2127. 参加会议的最多员工数 :rage: HARD
+关键思路：
+- 内向基环树：具有 n个点 n条边 的联通块；内向指每个点只有一条出边
+- 从节点 i 出发根据 favourite[i] 连接有向边
+- 对于基环长度大于 2 的情况，圆桌的最大员工数目即为最大的基环长度
+- 同时还可以放置多个长度2的环 + 其左右最长链；使用<b>拓扑排序 + 动态规划</b>的方法寻找最长游走路径
+- 通过一次拓扑排序，可以「剪掉」所有树枝。因为拓扑排序后，树枝节点的入度均为 0，基环节点的入度均为 1
+- 遍历deg为1的节点即遍历基环；再以基环与树枝的连接处为起点，顺着反图来遍历树枝，从而将问题转化成一个树形问题
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maximumInvitations(vector<int>& favorite) {
+        int n = favorite.size();
+        vector<int> deg(n);
+        for(int f : favorite)
+        {
+            deg[f]++; // 统计基环树每个节点的入度 便于进行拓扑排序
+        }
+
+        vector<vector<int>> rg(n); // 拓扑排序建立反图 被喜欢
+        queue<int> q;
+        for(int i = 0; i < n; i++)
+        {
+            if(deg[i] == 0)
+                q.push(i);
+        }
+        while(!q.empty())
+        {
+            int x = q.front();
+            q.pop();
+            int y = favorite[x];
+            rg[y].push_back(x);
+            if(--deg[y] == 0)
+                q.push(y);
+        }
+
+        // 通过dfs反图rg 寻找树枝上最深的链
+        function<int(int)> rdfs = [&](int x) -> int {
+            int max_depth = 1;
+            for(int son : rg[x])
+            {
+                max_depth = max(max_depth, rdfs(son) + 1);
+            }
+            return max_depth;
+        };
+
+        int size1 = 0, size2 = 0; // 一个2以上的环 或 多个2环及其两端最长链
+        for(int i = 0; i < n; i++)
+        {
+            if(deg[i] == 0)
+                continue;
+
+            // 遍历基环上的点
+            deg[i] = 0; // 将基环上的点的入度标记为0，避免重复访问
+            int ring_size = 1;
+            for(int x = favorite[i]; x != i; x = favorite[x])
+            {
+                deg[x] = 0;
+                ring_size++;
+            }
+
+            if(ring_size == 2)
+            {
+                size2 += rdfs(i) + rdfs(favorite[i]); // 最长链
+            }
+            else
+            {
+                size1 = max(size1, ring_size);
+            }
+        }
+        return max(size1, size2);
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2699. 修改图中的边权 :rage: HARD
 关键思路：
 - 坑：改变边权后 最短路的选择可能改变

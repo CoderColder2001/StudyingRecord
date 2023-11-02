@@ -6,6 +6,8 @@
 
 <a href = "https://subingwen.cn/cmake/CMake-primer/">CMake 保姆级教程（上）</a>
 
+<a href = "https://cliutils.gitlab.io/modern-cmake/">An Introduction to Modern CMake</a>
+
 ------
 `link_libraries`用来链接静态库，`target_link_libraries`用来链接导入库，即按照header file + .lib + .dll方式隐式调用动态库的.lib库   
 
