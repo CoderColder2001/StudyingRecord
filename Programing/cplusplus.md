@@ -5,6 +5,7 @@
 ## Content  
 * C++内存管理  
 * 变量与类型 
+* 智能指针
 * 迭代器
 * 函数
 * STL
@@ -30,6 +31,21 @@
 * 每个类额外增加一个指针大小的内存占用  
 * 函数调用多一层间接性   
 <br>  
+
+* ## 智能指针 todo
+---
+RAII 将资源的生命周期绑定到对象的生命周期上  
+用对象管理内存   
+通过makexxx创建  
+### shared_ptr
+
+### weak_ptr 
+为了避免 `shared_ptr` 带来的环状引用  
+
+### unique_ptr 
+独占资源（该块内存只能通过这个指针访问） 开销比 `shared_ptr` 小许多   
+
+<br>
 
 ------
 ##  
@@ -94,6 +110,10 @@ auto一般会忽略顶层const &emsp; 希望auto是顶层const时，需要明确
     auto [x, y, keyState] = q.front();
 ```
   
+---
+### decltype (C++11) todo
+推导类型（如容器的模板参数未知时）  
+
 ---
 ### enum class (C++11)
 enum class 将 { } 内的变量，加上 class 限制其在 { } 作用域内可见，是"域内枚举" (scoped enums)，可以防止命名空间污染  
