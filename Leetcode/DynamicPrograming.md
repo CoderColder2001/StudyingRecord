@@ -376,6 +376,39 @@ public:
 };
 ```
 </details> 
+<br>
+
+---
+### &emsp; 2304. 网格中的最小路径代价 MID
+关键思路：  
+- 先寻找子问题；当前节点的最小代价如何得到？
+- 还可以空间优化，将dp数组直接存在grid中
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minPathCost(vector<vector<int>>& grid, vector<vector<int>>& moveCost) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<int>> dp(m, vector<int>(n, INT_MAX));
+        dp[m-1] = grid[m-1];
+        for(int i = m - 2; i >= 0; i--) // 倒序枚举行
+        {
+            for(int j = 0; j < n; j++)
+            {
+                for(int k = 0; k < n; k++) // 枚举下一行的第k列
+                    dp[i][j] = min(dp[i][j], dp[i+1][k] + moveCost[grid[i][j]][k]);
+                dp[i][j] += grid[i][j];
+            }
+        }
+        return *min_element(dp[0].begin(), dp[0].end());
+    }
+};
+```
+</details> 
+<br>
 
 ### 扩展：LCA问题（求xy最近公共祖先）的解法模板  
 - DFS预处理各节点深度
