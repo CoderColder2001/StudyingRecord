@@ -24,6 +24,8 @@ WPS Office
 中途禁用了集显驱动，但还没有安装好nvidia驱动，导致开机黑屏  
 Ctrl+Alt+F2 进入命令行  
 ```
+sudo vi /etc/modprobe.d/blacklist.conf  //删去此前在末尾新加的 
+或
 rm -f /etc/modprobe.d/blacklist-nouveau.conf  //删除黑名单文件
 update-initramfs -u
 reboot
