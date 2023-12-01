@@ -1,0 +1,1 @@
+GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
