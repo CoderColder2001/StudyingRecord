@@ -1,6 +1,20 @@
 # Paper Reading Record
 ## Content
--
+- 
+
+------
+## 3D Gaussian Splatting for Real-Time Radiance Field Rendering
+
+SIGGRAPH2023  
+keywords：GS；场景表示；可微渲染  
+
+3D高斯保留了连续体积辐射场的理想特性以进行场景优化，同时避免了在空白空间中不必要的计算   
+3D高斯的交替优化/密度控制（优化各向异性协方差）  
+
+### Background：
+NeRF建立在连续场景表示的基础上，通常使用体积射线优化MLP；通过对存储在如体素或哈希网格或点上的值进行插值； &emsp; 这些方法的连续性有助于优化，但渲染所需的随机采样代价高昂，并可能导致噪声  
+
+<br>
 
 ------
 ## GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
