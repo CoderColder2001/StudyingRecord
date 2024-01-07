@@ -5,7 +5,7 @@
 ------
 ## （SIGGRAPH2023）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
  
-keywords：GS；场景表示；可微渲染  
+keywords：3D高斯；场景表示；可微渲染  
 
 通过一系列三维高斯参数的优化步骤，即位置、协方差、𝛼和SH系数与高斯密度的自适应控制操作交织，**创建辐射场表示**  
 
@@ -78,7 +78,7 @@ over-reconstruction（高方差区域中的大高斯分布）：使用原始的3
 ## GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
 
 arxiv202311  
-keywords：3D编辑；GS；  
+keywords：3D编辑；3D高斯；  
 
 通过自然语言编辑GS场景；利用GS的显式表示的典型特性来提升3D编辑的效果；  
 采用2D diffusion model进行编辑    
@@ -122,4 +122,20 @@ keywords：3D编辑；GS；
 对于要添加的物体，先使用2D inpainting（用户提供2D mask输入），再使用image to 3D转换成粗糙网格，再转成HGS并精细化（使用AnchorLoss）   
 对于新加物体高斯与原场景高斯的坐标系对齐，首先估计新生成的图像的深度 
 
----
+<br>
+
+------
+## Language Embedded 3D Gaussians for Open-Vocabulary Scene Understanding
+
+arxiv202311  
+keyword：语义嵌入三维表示；3D高斯；开放词汇查询    
+
+### Background：
+现今语义嵌入三维表示的效果在很大程度上依赖于在训练和渲染中资源密集型的神经网络   
+一些方法从多视图二维图像中提取密集的语言特征，并在场景表示中加入额外的输出分支来预测语义特征；然而，语义特征的质量将严重依赖于场景表示，且简单地扩展输出通道对恢复场景的高精度和健壮的语义提出了重大挑战  
+
+### 问题：
+1、如何存语义特征？直接向3D高斯嵌入语言特性会导致高昂的内存使用和性能下降（不在3D高斯上嵌入原始语义特征；而提出了一种新的特征量化方法，利用局部语义特性的冗余特性，构造更精简的语言特征，并紧密地存储在3D高斯上）  
+2、如何解决多视图不一致导致的语义歧义问题？（实现一种基于学习不确定性值的指导下降低语义特征空间频率的机制）  
+
+### xxx
