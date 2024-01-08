@@ -1,7 +1,10 @@
-## Leetcode中利用STL中数据结构求解的题目
+[TOC]
+
+# Leetcode中利用STL中数据结构求解的题目
 - 堆、栈、队列
 - 哈希表、哈希集合
 - map、set（平衡二叉树）？
+
 
 ------
 ## 堆、栈、队列
@@ -663,6 +666,40 @@ public:
 ## 哈希表、哈希集合
 
 ### 题目
+---
+### &emsp; 447 回旋镖的数量 MID
+关键思路：
+- 两趟遍历，枚举中间的点 i
+- 统计有多少对`(j,k)`， 满足`dis(i, j) = dis(i, k)`
+- <b>使用哈希表存储当前遍历到的距离为dis的点数量（dis值的出现次数）</b> 
+- 由于题目保证所有点互不相同，i=j 时对答案贡献必然为0，故无需特判 
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int numberOfBoomerangs(vector<vector<int>>& points) {
+        int ans = 0;
+        unordered_map<int, int> cnt;
+        for(auto p1 : points) // 枚举中间的点
+        {
+            cnt.clear();
+            for(auto p2 : points)
+            {
+                int dis2 = (p1[0] - p2[0])*(p1[0] - p2[0]) + (p1[1] - p2[1])*(p1[1] - p2[1]);
+                ans += cnt[dis2] * 2; // (j i k) and (k i j)
+                cnt[dis2]++;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ---
 ### &emsp; 822. 翻转卡片游戏 MID
 关键思路：
