@@ -1,3 +1,5 @@
+[TOC]  
+
 ## Content
 - 线性DP
 - 树形DP
@@ -481,6 +483,40 @@ public:
             }
         }
         return pa[x][0];
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 2707. 字符串中的额外字符 MID
+关键思路：  
+- 将字典中的字符串存入set中
+- 遍历字符串s，考虑选或不选当前字符作为多余字符；若不选，枚举 <b>能选哪个以当前遍历 i 结尾子字符串</b> 的起点 j
+
+<details> 
+<summary> <b>C++ Code</b> </summary>  
+
+```c++
+class Solution {
+public:
+    int minExtraChar(string s, vector<string>& dictionary) {
+        unordered_set<string> set(dictionary.begin(), dictionary.end());
+        int n = s.size();
+        vector<int> dp(n+1);
+        for(int i = 0; i < n; i++)
+        {
+            dp[i+1] = dp[i] + 1; // 不选
+            for(int j = 0; j <= i; j++) // 往前，枚举能选哪个
+            {
+                if(set.count(s.substr(j, i-j+1)))
+                {
+                    dp[i+1] = min(dp[i+1], dp[j]);
+                }
+            }
+        }
+        return dp[n];
     }
 };
 ```
