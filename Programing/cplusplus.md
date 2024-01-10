@@ -1,5 +1,6 @@
 # C++ 学习笔记
 记录整理《C++ Primer》与网上资料
+[TOC] 
 
 ---------
 ## Content  
@@ -10,12 +11,13 @@
 * 函数
 * STL
 * 异常处理
+* 多线程
 
 <br>
 
 ------
   
-* ## c++内存管理
+## c++内存管理
 ---
 ### 对象模型  
 非静态数据成员被置于每一个类对象之内，静态数据成员则被存放在类对象之外；静态和非静态成员函数也被存放在类对象外。  
@@ -32,24 +34,47 @@
 * 函数调用多一层间接性   
 <br>  
 
-* ## 智能指针 todo
+## 智能指针（C++11） todo
 ---
-RAII 将资源的生命周期绑定到对象的生命周期上  
-用对象管理内存   
+RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑定到对象的生命周期上</b>   
+<b>用对象管理内存</b>   
 通过makexxx创建  
-### shared_ptr
+&emsp; &emsp; 在RAII中，资源的获取和释放被绑定到对象的构造函数和析构函数上。当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
 
-### weak_ptr 
+* ### shared_ptr
+- 不要使用原始指针初始化多个`shared_ptr`（它们之间不知情）
+- 不要从栈的内存中（指向栈内存的指针）创建`shared_ptr`对象
+
+`reset`可以传参也可以不传参，不传参时和当前资源脱钩并减一引用计数，传参时绑定到新资源
+```c++
+std::shared_ptr<int> sp1(new int(10)); //资源被sp1共享，sp1引用计数 1
+std::shared_ptr<int> sp2 = sp1; //资源被sp2共享，sp1、2引用计数都是2
+sp1.reset();//sp1放弃共享资源，sp1自身置空，sp2引用计数变为1
+sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被释放
+//sp2.reset(new int(5))  sp2放弃共享资源，计数归零，资源被释放,sp2指向了新资源
+```
+
+* ### weak_ptr 
+对象的一种弱引用，<b>不增加对象的`use_count`</b>  
 为了避免 `shared_ptr` 带来的环状引用  
 
-### unique_ptr 
-独占资源（该块内存只能通过这个指针访问） 开销比 `shared_ptr` 小许多   
+`shared_ptr`可以直接赋值给`weak_ptr`，`weak_ptr`也可以通过调用`lock()`函数来获得`shared_ptr`   
+`weak_ptr`并没有重载`operator ->`和`operator *`操作符，因此不可直接通过`weak_ptr`使用对象；典型的用法是调用其`lock()`函数来获得`shared_ptr`实例，进而访问原始对象  
+
+* ### unique_ptr 
+<b>独占资源（该块内存只能通过这个指针访问）</b> 开销比 `shared_ptr` 小许多  
+
+使用`std::make_unique`创建：  
+```c++
+std::unique_ptr<int> up1 = std::make_unique<int>(1111);
+std::unique_ptr<int> up3 = std::move(up1);
+```
 
 <br>
 
 ------
-##  
-* ## 变量与类型
+ 
+## 变量与类型
 ---  
 ### 常量引用 & 引用常量 & 常量指针 & 指针常量  
 | code | explain |
@@ -168,13 +193,13 @@ lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它�
 <br>
 
 ------
-* ## 迭代器
+## 迭代器
 <b>迭代器令算法不依赖于容器</b>  
 访问元素：`(*iter) `  
 <br>
 
 ------
-* ## 函数
+## 函数
   
 ### explicit关键字
 指定构造函数或转换函数 （C++11起）为显式, 即它不能用于隐式转换和复制初始化   
@@ -194,7 +219,7 @@ explicit 指定符可以与常量表达式一同使用，函数若且唯若该�
 <br> 
 
 ------
-* ## STL
+## STL
 - datastructure
   - multiset
   - priority_queue
@@ -307,7 +332,7 @@ ForwardIterator lower_bound (ForwardIterator first, ForwardIterator last, const 
 <br>
 
 ---
-## 异常处理
+## C++ 异常处理
 异常处理机制允许程序中独立开发的部分能够在运行时就出现的问题进行通信并做出相应的处理；将问题的检测与解决过程分离开来   
 
 C++中通过 **抛出** 一条表达式来 **引发** 一个异常；被抛出的表达式类型以及当前的调用链共同决定了哪段**处理代码（handler）** 来处理该异常（在调用链中与抛出对象类型匹配的最近的处理代码）  
@@ -337,4 +362,9 @@ C++中通过 **抛出** 一条表达式来 **引发** 一个异常；被抛出�
 `catch(...)`捕获所有异常   
 
 ### noexcept（C++11）
-`noexcept`指定某个函数不会抛出异常
+`noexcept`指定某个函数不会抛出异常  
+
+<br>
+
+------
+## C++ 多线程 todo

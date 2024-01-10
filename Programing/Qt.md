@@ -1,3 +1,4 @@
+[TOC]
 # QT 5
 ## Content
 - 事件循环
@@ -8,6 +9,51 @@
 <br>
 
 ------
+## Qt 事件
+事件驱动架构Event Driving Architecture（程序的执行流由事件决定）：
+- 事件队列Event Queue：接受事件的入口，存储待处理事件
+- 分发器Event Mediator：将不同的事件分发到不同的业务逻辑单元
+- 事件通道Event Channel：分发器与处理器之间的联系渠道
+- 事件处理器Event Processor：实现业务逻辑，处理完成后发出事件，触发下一步操作
+
+用户操作首先被OS捕捉，转化为系统内核的消息，再传递进入GUI程序的事件处理框架   
+Qt的事件处理框架由事件循环（Event Loop）实现；当应用程序启动后，通过QApplication的`exec()`函数启动事件循环  
+
+在Qt中，任意的`QObject`对象都具有事件处理能力   
+
+用户操作 => 系统内核 => Qt App（转换成事件对象QEvent） => `QApplication::notify(QObject *receiver, QEvent *e)`事件分发 => `QObject::event(QEvent *e)`事件处理逻辑 => 事件处理函数（可以进行信号的发送） => 槽函数  
+
+**一般在子类重写父类的事件处理函数时，要调用父类的事件处理函数以保证默认的事件处理！！**
+
+Qt用户自定义处理事件的方式：
+- （*）重写特定事件处理函数（如`mousePressEvent()`）
+- 重写实现`QObject::event`
+- （*）安装事件过滤器
+- 在QApplication上安装事件过滤器
+- 重写`QApplication::notify`方法
+
+
+在事件处理函数中调用：  
+```c++  
+void QEvent::ignore(); // 表示当前对象忽略该事件；传给父对象
+void QEvent::accept(); // 表示当前对象接受并处理事件；事件不会继续传到父对象
+```  
+<br>
+
+### Qt 事件过滤器
+在目标对象接收到事件前，进行拦截或处理  
+可以对目标对象的事件进行修改、过滤、转发或记录；并可以与目标对象代码分离  
+
+```c++
+void QObject::installEventFilter(QObject *filterObj); // 为指定对象安装过滤器
+```
+在事件过滤器对象中实现事件过滤器逻辑（重写`eventFilter`函数）
+```c++
+// 事件过滤器处理函数接口
+virtual bool QObject::eventFilter(QObject *watched, QObject *event) override; // 事件目标对象 & 传递的事件
+```
+
+------
 ## QObject
 通过对象树 自动、有效地组织和管理继承自QObject的Qt对象  
 
@@ -15,7 +61,13 @@
 
 ------
 ## UI、元对象系统
-moc读取一个c++头文件。如果它找到包含Q_OBJECT宏的一个或多个类声明，它会生成一个包含这些类的元对象代码的c++源文件，并且以moc_作为前缀  
+### QWidget、QMainWindow、QDialog
+- `QWidget`：是所有用户界面对象的基类；它封装了基本的应用程序窗口功能，可以用作单独的窗口，也可以作为其他窗口部件的容器
+- `QMainWindow`：主窗口类，用于 创建和管理应用程序的主窗口；提供了一个菜单栏、工具栏、状态栏和一个中心窗口部件，以及一个可选的停靠窗口和工具栏区域
+- `QDialog`：是一个对话框类，用于 创建和管理应用程序的模态对话框（在显示时会阻塞用户与其它窗口的交互）或非模态对话框（允许用户在与对话框交互的同时与其他窗口交互）
+
+### 元对象系统
+moc读取一个c++头文件。如果它找到包含`Q_OBJECT`宏的一个或多个类声明，它会生成一个包含这些类的元对象代码的c++源文件，并且以moc_作为前缀  
 
 信号和槽机制、运行时类型信息和动态属性系统 需要元对象代码   
 信号槽，属性系统，运行时类信息都存储在静态对象`staticMetaObject`中  
