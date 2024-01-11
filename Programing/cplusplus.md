@@ -368,3 +368,16 @@ C++中通过 **抛出** 一条表达式来 **引发** 一个异常；被抛出�
 
 ------
 ## C++ 多线程 todo
+`std::call_once`、`std::call_flag`（C++ 11）：确保某个函数或可调用对象在程序执行期间只被调用一次  
+```c++
+KSQLiteManager * KSQLiteManager::m_pInstance = nullptr; // 单例对象初始化
+std::once_flag KSQLiteManager::m_flag; // once_flag 初始化
+KSQLiteManager* KSQLiteManager::getInstance()
+{
+    std::call_once(m_flag, []() 
+    {
+            m_pInstance = new KSQLiteManager(nullptr);
+    });
+    return m_pInstance;
+}
+```

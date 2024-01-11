@@ -631,11 +631,11 @@ public:
 ------
 ## 单调队列/单调栈 ： 
 常用于<b>区间最值问题</b>   
-<b>用于快速定位数组区间中具有某个最值性质的位置</b>   
+<b>用于快速定位数组区间（窗口）中 具有某个最值性质的位置</b>   
 单调队列使用`std::deque` &emsp; 单调栈可使用`std::stack`  
 
 单调栈：`nums[i]`左右比它最近的数的下标   
-单调队列：滑动窗口最大值 （*窗口：左右端点是单调的*）     
+单调队列：滑动窗口最大/最小值 （*窗口：左右端点是单调的*）     
 <br>
 
 ### 题目
@@ -692,7 +692,7 @@ class Solution {
 public:
     int longestSubarray(vector<int>& nums, int limit) {
         deque<int> queMax, queMin;
-        //单调减队列队头维护窗口最大值 单调增队列队头维护窗口最小值
+        // 单调减队列队头维护窗口最大值 单调增队列队头维护窗口最小值
         int n = nums.size();
         int left = 0, right = 0;
         int ans = 0;
