@@ -1,8 +1,16 @@
 # Golang
 
 ------
+## zerolog
+
 ## Hertz
 <a herf = "https://www.cloudwego.io/zh/docs/hertz/"> Hertz官方文档</a>   
+
+路由分组并将中间件注册到路由组上：  
+```go
+auth := hertz.Group("/douyin", jwt.JwtMiddleware.MiddlewareFunc())
+auth.POST("/favorite/action/", controller.FavoriteAction)
+```
 
 ## 常用封装
 

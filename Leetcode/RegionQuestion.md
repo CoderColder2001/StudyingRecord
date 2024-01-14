@@ -115,6 +115,129 @@ public:
 <br>
 
 ---
+### &emsp; 992. K个不同整数的子数组 :rage: HARD
+关键思路：
+- 对于每一个右边界位置r，寻找能满足条件的最左左边界和最右左边界
+- 问题转化：满足元素数量为 k 的最右左边界 => 满足元素数量为 k-1 的最左左边界 - 1
+- 使用 <b>双指针</b> 预处理数组计算
+- `upperBound[r] - lowerBound[r]` 代表了以r为右边界，满足条件的左边界数量（子数组数量）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int subarraysWithKDistinct(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> lowerBound(n, 0);
+        vector<int> upperBound(n, 0);
+        find(lowerBound, nums, k); // 最左左边界
+        find(upperBound, nums, k - 1); // 最右左边界 + 1
+        int ans = 0;
+        for(int i = 0; i < n; i++)
+        {
+            ans += upperBound[i] - lowerBound[i];
+        }
+        return ans;
+
+    }
+    void find(vector<int>& arr, vector<int>& nums, int k)
+    {
+        int n = nums.size();
+        vector<int> cnt(n + 1, 0);
+        for(int r = 0, l = 0, sum = 0; r < n; r++)
+        {
+            int right = nums[r];
+            if(++cnt[right] == 1)
+                sum++;
+            while(sum > k)
+            {
+                int left = nums[l++];
+                if(--cnt[left] == 0)
+                    sum--;
+            }
+            arr[r] = l;
+        }
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 995. K连续位的最小反转次数 :rage: HARD
+关键思路：
+- 问题模型可以理解为“一个长度为k的窗口滑动，每到一个点可以选择反转或不反转窗口内元素”
+- <b>贪心</b>： 每到一个`0`就反转一次 
+    - 思考这里的贪心最优性；我的理解关键是本题要求把所有位都反转成1的最小次数或得到无解，而不是求达到最少0位数的最小次数，故每次遍历到一个0，都必须将它反转成1（遇到第一个0时必须把它反转为1，依此类推）。
+- 法一：<b>使用 队列 维护滑动窗口</b> 
+- 法二：通过 <b>差分数组</b> 维护受反转影响的区域；在位置`l`开始，对`[l, r]`反转时，对应`arr[l+1]++; arr[r+1]--`
+
+使用队列模拟滑动窗口：  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 法一：使用队列模拟滑动窗口
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        queue<int> q; // 使用队列模拟滑动窗口
+        int ans = 0;
+        for(int i = 0; i < n; i++)
+        {
+            if(!q.empty() && i >= q.front() + k) // 队头的反转已经对当前i无效了，出队
+                q.pop();
+
+            if(q.size() % 2 == nums[i]) // 队列元素个数对应反转次数
+            {
+                if(i + k > n)
+                    return -1;
+                q.push(i);
+                ans++;
+            }
+        }
+        return ans;
+    }
+    
+};
+```
+</details>
+<br>
+
+使用差分数组维护受反转影响的区域：  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        int ans = 0;
+        vector<int> arr(n + 1, 0); // 差分数组
+        for(int i = 0, cnt = 0; i < n; i++)
+        {
+            cnt += arr[i]; // 当前位的反转次数
+            if((nums[i] + cnt) % 2 == 0)
+            {
+                if(i + k > n)
+                    return -1;
+                arr[i + 1]++;
+                arr[i + k]--; // 反转至 i+k-1 位为止
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 1040. 移动石子直至连续II MID
 关键思路：
 - 题目的条件：端点必须跳过石子移动到空位上
@@ -551,7 +674,8 @@ public:
 
 ------
 ## 差分： 
-存放 数组的前缀和数组 前后元素的差值  
+用于维护 <b>在一段区间上的操作</b>
+如（常用于）存放 数组的前缀和数组 前后元素的差值  
 对差分数组求前缀和即得到原数组  
 ```c++   
 void add(vector<int> c, int l, int r)
@@ -625,7 +749,78 @@ public:
 };
 ```
 </details>
+<br>
 
+---
+### &emsp; 995. K连续位的最小反转次数 :rage: HARD
+关键思路：
+- 问题模型可以理解为“一个长度为k的窗口滑动，每到一个点可以选择反转或不反转窗口内元素”
+- <b>贪心</b>： 每到一个`0`就反转一次 
+    - 思考这里的贪心最优性；我的理解关键是本题要求把所有位都反转成1的最小次数或得到无解，而不是求达到最少0位数的最小次数，故每次遍历到一个0，都必须将它反转成1（遇到第一个0时必须把它反转为1，依此类推）。
+- 法一：<b>使用 队列 维护滑动窗口</b> 
+- 法二：通过 <b>差分数组</b> 维护受反转影响的区域；在位置`l`开始，对`[l, r]`反转时，对应`arr[l+1]++; arr[r+1]--`
+
+使用队列模拟滑动窗口：  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    // 法一：使用队列模拟滑动窗口
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        queue<int> q; // 使用队列模拟滑动窗口
+        int ans = 0;
+        for(int i = 0; i < n; i++)
+        {
+            if(!q.empty() && i >= q.front() + k) // 队头的反转已经对当前i无效了，出队
+                q.pop();
+
+            if(q.size() % 2 == nums[i]) // 队列元素个数对应反转次数
+            {
+                if(i + k > n)
+                    return -1;
+                q.push(i);
+                ans++;
+            }
+        }
+        return ans;
+    }
+    
+};
+```
+</details>
+<br>
+
+使用差分数组维护受反转影响的区域：  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        int ans = 0;
+        vector<int> arr(n + 1, 0); // 差分数组
+        for(int i = 0, cnt = 0; i < n; i++)
+        {
+            cnt += arr[i]; // 当前位的反转次数
+            if((nums[i] + cnt) % 2 == 0)
+            {
+                if(i + k > n)
+                    return -1;
+                arr[i + 1]++;
+                arr[i + k]--; // 反转至 i+k-1 位为止
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
 <br>
 
 ------
