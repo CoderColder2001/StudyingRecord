@@ -1,6 +1,7 @@
 [TOC]  
 
 ## Content
+- 贪心
 - 线性DP
 - 树形DP
 - 序列DP
@@ -18,6 +19,60 @@
 在DP状态转移过程中是否需要精确的信息  
 枚举选哪个 适用于完全需要序列（转移的相邻状态）精确的信息  
 如 最长递增子序列问题需要知道子序列相邻数字的具体大小  
+
+------
+## 贪心
+### 概念
+贪心其实就是不用考虑所有状态的DP；  
+贪心要达到最优解同样要求问题具有 <b>最优子结构</b>  
+并要求可以证明当前贪心解构成最优解的一个划分（每一步贪心选择在最优解中）
+
+<br>
+
+---
+
+### 题目
+---
+### &emsp; 765. 情侣牵手 :rage:HARD
+关键思路：
+- 贪心：从情侣组考虑，每次遇到不匹配的情侣组，就去找到另一半的位置并交换  
+- 问题其实相当于考虑： *当前遍历到第 k 组位置，且前 k-1 组位置都已是情侣，接下来怎么做才能使交换次数最低*
+- 使用vector维护 *数组 row从值到索引的映射* （位置buffer）
+- `lover = a ^ 1` 取相邻的奇偶数
+
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minSwapsCouples(vector<int>& row) {
+        int n = row.size();
+        vector<int> loc(n, 0); // 位置buffer 从编号值映射到索引i
+        for(int i = 0; i < n; i++)
+        {
+            loc[row[i]] = i;
+        } 
+        int ans = 0;
+        for(int i = 0; i < n-1; i += 2)
+        {
+            int a = row[i]; // ID值
+            int lover = a ^ 1; // 取相邻的奇偶数
+            if(row[i+1] != lover)
+            {
+                loc[row[i+1]] = loc[lover]; // 更新位置buffer
+                swap(row[i+1], row[loc[lover]]); // 交换 更新row
+                loc[lover] = i+1; // 更新位置buffer
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>
 
 ------
 ## 线性DP

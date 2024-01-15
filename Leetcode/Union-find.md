@@ -1,3 +1,4 @@
+[TOC]
 ## 并查集
 ---
 `核心思想`：每一个集合选择一个 **代表元**，集合的其他元素指向这个代表元  
@@ -54,6 +55,67 @@ public:
 
 ---
 ## Leetcode中利用并查集的题目
+
+---
+### &emsp; 765. 情侣牵手 :rage: HARD
+关键思路：
+- 考虑 “构成错误的集合” ：如果有两对情侣互相坐错了位置，需要一次交换，回到正确的位置 => 如果有 n 对情侣互相坐错了位置，需要 n-1 次交换，回到正确的位置
+- <b>使用 并查集 维护这些集合</b>；（总是以“情侣组”为单位考虑问题）
+- 对于被分开的情侣，连接被分至的两个组
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class UnionFind {
+    vector<int> father;
+    vector<int> size;
+public:
+    int compCnt;
+    UnionFind(int _n) : compCnt(_n), father(_n), size(_n, 1)
+    {
+        iota(father.begin(), father.end(), 0);
+    }
+
+    int find(int x)
+    {
+        if(x != father[x])
+            father[x] = find(father[x]);
+        return father[x];
+    }
+
+    bool unite(int x, int y)
+    {
+        x = find(x);
+        y = find(y);
+        if(x == y)
+            return false;
+        if(size[x] < size[y])
+            swap(x, y);
+        father[y] = x;
+        size[x] += size[y];
+        compCnt--;
+        return true;
+    }
+};
+
+class Solution {
+public:
+    int minSwapsCouples(vector<int>& row) {
+        int n = row.size();
+        int m = n / 2;
+        UnionFind uf(m);
+        for(int i = 0; i < n; i += 2)
+        {
+            // 连接一对情侣被拆散到的两个组
+            uf.unite(row[i] / 2, row[i + 1] / 2); // 组id
+        }
+        return m - uf.compCnt;
+    }
+};
+```
+</details>
+<br>
 
 ---
 ### &emsp; 1697. 检查边长度限制的路径是否存在 :rage: HARD
