@@ -5,6 +5,7 @@
 - QObject
 - UI、元对象系统
 - 信号槽机制
+- QT MVD
 
 <br>
 
@@ -107,6 +108,28 @@ connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed, Qt::Conne
 声明槽 `public/protected/private slots:` :
 - 槽其实就是普通的C++函数，它可以是虚函数，static函数
 - 必须直接或间接继承自`QObject`类，并且开头私有声明包含`Q_OBJECT`
+
+<br>
+
+------
+## QT MVD设计模式
+### MVC框架
+将应用程序的数据、逻辑和界面分离  
+- 模型（Model）：负责存储和处理数据，通常与数据库进行交互
+- 视图（View）：负责显示数据，将模型中的数据可视化；是用户与系统交互的接口
+- 控制器（Controller）：负责接收用户输入，处理用户请求，并更新模型和视图
+
+在Qt中，Model-View是一种设计模式，用于将数据（Model）与其可视化表示（View）分离，主要包括以下三个组件：  
+- Model：数据的抽象表示，负责存储和管理数据；通常从底层数据源（如数据库、文件或数据结构）获取数据，并将其呈现给视图
+- View：数据的可视化表示，它负责呈现模型中的数据
+- Delegate：负责处理数据的显示和编辑；Delegate（委托）可以自定义单元格的渲染方式，以及将用户输入的数据写回模型
+
+`QXxxxWidget` 是 `QXxxxView` 的子类，封装了Model/View框架  
+
+### QT Model
+主要负责数据存储和处理；所有Model的父类都是 QAbstractItemModel
+（如，QTableWidget 中的单元格数据是通过 QTableWidgetItem 来进行描述）  
+
 
 ------
 ## 存疑列表

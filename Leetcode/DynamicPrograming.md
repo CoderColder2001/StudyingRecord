@@ -1362,9 +1362,10 @@ public:
 ### 概念
 ---
 * ### 数位DP
-    基于位运算描述状态 <b>按位遍历数字</b>  
+    某范围内满足某条件的数的个数  
+    基于位运算描述状态 <b>按位遍历数字</b> （构造） 
     以每一 “位” 为单位（转化为字符串）  
-    “数位” 与 “状态” 将带来限制
+    “数位” 与 “状态” 将带来限制（如何建模表达限制？）
 
 
 <br>
@@ -1378,6 +1379,7 @@ public:
 - 转换为求无重复数字的个数
 - 存储状态 <b>当前遍历到第几位数字 * 使用过的数字mask</b>
 - 终结状态的返回值也标示着一条合法搜索路径的结束
+- 注意 <b>`is_limit` 与 `is_num` 的变化在调用过程中都是单向的</b> 不需要再dp里存储状态
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -1422,7 +1424,57 @@ public:
 };
 ```
 </details> 
+<br>
 
+---
+### &emsp; 2719. 统计整数数目 :rage: HARD
+关键思路：  
+- 构造答案的过程：如何遍历可能的数字？如何建模限制状态转移的条件？
+- 状态：<b>当前遍历到第 i 位，数位和为 sum</b> 
+- `max_sum` 和 `min_sum` 转化为递归中的剪枝条件
+- 可以将问题转化为 `“ <= num2 的个数” - “ <= num1 的个数”`，再特判一下num1的数位和是否满足（两次记忆化搜索）
+- 也可以同时传入两个参数`limit_low`和`limit_high`，只进行一次记忆化搜索
+- 注意`limit`只是限制状态转移的条件（而不是问题的状态） 在数位的枚举过程中只会由`true`到`false`一次
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    const int MOD = 1e9+7;
+    int count(string num1, string num2, int min_sum, int max_sum) {
+        int n = num2.length();
+        num1 = string(n - num1.length(), '0') + num1; // 前导补0 和num2对齐
+
+        vector<vector<int>> memo(n, vector<int>(min(9*n, max_sum)+1, -1));
+        function<int(int, int, bool, bool)> dfs = [&](int i, int sum, bool limit_low, bool limit_high) -> int {
+            // limit 限制状态转移 在数位枚举过程中只会由true到false一次
+            // max_sum 和 min_sum 转化为递归中的剪枝条件
+            if(sum > max_sum)
+                return 0;
+            if(i == n)
+                return sum >= min_sum;
+            if(!limit_low && !limit_high && memo[i][sum] != -1)
+                return memo[i][sum];
+
+            int low = limit_low? num1[i] - '0' : 0;
+            int high = limit_high? num2[i] - '0' : 9;
+
+            int res = 0;
+            for(int d = low; d <= high; d++) // 枚举这一位填什么
+            {
+                res = (res + dfs(i + 1, sum + d, limit_low & (d == low), limit_high & (d == high))) % MOD;
+            }
+            if(!limit_low && !limit_high)
+                memo[i][sum] = res;
+            return res;
+        };
+        return dfs(0, 0, true, true);
+    }
+};
+```
+</details> 
 <br>
 
 ------
