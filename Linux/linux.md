@@ -45,4 +45,5 @@ sudo apt install nvidia-utils-470
 ## 常用命令
 ```
 uname -a // 查看linux内核版本号、操作系统版本号
+nvcc --version // 查看已安装的cuda
 ```
