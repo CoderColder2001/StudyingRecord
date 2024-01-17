@@ -13,6 +13,7 @@ sum(x >= y for x, y in pairwise(word))
 ```
 `itertool.pairwise()`（python3.10+）：获取对象中重叠的连续对的迭代器（如"abcd"中"ab""bc""cd"）  
 
+`str[::-1]` 字符串反转
 <br>
 
 ------

@@ -1,3 +1,4 @@
+[TOC]
 # GAMES101
 wsl2配置环境：  
 <https://www.bilibili.com/read/cv11143517>  
@@ -9,6 +10,7 @@ wsl2配置环境：
 - 2 Rasterization
 - 3 Shading
 - 4 Geometry
+- 5 Ray Tracing
 
 ------
 ## 1 Transformation
@@ -194,7 +196,7 @@ texture = memory + range query(filtering)
 <br>
 
 ------
-## 3 Geometry
+## 4 Geometry
 **隐式 Implicit：**  
 数学式子定义描述点之间的关系  
 &emsp; *隐式表示可以很容易判断点在物体内外，但无法直观地知道物体的形状*  
@@ -238,11 +240,13 @@ texture = memory + range query(filtering)
 贪心算法：从二次度量误差最小的边开始坍缩（优先队列）  
 
 ---
-### Shadow Mapping
+## Shadow Mapping
 不在阴影里的点 既能被相机看见，也能被光源看见  
 只能处理<b>点光源</b>，清晰的阴影边界（硬阴影）（软阴影意味着光源存在大小）  
 
-首先，从光源看向这个场景进行光栅化，记录深度Z-Buffer（生成ShadowMap）； 再从相机出发，将看到的点投影回光源的成像平面（测试），若对应像素深度一致，则说明这个点不在阴影内  
+流程：
+- 首先，从光源看向这个场景进行光栅化，记录深度Z-Buffer（生成ShadowMap）；   
+- 再从相机出发光栅化，将看到的2D点投影回光源的成像平面（测试），若对应像素深度一致，则说明这个点不在阴影内  
 
 广泛使用但问题重重：
 - Z-Buffer的浮点数数值精度问题（浮点数比较）  
@@ -250,3 +254,21 @@ texture = memory + range query(filtering)
 
 本质上的困难是 *光栅化无法处理全局的物理现象*   
   
+<br>
+
+------
+## 5 Ray Tracing
+光栅化无法处理全局的物理现象，如软阴影、glossy反射、间接光照等（光线不止弹射一次）  
+
+定义光线：
+- 光线沿直线传播
+- 光线之间不会发生碰撞
+- 光线从光源出发，经过若干次反射达到眼睛；这一条光路是可逆的
+
+Ray Tracing 关键思想是利用光路的可逆性  
+朴素的思路：从针孔相机模型（pinhole），成像平面每一个像素投射出一根光线，与场景求交求最近交点（代替了传统光栅化的深度测试）；再从交点出发，判定是否对光源可见（与光源连线），进行着色并写回像素的值  
+
+### Whitted-Style Ray Tracing（古老的做法）
+对光路传播 <b>递归</b>，假设反射、折射都是完美的    
+对每一个弹射点，都计算着色值，最终汇合到目标像素值
+<img src = "./pic/c13_1.png" width = "80%">   

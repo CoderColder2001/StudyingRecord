@@ -126,10 +126,15 @@ connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed, Qt::Conne
 
 `QXxxxWidget` 是 `QXxxxView` 的子类，封装了Model/View框架  
 
-### QT Model
+### Qt Model
 主要负责数据存储和处理；所有Model的父类都是 QAbstractItemModel
 （如，QTableWidget 中的单元格数据是通过 QTableWidgetItem 来进行描述）  
 
+Qt的标准模型主要支持字符串与图标(QIcon),对于其他类型支持能力较弱；如果需要显示自定义数据结构，则更好的方式是采用 <b>自定义Model</b>；同时，对于大量数据的处理，自定义数据模型可以实现数据的按需加载、缓存等策略，以提高视图的性能  
+自定义model类，根据数据结构的特点，继承相应的基类，实现相应接口的中的方法（包括必须要实现的与可选方法）：
+- 表格 QAbstractTableModel
+- 列表 QAbstractListModel
+- 通用 QAbstractItemModel
 
 ------
 ## 存疑列表

@@ -510,7 +510,86 @@ public:
 如果要计算的子数组恰好是一个前缀，则`s[right+1] - s[0]`   
 <br>
 
+### 二维前缀和模板（Leetcode 304.）
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class NumMatrix {
+public:
+    vector<vector<int>> sum;
+    NumMatrix(vector<vector<int>>& matrix) {
+        int m = matrix.size();
+        int n = m == 0 ? 0 : matrix[0].size();
+        sum.resize(m + 1, vector<int>(n + 1, 0));
+        for(int i = 1; i <= m; i++) // 前缀和 [0, i)
+        {
+            for(int j = 1; j <= n; j++)
+            {
+                // 当前格子前缀和 = 上方格子前缀和 + 左边格子前缀和 - 左上角格子前缀和 + 当前格子值
+                sum[i][j] = sum[i-1][j] + sum[i][j-1] - sum[i-1][j-1] + matrix[i-1][j-1];
+            }
+        }
+    }
+    
+    int sumRegion(int row1, int col1, int row2, int col2) {
+        return sum[row2 + 1][col2 + 1] - sum[row1][col2 + 1] - sum[row2 + 1][col1] + sum[row1][col1];
+    }
+};
+```
+</details>
+<br>
+
+
 ### 题目
+--- 
+### &emsp; 1074. 元素和为目标值的子矩阵数量 :rage: HARD
+关键思路：
+- <b>二维前缀和</b>
+- 如果通过枚举左上角和右下角搜索所有子矩阵 `O(m^2 * n^2)`，如何优化？
+    - 不从“点”上确定子矩阵，而是从“边”的角度，枚举三条边
+- 枚举右边界 `right` 的过程中，将与 `left = 0` 构成的子矩阵不断 <b>存入哈希表</b>，从而可以快速 <b>从哈希表中查找是否有满足条件的左边界</b>
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int numSubmatrixSumTarget(vector<vector<int>>& matrix, int target) {
+        int m = matrix.size(), n = matrix[0].size();
+        vector<vector<int>> sum(m + 1, vector<int>(n + 1, 0)); // 二维前缀和
+        for(int i = 1; i <= m; i++)
+        {
+            for(int j = 1; j <= n; j++)
+                sum[i][j] = sum[i-1][j] + sum[i][j-1] - sum[i-1][j-1] + matrix[i-1][j-1];
+        }  
+
+        int ans = 0;
+        for(int top = 1; top <= m; top++)
+        {
+            for(int bot = top; bot <= m; bot++)
+            {
+                int cur = 0;
+                unordered_map<int, int> map;
+                for(int right = 1; right <= n; right++)
+                {
+                    cur = sum[bot][right] - sum[top - 1][right];
+                    if(cur == target)
+                        ans++;
+                    if(map.count(cur - target))
+                        ans += map[cur - target];
+                    map[cur]++;
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 --- 
 ### &emsp; 1177. 构建回文串检测 MID
 关键思路：
