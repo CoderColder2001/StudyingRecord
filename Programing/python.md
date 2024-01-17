@@ -119,8 +119,9 @@ def open_file(filename):
     file.close()
 
 with open_file("file.txt") as file:
-data = file.read()
+    data = file.read()
 ```
+上下文管理器本质上是能够支持`with`操作的类或对象，实现了`__init__()`、`__enter__()`（上文方法）和`__exit__()`（下文方法）  
 ### 11、可变参数与关键字参数
 ```py
 def func(*args, **kwargs):
