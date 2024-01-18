@@ -127,14 +127,36 @@ connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed, Qt::Conne
 `QXxxxWidget` 是 `QXxxxView` 的子类，封装了Model/View框架  
 
 ### Qt Model
-主要负责数据存储和处理；所有Model的父类都是 QAbstractItemModel
-（如，QTableWidget 中的单元格数据是通过 QTableWidgetItem 来进行描述）  
+主要负责数据存储和处理；所有Model的父类都是 `QAbstractItemModel`
+（如，`QTableWidget` 中的单元格数据是通过 `QTableWidgetItem` 来进行描述）  
+模型索引由 `QModelIndex` 类来表示，包含了一个数据项的行、列、有效性、父索引信息、一个指向其所属模型的指针；通过模型索引,可以访问和操作模型中的数据   
 
-Qt的标准模型主要支持字符串与图标(QIcon),对于其他类型支持能力较弱；如果需要显示自定义数据结构，则更好的方式是采用 <b>自定义Model</b>；同时，对于大量数据的处理，自定义数据模型可以实现数据的按需加载、缓存等策略，以提高视图的性能  
-自定义model类，根据数据结构的特点，继承相应的基类，实现相应接口的中的方法（包括必须要实现的与可选方法）：
-- 表格 QAbstractTableModel
-- 列表 QAbstractListModel
-- 通用 QAbstractItemModel
+Qt的标准模型主要支持字符串与图标(`QIcon`),对于其他类型支持能力较弱；如果需要显示自定义数据结构，则更好的方式是采用 <b>自定义Model</b>；同时，对于大量数据的处理，自定义数据模型可以实现数据的按需加载、缓存等策略，以提高视图的性能  
+自定义 Model 类，根据数据结构的特点，继承相应的基类，实现相应接口的中的方法（包括必须要实现的与可选方法）：
+- 表格 `QAbstractTableModel`
+- 列表 `QAbstractListModel`
+- 通用 `QAbstractItemModel`
+
+**QVariant**：
+- 可以存储各种类型数据的通用容器的类；支持多种内置的 C++ 数据结构，如 `int`，`bool`，`double`，`QString`，`QByteArray`
+- 支持存储自定义的数据类型
+- 提供了一种高效、便捷的方法来 在函数和对象之间传递数据
+
+**role 数据角色**：
+- 描述 Model 中存储的数据在 View 中的用途和表现形式；每个数据项可以有多个不同的数据角色，例如文本内容、文本颜色、背景颜色等
+- View 通过 `role` 来获取数据项的相关属性，并根据这些属性来绘制数据项
+- Qt 内置了预定义的数据角色，见 `Qt::ItemDataRole` 中的常量
+
+
+
+### Qt Delegate
+Qt Delegate 负责 <b>在View上对数据的编辑和渲染</b>。当用户需要编辑数据时，Delegate负责提供编辑器，同时负责将编辑后的数据写回Model   
+默认委托是由 `QStyledItemDelegate` 类来进行过描述，继承于`QAbstractItemDelegate`  
+
+当遇到单元格的内容非文本，数字和图像等基本数据类型，则应该考虑自定义 Delegate *（一般选择 `QStyledItemDelegate` 作为基类）*   
+对不想要自定义绘制的类型，调用基类的实现   
+
+Model 与 Delegate通过 `QModelIndex` 实现数据交互
 
 ------
 ## 存疑列表

@@ -952,6 +952,41 @@ public:
 </details>
 
 --- 
+### &emsp; 1499. 满足不等式的最大值 :rage: HARD
+关键思路：
+- 条件变换： `yi + yj + |xi - xj| == (xj + yj) + (yi - xi)`
+- <b>枚举 j</b>，问题变成 计算可选的点中 `yi - xi` 的最大值
+- <b>用单调队列维护这些可选的点</b>
+- 根据 `yi - xi` 递减单调队列存储二元组`(xi, yi - xi)` ； 队首超出范围的数据（`xi < xj - k`）出队
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findMaxValueOfEquation(vector<vector<int>>& points, int k) {
+        int ans = INT_MIN;
+        deque<pair<int, int>> q;
+        for(auto &p : points) // 枚举j
+        {
+            int x = p[0], y = p[1];
+            while(!q.empty() && q.front().first < x - k) // 队首超出范围
+                q.pop_front();
+            if(!q.empty())
+                ans = max(ans, x + y + q.front().second);
+            while(!q.empty() && q.back().second <= y - x) // 队尾不如新来的
+                q.pop_back();
+            q.emplace_back(x, y - x);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 1438. 绝对差不超过限制的最长连续子数组 MID
 关键思路：
 - 两个单调队列
