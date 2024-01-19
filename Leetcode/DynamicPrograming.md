@@ -975,6 +975,58 @@ public:
 </details> 
 <br>
 
+---
+### &emsp; 2809. 使数组和小于等于k的最小时间 :rage: HARD
+关键思路：  
+- 对每个元素，至多操作一次（否则只操作最后一次就可以更优了）；总体最多操作 n 次
+- <b>枚举最小时间 `t`</b>
+- 不进行操作`t`秒后元素和 `s1 + s2*t`
+- 对于一个元素，如果在第`k`秒操作 则最后减少了`nums1[i] + nums2[i]* k`
+- 对于一个 选定要操作的元素集 ，先操作nums2小的、再操作nums2大的，可以使收益最大化（使大的`k`分配给大的`nums2[i]`）；故先根据nums2进行排序
+- 问题转化为： **从`[0, n-1]`选总共 `t`个下标作为 子序列 并进行 依次操作（问题建模中保证了对这个元素集来说收益最大化），如何使最终收益最大（找到一个最大收益最大的 t-元素集）**
+- 类似0-1背包问题 定义`dp[i+1][j]`： 表示 *从`[0, i]`选择`j`个元素 可以达到的 最大减少量* （DP状态值对应最大收益）
+- <b>状态转移考虑 选或不选</b>
+- `dp[i+1][j]` 的前置状态为 `dp[i][j]`、`dp[i][j-1]` 因此可以压缩第一维
+
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumTime(vector<int>& nums1, vector<int>& nums2, int x) {
+        int n = nums1.size();
+        vector<int> ids(n); // 下标数组
+        iota(ids.begin(), ids.end(), 0);
+        sort(ids.begin(), ids.end(), [&](const int i, const int j) {
+            return nums2[i] < nums2[j];
+        }); // 根据nums2排序下标数组
+
+        vector<int> dp(n + 1); // 最多操作n次
+        for(int i = 0; i < n; i++)
+        {
+            int a = nums1[ids[i]], b = nums2[ids[i]];
+            for(int j = i + 1; j > 0; j--)
+            {
+                dp[j] = max(dp[j], dp[j - 1] + a + b*j);
+            }
+        }
+
+        int s1 = accumulate(nums1.begin(), nums1.end(), 0);
+        int s2 = accumulate(nums2.begin(), nums2.end(), 0);
+        for(int t = 0; t <= n; t++) // 枚举需要的操作次数t
+        {
+            if(s1 + s2 * t - dp[t] <= x)
+                return t;
+        }
+        return -1;
+    }
+};
+```
+</details> 
+<br>
+
 ------
 ## 区间DP
 ### 概念
