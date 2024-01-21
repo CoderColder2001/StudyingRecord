@@ -3,6 +3,8 @@
 <b>最大化最小值</b> 或 <b>最小化最大值</b> => 二分答案  
 利用数组的有序性和目标问题的单调性  
 
+一般地，“二分的值越小，越不能/能满足要求；二分的值越大，越能/不能满足要求” —— 问题有单调性的保证，就可以二分答案了
+
 三种形式：
 - 寻找一个数
 - 寻找左侧边界
@@ -144,6 +146,59 @@ public:
                 right = pivot_i - 1;
         }
         return -1;
+    }
+};
+```
+</details>
+<br>
+
+### &emsp; 410. 分割数组的最大值 :rage: HARD
+关键思路：
+- 二分答案 最小化每段和的最大值
+- 如何确定左右边界？
+  - 右边界取总和 必定满足要求
+  - 左边界考虑最大元素值与平均值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int splitArray(vector<int>& nums, int k) {
+        auto check = [&](int mx) -> bool {
+            int cnt = 1, s = 0;
+            // 贪心地计算要划分出的段数 看是否满足
+            for(int x : nums)
+            {
+                if(x > mx)
+                    return false;
+                
+                if(s + x <= mx) 
+                    s += x;
+                else 
+                {
+                    // 新划分一段
+                    if(cnt++ == k)
+                        return false;
+                    s = x;
+                }
+            }
+            return true;
+        };
+
+        int right = accumulate(nums.begin(), nums.end(), 0) ;
+        int left = max(*ranges::max_element(nums), (right / k));
+        while(left <= right) // 闭区间 寻找左侧边界
+        {
+            int mid = left + (right - left) / 2;
+            // (check(mid)? right : left) = mid;
+            if(check(mid))
+                right = mid - 1;
+            else 
+                left = mid + 1;
+        }
+        return left;
     }
 };
 ```
