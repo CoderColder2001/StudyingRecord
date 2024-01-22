@@ -381,3 +381,11 @@ KSQLiteManager* KSQLiteManager::getInstance()
     return m_pInstance;
 }
 ```
+
+<br>
+
+### volatile
+关闭编译器优化，系统总是重新从它所在的内存中读取数据（保证对特殊地址的稳定访问）  
+与外部硬件交流的时候，存储器映射的硬件寄存器通常也要加`volatile`说明，因为每次对它的读写都可能由不同意义
+
+### atomic
