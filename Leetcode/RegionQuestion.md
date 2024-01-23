@@ -950,6 +950,45 @@ public:
 };
 ```
 </details>
+<br>
+
+--- 
+### &emsp; 456. 132模式 MID
+关键思路：
+- 从 132（ijk） 的大小特性去分析；问题的关键在于：*如何在确定一个数之后，快速找到另外两个数*
+- 枚举 `i` ，往后找存在`j > k`关系的数对`(j, k)`
+    - 如果存在 `(j, k)` 满足要求的话，只需要找到一个最大的满足条件的 `k`，再与 `i` 的比较即可
+- 通过 <b>倒序遍历 维护「单调递减」栈</b> 来确保已经找到了有效的 `(j, k)` ；使用`k`记录所有出栈元素的最大值
+    - 如果 `k`是有效的值，那必然是因为在遍历过程中发现了 `j > k`
+- 向左倒序遍历到`i`时，若满足 `nums[i] < k`，则已找到了符合条件的 ijk
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    bool find132pattern(vector<int>& nums) {
+        int n = nums.size();
+        stack<int> s;
+        int k = INT_MIN;
+        for(int i = n - 1; i >= 0; i--)
+        {
+            if(nums[i] < k)
+                return true;
+            while(!s.empty() && s.top() < nums[i])
+            {
+                k = max(k, s.top()); // 维护最大的k
+                s.pop();
+            }
+            s.push(nums[i]);
+        }
+        return false;
+    }
+};
+```
+</details>
+<br>
 
 --- 
 ### &emsp; 1499. 满足不等式的最大值 :rage: HARD

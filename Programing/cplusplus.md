@@ -42,6 +42,8 @@ RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑�
 &emsp; &emsp; 在RAII中，资源的获取和释放被绑定到对象的构造函数和析构函数上。当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
 
 * ### shared_ptr
+
+`shared_ptr`和他人共享资源，持有者仅可以显式地释放自己共享的份额（`use_count`）但是不能释放资源；只有持有者已经是最后一个持有人地时候，释放自己份额地时候也会释放资源
 - 不要使用原始指针初始化多个`shared_ptr`（它们之间不知情）
 - 不要从栈的内存中（指向栈内存的指针）创建`shared_ptr`对象
 
@@ -62,12 +64,26 @@ sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被
 `weak_ptr`并没有重载`operator ->`和`operator *`操作符，因此不可直接通过`weak_ptr`使用对象；典型的用法是调用其`lock()`函数来获得`shared_ptr`实例，进而访问原始对象  
 
 * ### unique_ptr 
-<b>独占资源（该块内存只能通过这个指针访问）</b> 开销比 `shared_ptr` 小许多  
+<b>独占资源（该块内存只能通过这个指针访问）</b> 
+
+开销比 `shared_ptr` 小许多  
+`unique_ptr`可以显示地删除资源，也可以分享独占资源或者将独占资源移交给另外地独占者
 
 使用`std::make_unique`创建：  
 ```c++
 std::unique_ptr<int> up1 = std::make_unique<int>(1111);
 std::unique_ptr<int> up3 = std::move(up1);
+```
+
+---
+### 智能指针作为函数参数
+**当函数涉及到智能指针的生存期语义的时候才使用智能指针作为传参**，否则使用普通指针或者引用  
+```c++
+foo(std::unique_ptr<Widget> widget);  // foo转移了资源的所有权
+foo(std::unique_ptr<Widget>& widget); // foo将要对widget进行修改，指向另外的内容
+foo(std::shared_ptr<Widget> widget);  // foo参与了资源的共享
+foo(std::shared_ptr<Widget>& widget); // foo可能要对widget进行修改，指向另外的内容
+foo(const std::shared_ptr<Widget>& widget); // foo可能要持有一份引用计数
 ```
 
 <br>
@@ -154,10 +170,16 @@ enum class 将 { } 内的变量，加上 class 限制其在 { } 作用域内可�
 size_t是 sizeof 关键字（注：sizeof是关键字，并非运算符）运算结果的类型  
 
 ---
+### volatile（与多线程不相关）
+关闭编译器优化，系统总是重新从它所在的内存中读取数据（保证对特殊地址的稳定访问）  
+一般用于与外部硬件交流的时候，存储器映射的硬件寄存器通常也要加`volatile`说明，因为每次对它的读写都可能由不同意义
+
+---
 ### lambda表达式（C++11）
 *源于函数式编程 &emsp; 可以就地匿名定义目标函数或函数对象，不需要额外写一个命名函数或者函数对象*   
 
-当定义一个lambda时，编译器生成一个与lambda对应的新的（未命名的）类类型；向一个函数传递一个lambda时，同时定义了一个新的类类型和该类型的一个对象  
+当定义一个lambda时，编译器生成一个与lambda对应的新的（未命名的）类类型；  
+向一个函数传递一个lambda时，同时定义了一个新的类类型和该类型的一个对象  
 
 lambda表达式表示一个可调用的代码单元，定义了一个匿名函数（代替函数对象），并且可以捕获一定范围内的变量  
 `[ capture 捕获列表 ] ( params 参数列表 ) opt 函数选项-> ret 返回值类型 { body; 函数体 };`   
@@ -168,28 +190,31 @@ lambda表达式表示一个可调用的代码单元，定义了一个匿名函�
 * [bar] 按值捕获 bar 变量，同时不捕获其他变量。
 * [this] 捕获当前类中的 this 指针，让 lambda 表达式拥有和当前类成员函数同样的访问权限。如果已经使用了 & 或者 =，就默认添加此选项。捕获 this 的目的是可以在 lamda 中使用当前类的成员函数和成员变量  
 
-lambda 表达式的类型在 C++11 中被称为“闭包类型（Closure Type）”。它是一个特殊的，匿名的非 nunion 的类类型。可以认为它是一个带有 operator() 的类，即仿函数。因此，我们可以使用 std::function 和 std::bind 来存储和操作 lambda 表达式：  
+lambda 表达式的类型在 C++11 中被称为 <b>“闭包类型（Closure Type）”</b> 。它是一个特殊的，匿名的非 nunion 的类类型。可以认为它是 <b>一个带有 operator() 的类，即仿函数</b>。 因此，我们可以使用 `std::function` 和 `std::bind` 来存储和操作 lambda 表达式：  
 
 ```c++
 std::function<int(int)>  f1 = [](int a){ return a; };
 std::function<int(void)> f2 = std::bind([](int a){ return a; }, 123);
 ```
+
 对于没有捕获任何变量的 lambda 表达式，还可以被转换成一个普通的函数指针：
 ```c++
 using func_t = int(*)(int);
 func_t f = [](int a){ return a; };
 f(123);
 ```
-<br>
-
-需要注意的是，没有捕获变量（没有状态）的 lambda 表达式可以直接转换为函数指针，而捕获变量（有状态）的 lambda 表达式则不能转换为函数指针。  
+需要注意的是，没有捕获变量（没有状态）的 lambda 表达式可以直接转换为函数指针，而捕获变量（有状态）的 lambda 表达式则不能转换为函数指针。
 lambda 表达式可以说是就地定义仿函数闭包的“语法糖”。它的捕获列表捕获住的任何外部变量，最终均会变为闭包类型的成员变量。而一个使用了成员变量的类的 operator()，如果能直接被转换为普通的函数指针，那么 lambda 表达式本身的 this 指针就丢失掉了。而没有捕获任何外部变量的 lambda 表达式则不存在这个问题。 
+<br>  
 
-按照 C++ 标准，lambda 表达式的 operator() 默认是 const 的。按值捕获时，一个 const 成员函数是无法修改成员变量的值。而 mutable 的作用，就在于取消 operator() 的 const  
+按照 C++ 标准，lambda 表达式的 operator() 默认是 const 的。按值捕获时，一个 const 成员函数无法修改成员变量的值。而 `mutable` 的作用，就在于取消 operator() 的 const  
 `auto f2 = [=]() mutable { return a++; };`
 
 · &emsp; 在priority_queue中使用lambda表达式时：  
-因为在初始化priority_queue时，三个参数必须是类型名，而cmp是一个对象，因此必须通过decltype()来转为类型名； 因为lambda这种特殊的class没有默认构造函数，pq内部排序比较的时候要使用的是一个实例化的lambda对象，通过lambda的copy构造进行实例化（pq构造函数的时候传入这个lambda对象）  
+因为在初始化priority_queue时，三个参数必须是类型名，而cmp是一个对象，因此必须通过`decltype()`来转为类型名； 因为lambda这种特殊的class没有默认构造函数，而 pq 内部排序比较的时候要使用的是一个实例化的lambda对象，通过lambda的copy构造进行实例化（pq 构造函数的时候传入这个lambda对象）  
+<br>
+
+lambda表达式还可以用于 *构造一个复杂的const对象并进行初始化*
 <br>
 
 ------
@@ -384,8 +409,10 @@ KSQLiteManager* KSQLiteManager::getInstance()
 
 <br>
 
-### volatile
-关闭编译器优化，系统总是重新从它所在的内存中读取数据（保证对特殊地址的稳定访问）  
-与外部硬件交流的时候，存储器映射的硬件寄存器通常也要加`volatile`说明，因为每次对它的读写都可能由不同意义
+### std::thread
+
+### std::mutex
 
 ### atomic
+
+### shared_lock & unique_lock（C++14）
