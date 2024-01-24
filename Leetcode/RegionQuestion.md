@@ -1152,6 +1152,66 @@ public:
 </details>
 <br>
 
+--- 
+### &emsp; 2865. 美丽塔I MID
+关键思路：
+- 前后缀分解，前缀正序遍历，后缀倒序遍历
+- 使用 <b>单调栈</b> 维护 <b>前缀递增序列 & 后缀递减序列</b>；元素和的最大值存入数组 pre、suf
+- 入栈的过程即是 “对一段区间填入height值”
+- 在满足“单调递增”的过程中，可以一直尽量取大的值（`maxHeights[i]`）作为`height[i]`
+    - 在新元素不能够满足单调增导致的旧元素出栈过程中，要更新出栈元素入栈时对一段区间填入的height（更新旧元素所贡献的序列和`sum`）
+- 答案即为枚举`i`，计算`pre[i]+suf[i+1]`的最大值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long maximumSumOfHeights(vector<int>& maxHeights) {
+        int n = maxHeights.size();
+        vector<long long> suf(n + 1); // 后缀序列对应的sum值
+        stack<int> s; // 单调递增栈 
+        s.push(n); // 哨兵
+        long long sum = 0;
+        for(int i = n - 1; i >= 0; i--) // 处理后缀序列的suf值
+        {
+            int x = maxHeights[i]; // 往上限取
+            while(s.size() > 1 && x < maxHeights[s.top()])
+            {
+                int j = s.top();
+                s.pop();
+                sum -= (long long) maxHeights[j]*(s.top() - j); // 撤销出栈元素入栈时增加的sum值
+            }
+            sum += (long long) x*(s.top() - i); // 从i到s.top()-1 都是 x
+            suf[i] = sum;
+            s.push(i);
+        }
+
+        long long ans = sum;
+        s = stack<int>();
+        s.push(-1); // 哨兵
+        long long pre = 0;
+        for(int i = 0; i < n; i++)
+        {
+            int x = maxHeights[i];
+            while(s.size() > 1 && x < maxHeights[s.top()])
+            {
+                int j = s.top();
+                s.pop();
+                pre -= (long long) maxHeights[j]*(j - s.top());
+            }
+            pre += (long long) x * (i - s.top());
+            ans = max(ans, pre + suf[i + 1]);
+            s.push(i);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 其他： 
 
