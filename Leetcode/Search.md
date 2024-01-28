@@ -1,3 +1,4 @@
+[TOC]
 ## Content
 - BFS/DFS
 - 状态压缩 + BFS/DFS
@@ -11,6 +12,74 @@
 ---
 ---
 ### 题目
+---
+### &emsp; 365. 水壶问题 MID
+关键思路：
+- “状态转移” 实际上也是一个图
+- 定义状态 `(a, b)`：当前A、B水壶的水量
+- <b>使用BFS遍历状态空间</b>，unordered_set存储以及达到过的状态
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    // 自定义pair的哈希函数
+    struct pairHash
+    {
+        template<class T1, class T2>
+        size_t operator() (pair<T1, T2> const &pair) const
+        {
+            size_t h1 = hash<T1>()(pair.first); // 用默认hash分别处理
+            size_t h2 = hash<T2>()(pair.second);
+            return h1^h2;
+        }
+    };
+
+    bool canMeasureWater(int jug1Capacity, int jug2Capacity, int targetCapacity) {
+        if(targetCapacity == 0)
+            return true;
+        if(jug1Capacity + jug2Capacity < targetCapacity)
+            return false;
+        
+        pair<int, int> start(0, 0);
+        queue<pair<int, int>> q;
+        unordered_set<pair<int, int>, pairHash> visited;
+        q.push(start);
+        visited.insert(start);
+        
+        while(!q.empty()) // bfs
+        {
+            pair<int, int> now = q.front();
+            visited.insert(now);
+            q.pop();
+            int cur1 = now.first, cur2 = now.second;
+            if(cur1 == targetCapacity || cur2 == targetCapacity || cur1 + cur2 == targetCapacity)
+                return true;
+            
+            // 下一状态
+            if(visited.find({jug1Capacity, cur2}) == visited.end())
+                q.push({jug1Capacity, cur2});
+            if(visited.find({cur1, jug2Capacity}) == visited.end())
+                q.push({cur1, jug2Capacity});
+            if(visited.find({0, cur2}) == visited.end())
+                q.push({0, cur2});
+            if(visited.find({cur1, 0}) == visited.end())
+                q.push({cur1, 0});
+            if(visited.find({cur1 - min(cur1, jug2Capacity - cur2), cur2 + min(cur1, jug2Capacity - cur2)}) == visited.end())
+                q.push({cur1 - min(cur1, jug2Capacity - cur2), cur2 + min(cur1, jug2Capacity - cur2)});
+            if(visited.find({cur1 + min(cur2, jug1Capacity - cur1), cur2 - min(cur2, jug1Capacity - cur1)}) == visited.end())
+                q.push({cur1 + min(cur2, jug1Capacity - cur1), cur2 - min(cur2, jug1Capacity - cur1)});
+        }
+
+        return false;
+    }
+};
+```
+</details>
+<br>
+
 ---
 ### &emsp; 1263. 推箱子 :rage: HARD
 关键思路：

@@ -250,12 +250,13 @@ explicit 指定符可以与常量表达式一同使用，函数若且唯若该�
   - priority_queue
   - vector
   - string
+  - unordered_map
 - algorithm
 
 ------
 ## DataStructure
 ### multiset
-允许重复元素  
+允许重复元素（允许多个元素具有相同关键字key）  
 与`unordered_xxx`不同 会对内部元素进行排序 基于红黑树  
 `*s.rbegin()` 访问最大元素  
 `*s.begin()` 访问最小元素
@@ -321,6 +322,28 @@ for (auto &[ch, num] : vec) {
 `erase(n)` 去掉从n开始所有字符  
 `resize(n, 'x')` 改变长度，如果超过了原有长度，后面补充x  
 `insert(2,"xxx")` 下标n处插入   
+
+---
+### unordered_map、unordered_set
+无序容器在存储上组织为一系列桶，性能依赖于哈希函数质量以及桶的数量和大小。 理想状态下哈希函数将每个特定值映射到唯一的桶，但当一个桶保存多个元素时，需要顺序查找。  
+
+默认情况下，无序容器使用关键字类型的 `==` 运算符来比较元素，使用 `hash<key_type>` 类型的对象生成每个元素的哈希值  
+STL为内置类型（包括指针）和一些标准库类型（string、智能指针等）提供了hash模板    
+对于自定义类型，需要提供函数来代替 `==` 运算符和 hash计算函数  
+```c++
+// 自定义pair的哈希函数
+struct pairHash
+{
+    template<class T1, class T2>
+    size_t operator() (pair<T1, T2> const &pair) const
+    {
+        size_t h1 = hash<T1>()(pair.first); // 用默认hash分别处理
+        size_t h2 = hash<T2>()(pair.second);
+        return h1^h2;
+    }
+};
+unordered_set<pair<int, int>, pairHash> visited;
+```
 
 <br>
 
