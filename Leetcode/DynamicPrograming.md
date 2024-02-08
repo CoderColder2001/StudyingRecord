@@ -87,6 +87,73 @@ public:
 
 ### 题目
 ---
+### &emsp; 514. 自由之路 :rage: HARD
+关键思路：  
+- 定义状态： `(key拼到哪一位, ring指向哪一位)`
+- <b>状态转移：每次转到 左边最近的 或 右边最近的</b>
+- 预处理出 对于ring每一位来说，左边与右边a-z最近的下标
+- 使用一个数组`pos`缓存每个字母最后出现的位置，遍历过程中更新`pos`并直接赋值给`left[i]`、`right[i]`
+- *如何在遍历中表达 环形、顺时针、逆时针？*
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findRotateSteps(string ring, string key) {
+        int n = ring.length(), m = key.length();
+
+        array<int, 26> pos; // 缓存在当前方向上每个字母最近的位置
+
+        // 对于每个ring[i] 左边（逆时针） a-z最近的下标（左边没有就从 n-1 往左找）
+        vector<array<int, 26>> left(n);
+        for(int i = 0; i < n; i++) // 第0位左边最近的a-z的下标
+        {
+            ring[i] -= 'a';
+            pos[ring[i]] = i; // 每个字母最后出现的位置
+        }
+        for(int i = 0; i < n; i++) // 向右（逆时针）
+        {
+            left[i] = pos;
+            pos[ring[i]] = i; // 左边出来了一位 更新下标
+        }
+
+        vector<array<int, 26>> right(n);
+        for(int i = n - 1; i >= 0; i--) // 第n-1位右边最近的a-z的下标
+        {
+            pos[ring[i]] = i; // 每个字母首次出现的位置
+        }
+        for(int i = n - 1; i >= 0; i--) // 向左（顺时针）
+        {
+            right[i] = pos;
+            pos[ring[i]] = i; // 右边出来了一位 更新下标
+        }
+
+        vector<vector<int>> dp(m + 1, vector<int>(n)); // 边界：dp[m][i] = 0;
+        for(int j = m - 1; j >= 0; j--)
+        {
+            char c = key[j] - 'a';
+            for(int i = 0; i < n; i++)
+            {
+                if(ring[i] == c) // 无需旋转
+                    dp[j][i] = dp[j + 1][i];
+                else
+                {
+                    int l = left[i][c], r = right[i][c];
+                    dp[j][i] = min(dp[j + 1][l] + (l > i ? n - l + i : i - l),
+                                   dp[j + 1][r] + (r < i ? n - i + r : r - i));
+                }
+            }
+        }
+        return dp[0][0] + m; // m次拼写
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 978. 最长湍流子数组 MID
 关键思路：  
 - 定义两个状态量`up`，`down` 

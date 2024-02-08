@@ -81,6 +81,61 @@ public:
 <br>
 
 ---
+### &emsp; 514. 自由之路 :rage: HARD
+关键思路：  
+- 定义状态： `(key拼到哪一位, ring指向哪一位)`
+- <b>BFS 寻找由`(0, 0)` 到 `(m, i)`的最短路</b>
+- 如果`ring[i] == key[j]`， 拼写`key[j]`并移动状态至`(j+1, i)`
+- 否则向左转移动至状态`((i−1+n) mod n, j)` 或向右转移动至状态`((i+1) mod n,j)`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findRotateSteps(string s, string t) {
+        int n = s.length(), m = t.length();
+
+        vector<vector<int>> vis(n, vector<int>(m + 1));
+        vis[0][0] = true;
+
+        vector<pair<int, int>> q = {{0, 0}}; // 当前BFS层的状态
+        for(int step = 0; ; step++) 
+        {
+            vector<pair<int, int>> nxt;
+            for(auto [i, j] : q)
+            {
+                if(j == m)
+                    return step;
+                
+                if(s[i] == t[j])
+                {
+                    if(!vis[i][j + 1]) 
+                    {
+                        vis[i][j + 1] = true;
+                        nxt.emplace_back(i, j + 1);
+                    }
+                    continue;
+                }
+                for(int i2 : {(i - 1 + n) % n, (i + 1) % n}) 
+                {
+                    if(!vis[i2][j])
+                    {
+                        vis[i2][j] = true;
+                        nxt.emplace_back(i2, j);
+                    }
+                }
+            }
+            q = move(nxt); // 用move
+        }
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1263. 推箱子 :rage: HARD
 关键思路：
 - <b>使用BFS寻找最短路</b>
