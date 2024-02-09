@@ -1,3 +1,5 @@
+[TOC]
+
 ## Content
 - DFS
 
@@ -10,6 +12,36 @@
 ---
 ---
 ### 题目
+---
+### &emsp; 236. 二叉树的最近公共祖先 MID
+关键思路：
+- 分析性质，最近公共祖先为要么是p、q中的一个，要么使p、q分布在两侧
+- <b>DFS递归寻找子树中的p或q</b>
+- 递归结果`rtn`不为`nullptr`时，意味着在`rtn`子树下找到了p或q（递归保证是“最深”的）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(root == nullptr || root == p || root == q) // 遇到叶节点、p或q时从底至顶回溯
+            return root;
+        TreeNode* left = lowestCommonAncestor(root->left, p, q);
+        TreeNode* right = lowestCommonAncestor(root->right, p, q);
+
+        // 单侧为nullptr 返回另一侧结果
+        if(left == nullptr) return right; 
+        if(right == nullptr) return left;
+        
+        return root; // p q 分布在异侧
+    }
+};
+```
+</details>
+<br>
+
 ---
 ### &emsp; 979. 在二叉树中分配硬币 MID
 关键思路：
