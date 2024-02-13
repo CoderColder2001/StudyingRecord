@@ -1,8 +1,80 @@
+[TOC]
 # Paper Reading Record
 ## Content
-- 
+- Machine Learning Arch
+- 3D Graphics
+- 3D Semantic
 
 ------
+# Machine Learning Arch
+---
+## （NeurIPS2017）Attention is all you need
+keyword: Transformer；深度学习  
+
+提出了一个**仅基于注意力机制**的simple的架构transformer，不依赖于递归或卷积  
+<b>把传统 encoder-decoder 架构的递归循环层全部替换成了 multi-head self-attention</b>  
+
+### Background：
+当前主流的序列转录模型依赖于CNN或RNN实现，包含一个encoder和一个decoder架构  
+
+RNN依赖于前序隐藏状态的计算结果，难以并行  
+RNN的历史信息一步一步向下传递；如果时序较长，早期时序信息可能会丢失（或者导致内存开销增大） 
+
+注意机制对依赖关系进行建模，而不考虑它们在输入或输出序列中的距离（当前主要用于如何把编码器的信息有效地传给解码器） 
+
+CNN对比较长的序列难以建模（每次卷积 “看一个小窗口”，两个信息在序列中距离较远时，需要经过比较多层的卷积才能联系起来）  
+卷积的优势是 **“可以实现多个通道输出”**，可以认为每个输出通道对应识别不一样的模式  
+
+### 问题：
+1、如何保留RNN和CNN的良好性质同时解决RNN和CNN的问题
+2、如何使用注意力层？（自注意力 & 在encoder和decoder间传递信息）
+3、如何传递序列信息？（通过attention层）
+
+### 编码器 & 解码器
+编码器把`(x1,..., xn)`序列映射成`(z1,...,zn)`，`zi`为元素`xi`的向量表示  
+解码器根据编码器输出的`z`生成长度`m`的序列`(y1,...,ym)`  
+对于解码器，元素是一个个生成的（过去的输出会作为输入，自回归auto-regressive）
+
+### 架构
+<img src = "./pic/transformer_1.png" width = 80%>   
+
+编码器：  
+每层有两个子层 Multi-head Attention + MLP + 子层间残差连接  
+`LayerNormal(x + Sublayer(x))`
+残差连接需要输入输出同样大小，为简单起见将每一个层的输出维度取为512  
+
+LayerNorm：对batch中的每一个样本做normalization，而非对batch中的每一个特征  
+对于处理序列的模型来说，输入一般是三维的（batch，样本seq(n)，样本元素特征feature）  
+使用layernorm的原因：  
+在时序序列模型中，每个样本的长度可能不同；若使用batchNorm，在batch中样本长度变化比较大时，均值和方差的结果抖动可能比较大  
+
+解码器：  
+解码器是自回归的（前序输出会作为输入）；由于注意力机制每次能看到完整的输入，采用带掩码的注意力机制（防止训练时看到后续输入）  
+
+### Multi-head Self-attention
+注意力函数：将一个query和一系列key-value映射到一个输出  
+output是value的加权和（输出维度和value维度一样）  
+由query和key的相似度计算出value的权重
+*不同的相似函数对应不同的注意力机制*
+$Attention=softmax({QK^T\over\sqrt{d_k}})*V$
+当$d_k$比较大时，点积结果值之间的相对差距可能比较大，导致最大值的softmax结果更加接近1，其他结果更加接近0，从而会导致梯度比较小；因此，对结果值除以$\sqrt{d_k}$  
+时序mask：对第t时间的$q_t$，在做计算时只留下$k_1$至$k_{t-1}$对应的结果值是有效的，其他换成大负数（softmax结果为0）  
+
+多头注意力：  
+单纯的点积注意力机制没有什么可以学习的权重参数。多头注意力先将输入Q、K、V经过不同的并行线性层投影（投影的w是可以学习的），共h个线性层（对应h个头、h个输出），使得**在投影结果的度量空间中可以匹配不同的模式**；合并连接多个注意力结果并投影得到最终输出  
+
+自注意力（用于encoder和decoder）：  
+同样的输入复制为三份，既作为key、又作为value和query   
+*把序列中的信息抓取出来，并作一次汇聚*，再分别输送给MLP映射到语义空间
+
+"encoder-decoder attention" layers 连接encoder和decoder：  
+encoder输出作为key和value，previous decoder layer的输出作为query；允许decoder中的每个位置都能关注输入序列中的所有位置    
+
+<br>
+
+------
+# 3D Graphics
+---
 ## （SIGGRAPH2023）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
  
 keywords：3D高斯；场景表示；可微渲染  
@@ -75,6 +147,8 @@ over-reconstruction（高方差区域中的大高斯分布）：使用原始的3
 <br>
 
 ------
+# 3D Semantic
+---
 ## GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
 
 arxiv202311  
@@ -99,7 +173,7 @@ keywords：3D编辑；3D高斯；
 3、如何解决物体删除带来的边缘空洞or填入物体？ （作者提出了一种 **3D inpainting** 的方法）   
 &emsp; image to 3Dmesh，再转为GS  
 
-### Gassian semantic tracing
+### Gaussian semantic tracing
 *确保只有目标相关区域被修改，使得编辑精准、可控*  
 将二维分割mask投影到三维高斯，并为每个高斯分配一个语义属性（j类语义标签）  
 编辑时只更新目标高斯  

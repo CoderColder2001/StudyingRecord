@@ -1,9 +1,175 @@
 [TOC]
 
 ## Content
+- basic
 - DFS
 
 不要一开始就陷入细节；先思考 <b>整棵树与其（左右）子树的关系</b>（原问题与子问题）
+<br>
+
+------
+## basic
+### 二叉树前序遍历
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> s;
+        if(root == nullptr)
+            return ans;
+        s.push(root);
+        ans.push_back(root->val);
+        TreeNode* p = root->left;
+        while(!s.empty())
+        {
+            while(p)
+            {
+                s.push(p);
+                ans.push_back(p->val);
+                p = p->left;
+            }
+            TreeNode* t = s.top();
+            s.pop();
+            if(t->right)
+            {
+                s.push(t->right);
+                ans.push_back(t->right->val);
+                p = t->right->left;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+### 二叉树中序遍历
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> s;
+        if(root == nullptr)
+            return ans;
+
+        s.push(root);
+        TreeNode* p = root->left; // 指示下一个进栈
+        while(!s.empty())
+        {
+            while(p != nullptr) // 左子树向左遍历
+            {
+                s.push(p);
+                p = p->left;
+            }
+
+            TreeNode* t = s.top();
+            ans.push_back(t->val);
+            s.pop(); // 出栈 处理右子树
+            if(t->right)
+            {
+                s.push(t->right);
+                p = t->right->left;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+### 二叉树后序遍历
+
+先“根右左”遍历，然后reverse
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        if(root == nullptr)
+            return ans;
+        stack<TreeNode*> s;
+        s.push(root);
+        while(!s.empty())
+        {
+            TreeNode* node = s.top();
+            s.pop();
+            ans.push_back(node->val);
+            if(node->left)
+                s.push(node->left);
+            if(node->right)
+                s.push(node->right);
+        }
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
+### 二叉树morris遍历（以中序为例）
+主要思想：
+- 对于当前节点`x`，准备处理左子树时，先找到其左子树的最右节点（中序遍历输出的前一个节点）`predecessor`，将其右指针指向自己，然后正常向左遍历  
+- 这样在左子树遍历完成后可以通过这个指针走回`x`，且能通过这个指针知晓我们已经遍历完成了左子树    
+
+每个节点会被遍历两次，O(2n)；空间复杂度为 O(1)   
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        TreeNode *predecessor = nullptr;
+
+        while (root != nullptr) {
+            if (root->left != nullptr) {
+                // predecessor 节点就是当前 root 节点向左走一步，然后一直向右走至无法走为止
+                predecessor = root->left;
+                while (predecessor->right != nullptr && predecessor->right != root) {
+                    predecessor = predecessor->right;
+                }
+                
+                // 让 predecessor 的右指针指向 root，继续遍历左子树
+                if (predecessor->right == nullptr) {
+                    predecessor->right = root;
+                    root = root->left;
+                }
+                // 说明左子树已经访问完了，我们需要断开链接
+                else {
+                    res.push_back(root->val);
+                    predecessor->right = nullptr;
+                    root = root->right;
+                }
+            }
+            // 如果没有左孩子，则直接访问右孩子
+            else {
+                res.push_back(root->val);
+                root = root->right;
+            }
+        }
+        return res;
+    }
+};
+```
+</details>
 <br>
 
 ------
@@ -72,6 +238,86 @@ public:
 
     int distributeCoins(TreeNode* root) {
         dfs(root);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 987. 二叉树的垂序遍历 :rage: HARD
+关键思路：
+- 需要知道每个节点的行号row、列号col以及节点值val
+- 按照col分组 每组的val根据row从小到大排序
+- <b>使用DFS获取每个节点信息，用有序map记录</b>
+- 也可以在DFS的同时记录col最小值，从而可以使用unordered_map
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+    map<int, vector<pair<int, int>>> groups;
+
+    void dfs(TreeNode* node, int row, int col)
+    {
+        if(node == nullptr)
+            return;
+        groups[col].emplace_back(row, node->val);
+        dfs(node->left, row + 1, col - 1);
+        dfs(node->right, row + 1, col + 1);
+    }
+public:
+    vector<vector<int>> verticalTraversal(TreeNode* root) {
+        dfs(root, 0, 0);
+        vector<vector<int>> ans;
+        for(auto &[_, g] : groups)
+        {
+            ranges::sort(g);
+            vector<int> vals;
+            for(auto &[_, val] : g)
+                vals.push_back(val);
+            
+            ans.push_back(vals);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+- 也可以把所有 `(col,row,val)` 全部丢到同一个列表中，排序后按照 `col` 分组
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+lass Solution {
+public:
+    vector<vector<int>> verticalTraversal(TreeNode* root) {
+        vector<tuple<int, int, int>> data;
+        function<void(TreeNode*, int, int)> dfs = [&](TreeNode* node, int row, int col) {
+            if(node == nullptr)
+                return;
+            data.emplace_back(col, row, node->val);
+            dfs(node->left, row + 1, col - 1);
+            dfs(node->right, row + 1, col + 1);
+        };
+        dfs(root, 0, 0);
+
+        vector<vector<int>> ans;
+        ranges::sort(data);
+        int last_col = INT_MIN;
+        for(auto &[col, _, val] : data)
+        {
+            if(col != last_col)
+            {
+                last_col = col;
+                ans.push_back({}); // 一个新的组
+            }
+            ans.back().push_back(val);
+        }
         return ans;
     }
 };
