@@ -1,0 +1,5 @@
+### batchNorm
+
+### adam optimizer
+
+### dropout

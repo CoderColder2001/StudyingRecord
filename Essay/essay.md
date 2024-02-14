@@ -12,7 +12,12 @@
 keyword: Transformer；深度学习  
 
 提出了一个**仅基于注意力机制**的simple的架构transformer，不依赖于递归或卷积  
-<b>把传统 encoder-decoder 架构的递归循环层全部替换成了 multi-head self-attention</b>  
+<b>把传统 encoder-decoder 架构的递归循环层全部替换成了 multi-head self-attention</b>   
+
+attention对整个模型所做的假设更少，导致需要更多的数据和更大的模型才能训练出来   
+
+同样一个模型架构适用于不同的领域  
+可以融合不同模态的数据（都用同一个架构抽取特征）  
 
 ### Background：
 当前主流的序列转录模型依赖于CNN或RNN实现，包含一个encoder和一个decoder架构  
@@ -26,9 +31,11 @@ CNN对比较长的序列难以建模（每次卷积 “看一个小窗口”，�
 卷积的优势是 **“可以实现多个通道输出”**，可以认为每个输出通道对应识别不一样的模式  
 
 ### 问题：
-1、如何保留RNN和CNN的良好性质同时解决RNN和CNN的问题
-2、如何使用注意力层？（自注意力 & 在encoder和decoder间传递信息）
-3、如何传递序列信息？（通过attention层）
+1、如何保留RNN和CNN的良好性质同时解决RNN和CNN的问题（使用attention聚合序列信息）  
+2、如何使用注意力层？（自注意力 & 在encoder和decoder间传递信息）  
+3、如何传递序列信息？（通过 “encoder-decoder attention” 层）  
+4、attention没有维护时序信息（引入position encoding）  
+5、为什么采用自注意力？（相对于传统的卷积层和循环层）  
 
 ### 编码器 & 解码器
 编码器把`(x1,..., xn)`序列映射成`(z1,...,zn)`，`zi`为元素`xi`的向量表示  
@@ -70,6 +77,12 @@ $Attention=softmax({QK^T\over\sqrt{d_k}})*V$
 "encoder-decoder attention" layers 连接encoder和decoder：  
 encoder输出作为key和value，previous decoder layer的输出作为query；允许decoder中的每个位置都能关注输入序列中的所有位置    
 
+### Position Encoding
+在输入里加入时序信息（编码词所处的位置`i`）  
+方法：采用 <b>周期不同的sin和cos函数</b>，映射成512维向量，与输入的词向量相加  
+$PE(pos, 2i)=sin(pos/10000^{2i/d_{model}})$   
+$PE(pos, 2i+1)=cos(pos/10000^{2i/d_{model}})$  
+对于任何偏移量`k`，$PE_{pos+k}$可以表示为$PE_{pos}$的线性函数  
 <br>
 
 ------
