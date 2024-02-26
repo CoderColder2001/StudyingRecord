@@ -2,6 +2,7 @@
 
 ## Content
 - basic
+- BST二叉搜索树
 - DFS
 
 不要一开始就陷入细节；先思考 <b>整棵树与其（左右）子树的关系</b>（原问题与子问题）
@@ -10,6 +11,9 @@
 ------
 ## basic
 ### 二叉树前序遍历
+迭代栈模拟中比较难处理的在于从当前节点 $u$ 的子节点 $v_1$返回时，需要记录当前已经遍历完成哪些子节点，才能找到下一个需要遍历的节点   
+（N叉树可以使用哈希表）  
+（或者子节点从右向左逆序入栈）
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -24,7 +28,7 @@ public:
             return ans;
         s.push(root);
         ans.push_back(root->val);
-        TreeNode* p = root->left;
+        TreeNode* p = root->left; // 下一个进栈（遍历）的节点
         while(!s.empty())
         {
             while(p)
@@ -49,6 +53,36 @@ public:
 </details>
 <br>
 
+N叉树：
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> preorder(Node* root) {
+        vector<int> res;
+        if(root == nullptr)
+            return res;
+
+        stack<Node* > st;
+        st.emplace(root);
+        while(!st.empty())
+        {
+            Node* node = st.top();
+            st.pop();
+            res.emplace_back(node->val);
+            for(auto it = node->children.rbegin(); it != node->children.rend(); it++) // 倒序入栈
+                st.emplace(*it);
+        }
+        return res;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### 二叉树中序遍历
 
 <details> 
@@ -89,9 +123,10 @@ public:
 </details>
 <br>
 
+---
 ### 二叉树后序遍历
 
-先“根右左”遍历，然后reverse
+先“根右左”遍历，然后reverse   
 <details> 
 <summary> <b>C++ Code</b> </summary>
 
@@ -116,6 +151,42 @@ public:
         }
         reverse(ans.begin(), ans.end());
         return ans;
+    }
+};
+```
+</details>
+<br>
+
+N叉树：  
+等待子节点全部出栈  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> postorder(Node* root) {
+        vector<int> res;
+        if(root == nullptr)
+            return res;
+        
+        stack<Node*> st;
+        unordered_set<Node*> visited;
+        st.emplace(root);
+        while(!st.empty())
+        {
+            Node* node = st.top();
+            if(node->children.size() == 0 || visited.count(node)) // 叶子节点或子节点已经全部访问（子节点已全部出栈）
+            {
+                res.push_back(node->val);
+                st.pop();
+                continue;
+            }
+            for(auto it = node->children.rbegin(); it != node->children.rend(); it++)  // 倒序入栈
+                st.emplace(*it);
+            visited.emplace(node);
+        }
+        return res;
     }
 };
 ```
@@ -173,6 +244,43 @@ public:
 <br>
 
 ------
+## BST二叉搜索树
+### 概念
+---
+BST性质：
+- 左子树的节点值都小于根节点的值
+- 右子树的节点值都大于根节点的值
+- 任意节点的左子树和右子树都是二叉搜索树
+
+---
+### 题目
+---
+### &emsp; 938. 二叉搜索树的范围和 EASY
+关键思路：
+- DFS，利用BST的性质确定递归下去的方向
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int rangeSumBST(TreeNode* root, int low, int high) {
+        if(root == nullptr)
+            return 0;
+        int x = root->val;
+        if(x > high)
+            return rangeSumBST(root->left, low, high); // 右子树没有节点在范围内，只需递归左子树
+        if(x < low)
+            return rangeSumBST(root->right, low, high); // 左子树没有节点在范围内，只需递归右子树
+        return x + rangeSumBST(root->left, low, high) + rangeSumBST(root->right, low, high);
+    }
+};
+```
+</details>
+<br>
+
+------
 ## DFS
 ### 概念
 ---
@@ -181,9 +289,10 @@ public:
 ---
 ### &emsp; 236. 二叉树的最近公共祖先 MID
 关键思路：
+- 等价于 <b>找最深的包含p、q的子树</b>
 - 分析性质，最近公共祖先为要么是p、q中的一个，要么使p、q分布在两侧
-- <b>DFS递归寻找子树中的p或q</b>
-- 递归结果`rtn`不为`nullptr`时，意味着在`rtn`子树下找到了p或q（递归保证是“最深”的）
+- <b>DFS 递归寻找子树中的 p 或 q</b>
+- 递归结果`rtn`不为`nullptr`时，意味着在`rtn`子树下找到了 p 或 q （递归保证是“最深”的） 一直向上传递
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -194,14 +303,16 @@ public:
     TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
         if(root == nullptr || root == p || root == q) // 遇到叶节点、p或q时从底至顶回溯
             return root;
+
         TreeNode* left = lowestCommonAncestor(root->left, p, q);
         TreeNode* right = lowestCommonAncestor(root->right, p, q);
 
-        // 单侧为nullptr 返回另一侧结果
+        // 单侧为nullptr 说明这侧子树没有p或q 返回另一侧结果
         if(left == nullptr) return right; 
         if(right == nullptr) return left;
         
-        return root; // p q 分布在异侧
+        return root; // 左右都不为nullptr，说明p q 分布在异侧
+        // 在这里实现了“汇聚”
     }
 };
 ```
