@@ -243,6 +243,44 @@ public:
 </details>
 <br>
 
+---
+### 根据前序序列和后序序列构建二叉树
+主要思想：
+- <b>找到左右子树对应的序列在前序序列及后序序列中的位置</b>
+- 用一个数组预处理 postorder 每个元素的下标，从而可以 O(1) 查找 `preorder[1]` 在 postorder 的位置，从而 O(1)知道左子树的大小
+- 递归的终点：空节点 or 叶节点
+
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    TreeNode* constructFromPrePost(vector<int>& preorder, vector<int>& postorder) {
+        int n = postorder.size();
+        vector<int> index(n + 1);
+        for(int i = 0; i < n; i++)
+            index[postorder[i]] = i; // value to id
+
+        function<TreeNode* (int, int, int, int)> dfs = [&](int pre_l, int pre_r, int post_l, int post_r) -> TreeNode* {
+            if(pre_l == pre_r) //空节点
+                return nullptr;
+            if(pre_l + 1 == pre_r) // 叶节点
+                return new TreeNode(preorder[pre_l]);
+
+            int left_size = index[preorder[pre_l + 1]] - post_l + 1; // 左子树大小
+            TreeNode* left = dfs(pre_l + 1, pre_l + 1 + left_size, post_l, post_l + left_size);
+            TreeNode* right = dfs(pre_l + 1 + left_size, pre_r, post_l + left_size, post_r - 1);
+            return new TreeNode(preorder[pre_l], left, right);
+        };
+        return dfs(0, n, 0, n); // 左闭右开
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## BST二叉搜索树
 ### 概念

@@ -1,3 +1,4 @@
+# 搜索 & 图论
 [TOC]
 ## Content
 - BFS/DFS
@@ -310,6 +311,86 @@ public:
             }
         }
         return -1;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2867. 统计树中的合法路径数目 :rage: HARD
+关键思路：
+- <b>质数节点把这棵树分成了若干个连通块</b>
+- 使用 <b>DFS 预处理</b> 得到每个非质数节点所在连通块的总节点数
+- 枚举路径上的这个质数 以及它可以连接到的连通块
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+const int MX = 1e5;
+bool np[MX + 1]; // 质数false 非质数true
+int init = []() { // 预处理出质数
+    np[1] = true;
+    for(int i = 2; i * i <= MX; i++)
+    {
+        if(!np[i])
+        {
+            for(int j = i * i; j <= MX; j += i)
+                np[j] = true;
+        }
+    }
+    return 0;
+}();
+
+class Solution {
+public:
+    long long countPaths(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> g(n + 1); // 邻接表
+        for(auto &e : edges)
+        {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        vector<int> size(n + 1); // 节点所在连通块的总节点数
+        vector<int> nodes; // buffer
+        function<void(int, int)> dfs = [&](int x, int fa) {
+            nodes.push_back(x); // 统计连通块非质数节点
+            for(int y : g[x])
+            {
+                if(y != fa && np[y])
+                    dfs(y, x);
+            }
+        };
+
+        long long ans = 0;
+        for(int x = 1; x <= n; x++) // 枚举1-n的质数
+        {
+            if(np[x]) // 跳过非质数
+                continue;
+            int sum = 0; // 统计以这个质数作为中间点的路径数
+            for(int y : g[x])
+            {
+                if(!np[y])
+                    continue;
+                if(size[y] == 0) // 尚未计算过
+                {
+                    nodes.clear();
+                    dfs(y, -1); // 遍历 y 所在连通块
+                    for(int z : nodes)
+                    {
+                        size[z] = nodes.size();
+                    }
+                }
+                // 连通块中size[y]个非质数 与之前遍历到的sum个非质数 构造出包含一个质数的路径
+                ans += (long long ) size[y] * sum;
+                sum += size[y];
+            }
+            ans += sum;
+        }
+        return ans;
     }
 };
 ```
