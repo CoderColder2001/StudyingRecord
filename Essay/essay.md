@@ -231,10 +231,13 @@ $w_i^j$表示第`i`个高斯对第`j`个标签的权重；根据一个高斯的 
 
 ### 3D inpainting algorithm
 *对于去除对象后的局部修复算法，以及提供 prompt 和 2D mask 的对象添加算法*   
-删除物体后，使用KNN识别最接近被移除物体的高斯（很可能是在交接处），再投影到多个视角下（形成2D mask），调用2D inpainting算法   
+删除物体后，**使用KNN识别最接近被移除物体的高斯**（很可能是在交接处），再投影到多个视角下（得到2D mask），调用2D inpainting算法   
 
-对于要添加的物体，先使用2D inpainting（用户提供2D mask输入），再使用image to 3D 转换成粗糙网格mesh，再转成HGS并精细化（使用AnchorLoss）（感觉好不优雅...）   
-对于 新加物体GS与原场景GS的坐标系对齐 问题，首先估计出新生成的2D图像的深度 
+对于要添加的物体，先使用2D inpainting（用户提供2D mask和prompt）（ *# SDXL Improving latent diffusion models for high-resolution image synthesis*），再使用 image to 3D 将生成的前景对象分割出来后转换成粗糙网格mesh，再转成HGS并精细化（使用HGS的AnchorLoss）（感觉好不优雅...）   
+
+对于 新加物体GS与原场景GS的坐标系对齐 问题：
+- 1、估计出新生成的2D图像的深度
+- 2、使用最小二乘法将这个深度与原高斯 θ 在相机姿势 p 处渲染的深度图对齐  
 
 <br>
 

@@ -4,6 +4,7 @@
 - basic
 - BST二叉搜索树
 - DFS
+- other
 
 不要一开始就陷入细节；先思考 <b>整棵树与其（左右）子树的关系</b>（原问题与子问题）
 <br>
@@ -289,6 +290,7 @@ BST性质：
 - 左子树的节点值都小于根节点的值
 - 右子树的节点值都大于根节点的值
 - 任意节点的左子树和右子树都是二叉搜索树
+- **中序遍历BST 可以得到有序数组**
 
 ---
 ### 题目
@@ -637,6 +639,37 @@ public:
             ans[node] = mex;
             pre = node;
             node = parents[node]; // 往上走
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+------
+## other
+---
+### 题目
+---
+### &emsp; 2673. 使二叉树所有路径值相等的最小代价 MID
+关键思路：
+- 影响一个节点值的同时，也会影响它的子孙节点的路径值
+- <b>从最后一个非叶节点开始自底向上计算</b>
+- 再递归考虑子节点对父节点的路径和的影响
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int minIncrements(int n, vector<int>& cost) {
+        int ans = 0;
+        for(int i = n / 2; i > 0; i--) // 从最后一个非叶节点开始
+        {
+            ans += abs(cost[i * 2 -1] - cost[i * 2]); // 两个子节点变成一样的
+            cost[i - 1] += max(cost[i * 2 - 1], cost[i * 2]); // 更新父节点的路径和 
         }
         return ans;
     }
