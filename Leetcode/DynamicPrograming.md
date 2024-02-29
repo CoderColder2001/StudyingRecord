@@ -650,9 +650,13 @@ public:
 ### 概念
 ---
 * ### 树形DP
-    基于左右子树描述状态 在树上状态转移  
+    基于左右子树描述状态 在树上状态转移（一般递归进行）  
     树形DP的出发点：思考 **如何通过递归去计算，如何由子问题算出原问题** （选或不选、枚举选哪个 等）
+    <br>
 
+* ### 换根DP
+    树形 DP 中的换根 DP 问题又被称为 <b>二次扫描</b>，通常不会指定根结点；并且根结点的变化会对一些值，例如子结点深度和、点权和等产生影响
+    **通常需要两次 DFS**，第一次 DFS 预处理诸如深度，点权和之类的信息，在第二次 DFS 开始运行换根动态规划
 <br>
 
 ---
@@ -689,6 +693,65 @@ public:
     int rob(TreeNode* root) {
         auto [root_rob, root_not_rob] = dfs(root);
         return max(root_rob, root_not_rob);
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 834. 树中距离之和 :rage: HARD
+关键思路：  
+- <b>换根DP</b> 在DFS的过程中“换根”
+- 从 0 出发DFS 计算 0 到每个点的距离（得到ans[0]） 并计算出每个子树的大小（通过后序遍历计算每棵子树的大小）
+- “换根”时 如从当前root换到右孩子时，导致右子树所有节点距离-1，左子树节点及root的距离+1
+- 故由 x 换到 y 时 $ans[y] = ans[x] - size[y] + (n - size[y])$ （注意对于一条节点链上换根的过程，这个状态转移方程是递推形式的）
+
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> sumOfDistancesInTree(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> g(n); // 邻接表建图（无向树）
+        for(auto & e : edges)
+        {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        vector<int> ans(n);
+        vector<int> size(n, 1); // 统计子树大小
+        // 无向树dfs参数记得传递父节点fa
+        function<void(int, int, int)> dfs = [&](int x, int fa, int depth) {
+            ans[0] += depth; // depth 为 0 到 x的距离
+            for(int y : g[x])
+            {
+                if(y != fa)
+                {
+                    dfs(y, x, depth + 1);
+                    size[x] += size[y];
+                }
+            }
+        };
+        dfs(0, -1, 0); // 0 没有父节点
+
+        // "换根" dfs
+        function<void(int, int)> reroot = [&](int x, int fa) {
+            for(int y : g[x])
+            {
+                if(y != fa)
+                {
+                    ans[y] = ans[x] + n - 2*size[y];
+                    reroot(y, x);
+                }
+            }
+        };
+        reroot(0, -1);
+        return ans;
     }
 };
 ```

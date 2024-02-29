@@ -3,7 +3,8 @@
 ## Content
 - Machine Learning Arch
 - Visual-Language Pre-training
-- 3D Graphics
+- 2D Segment 
+- 3D Graphics 几何
 - 3D Semantic
 
 ------
@@ -86,6 +87,26 @@ $PE(pos, 2i+1)=cos(pos/10000^{2i/d_{model}})$
 对于任何偏移量`k`，$PE_{pos+k}$可以表示为$PE_{pos}$的线性函数  
 <br>
 
+# 2D Segment
+---
+## （ICCV2023）Segment Anything 
+ 
+keywords：2D图像分割；  
+
+模型被设计和训练成promptable的，因此它可以将zero-shot transfer到新的图像分布和任务（通过 prompt engineering 实现zeroshot transfer）  
+
+
+### Background：
+N
+
+### 问题：
+1、  
+
+### 3
+属性：三维位置，不透明度𝛼，各向异性协方差，球谐（SH）系
+
+<br>
+
 ------
 # 3D Graphics
 ---
@@ -163,14 +184,35 @@ over-reconstruction（高方差区域中的大高斯分布）：使用原始的3
 ------
 # 3D Semantic
 ---
+## (2023ICLR) DreamFusion: Text-to-3d using 2d diffusion
+
+keywords: **基于文本的3D生成**；diffusion；
+
+不需要3D数据，使用 <b>预训练的 2d text to image diffusion model </b>来执行文本到3D的生成；给定文本的结果三维模型可以从任何角度查看，通过任意照明进行恢复，或合成到任何三维环境中    
+
+引入了一种 **基于概率密度蒸馏（probability density distillation）的损失**，以使用2d diffusion model作为优化参数图像生成器的先验   
+通过使用一种新的 Score Distillation Sample方法 和一种新的 类似NeRF的渲染引擎  
+最小化 “基于正向扩散过程的共享均值的高斯分布族” 和 “预训练的diffusion model学习的score function” 之间的 KL散度  
+所得到的分数蒸馏采样（SDS）方法可以通过可微图像参数化的优化来实现采样  
+
+*SDS在应用于图像采样时并不是一个完美的损失函数，相对于 ancestral sampling，往往会产生过饱和、过平滑的结果；且使用SDS生成的二维图像样本往往缺乏多样性*   
+由于使用64*64的图像模型，生成的三维模型不够精细  
+<br>
+
+### Background：
+2D图像生成模型的发展得益于大型对齐的图像-文本数据集以及可扩展的生成模型架构  
+
+<br>
+
+---
 ## GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
 
 arxiv202311  
-keywords：3D编辑；3D高斯；  
+keywords：**基于文本的3D编辑（分割、变换、生成、删除）**；3D高斯；  
 
-通过自然语言编辑GS场景；**利用GS的显式表示的典型特性来提升3D编辑的效果**；  
+通过自然语言编辑GS场景；**利用GS的显式表示的典型特性来提升3D编辑的效果**；在随机梯度引导下获得精细的结果     
 既能通过自然语言进行隐式控制，又能通过类似bounding-box进行显式编辑  
-*采用 2D diffusion model 进行编辑*   
+*采用 2D diffusion model 进行编辑；* &emsp; 目前的2D扩散模型难以为某些复杂的提示提供有效的指导（局限性）   
 提出了：1、高斯语义跟踪；2、扩展原生高斯表示为分层高斯HGS   
 
 编辑任务分为 edit、remove、integrate 三类  
@@ -192,11 +234,11 @@ keywords：3D编辑；3D高斯；
 
 ### 问题：  
 1、如何识别需要编辑的gaussian？（作者提出了 **gaussian semantic trace**）  
-&emsp; 同时，gaussian semantic trace 可以视为一种动态的mask  
+&emsp; 同时，gaussian semantic trace 可以视为一种动态的mask <b>控制编辑区域</b>  
 2、如何解决编辑时随机性（具有高度随机性的生成引导）带来的不稳定更新等问题？（作者提出了 **HGS**）  
 3、如何解决物体删除带来的边缘空洞or填入物体？ （作者提出了一种 **3D inpainting** 的方法）  
 &emsp; image to 3Dmesh，再转为GS  
-4、2D diffusion guidance 难以编辑负责场景中的小物体；（单独渲染这些小物体）
+4、2D diffusion guidance 难以编辑负责场景中的小物体；（用靠近小物体的相机额外渲染这些小物体，以增加分辨率） （当目标对象与场景的关联程度较低时，只渲染目标对象，以减少计算负荷）
 <br>
 
 ### Gaussian semantic tracing
@@ -207,6 +249,8 @@ keywords：3D编辑；3D高斯；
 编辑时只更新目标高斯  
 选择性地 **只在目标类别的高斯上应用梯度、致密化和剪枝**  
 致密化过程中，新致密的高斯继承其父高斯的语义属性  
+
+在大场景编辑中 不使用Gaussian semantic tracing  
 <br>   
 
 ### 2D语义mask逆投影

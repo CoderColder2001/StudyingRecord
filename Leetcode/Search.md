@@ -318,6 +318,69 @@ public:
 <br>
 
 ---
+### &emsp; 2581. 统计可能的树根数目 :rage: HARD
+关键思路：
+- 如何判断是否猜对？<b>DFS向下过程中 查询是否有关于当前父子节点对的猜测</b>
+- <b>用 哈希表 压缩存储所有猜测</b>
+- 如果x和y相邻，那么根从x变为y时，只有x和y的父子关系改变（只会影响到`[x, y]`和`[y, x]`两个猜测的正确性）
+- 在计算完以0为根的猜对次数`cnt0`后，再次从0出发，<b>在DFS的过程中 “换根” 并统计</b>
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+using LL = long long;
+
+class Solution {
+public:
+    int rootCount(vector<vector<int>>& edges, vector<vector<int>>& guesses, int k) {
+        vector<vector<int>> g(edges.size() + 1);
+        for(auto &e : edges) // 邻接表建图
+        {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        unordered_set<LL> s;
+        for(auto &e : guesses) // guesses转成哈希表 两个4字节数字压缩存放
+            s.insert((LL) e[0] << 32 | e[1]);
+
+        int ans = 0, cnt0 = 0;
+        function<void(int, int)> dfs = [&](int x, int fa) {
+            for(int y : g[x])
+            {
+                if(y != fa)
+                {
+                    cnt0 += s.count((LL) x << 32 | y); // 统计以0为根时猜对的个数
+                    dfs(y, x);
+                }
+            }
+        };
+        dfs(0, -1); // 以0为根dfs
+
+        // 在dfs的过程中换根
+        // cnt的转移根据 换根DP
+        function<void(int, int, int)> reroot = [&](int x, int fa, int cnt) {
+            ans += cnt >= k; // 上一结果是否满足猜对个数不少于k
+            for(int y : g[x])
+            {
+                if(y != fa)
+                {
+                    reroot(y, x, cnt - s.count((LL) x << 32 | y) + s.count((LL) y << 32 | x));
+                    // 原本对的现在错了，原本错的现在对了
+                }
+            }
+        };
+        reroot(0, -1 ,cnt0);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2867. 统计树中的合法路径数目 :rage: HARD
 关键思路：
 - <b>质数节点把这棵树分成了若干个连通块</b>
