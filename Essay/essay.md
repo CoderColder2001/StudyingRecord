@@ -32,6 +32,8 @@ RNN的历史信息一步一步向下传递；如果时序较长，早期时序�
 CNN对比较长的序列难以建模（每次卷积 “看一个小窗口”，两个信息在序列中距离较远时，需要经过比较多层的卷积才能联系起来）  
 卷积的优势是 **“可以实现多个通道输出”**，可以认为每个输出通道对应识别不一样的模式  
 
+<br>
+
 ### 问题：
 1、如何保留RNN和CNN的良好性质同时解决RNN和CNN的问题（使用attention聚合序列信息）  
 2、如何使用注意力层？（自注意力 & 在encoder和decoder间传递信息）  
@@ -39,10 +41,13 @@ CNN对比较长的序列难以建模（每次卷积 “看一个小窗口”，�
 4、attention没有维护时序信息（引入position encoding）  
 5、为什么采用自注意力？（相对于传统的卷积层和循环层）  
 
+<br>
+
 ### 编码器 & 解码器
 编码器把`(x1,..., xn)`序列映射成`(z1,...,zn)`，`zi`为元素`xi`的向量表示  
 解码器根据编码器输出的`z`生成长度`m`的序列`(y1,...,ym)`  
-对于解码器，元素是一个个生成的（过去的输出会作为输入，自回归auto-regressive）
+对于解码器，元素是一个个生成的（过去的输出会作为输入，自回归auto-regressive）  
+<br>
 
 ### 架构
 <img src = "./pic/transformer_1.png" width = 80%>   
@@ -59,6 +64,7 @@ LayerNorm：对batch中的每一个样本做normalization，而非对batch中的
 
 解码器：  
 解码器是自回归的（前序输出会作为输入）；由于注意力机制每次能看到完整的输入，采用带掩码的注意力机制（防止训练时看到后续输入）  
+<br>
 
 ### Multi-head Self-attention
 注意力函数：将一个query和一系列key-value映射到一个输出  
@@ -78,6 +84,7 @@ $Attention=softmax({QK^T\over\sqrt{d_k}})*V$
 
 "encoder-decoder attention" layers 连接encoder和decoder：  
 encoder输出作为key和value，previous decoder layer的输出作为query；允许decoder中的每个位置都能关注输入序列中的所有位置    
+<br>
 
 ### Position Encoding
 在输入里加入时序信息（编码词所处的位置`i`）  
@@ -85,8 +92,48 @@ encoder输出作为key和value，previous decoder layer的输出作为query；�
 $PE(pos, 2i)=sin(pos/10000^{2i/d_{model}})$   
 $PE(pos, 2i+1)=cos(pos/10000^{2i/d_{model}})$  
 对于任何偏移量`k`，$PE_{pos+k}$可以表示为$PE_{pos}$的线性函数  
+
 <br>
 
+---
+## （NeurIPS2020）Denoising Diffusion Probabilistic Models
+
+keyword：2D图像生成；概率扩散模型  
+<a href = "https://www.bilibili.com/video/BV1b541197HX/?spm_id_from=333.999.0.0&vd_source=492be4af83531f552a324868c25aa005">Probabilistic Diffusion Model概率扩散模型理论与完整PyTorch代码详细解读</a>  
+
+一类受 非平衡热力学 考虑启发的隐变量模型  
+使用变分推理训练的参数化马尔可夫链，在有限时间后产生匹配数据的样本  
+
+扩散模型的采样过程是一种渐进式解码方法  
+
+扩散过程：在原始分布上逐渐加高斯噪声，最后得到各项独立的高斯分布  
+逆扩散过程：基于噪声分布推导目标分布，从而在目标分布中采样获得新的样本  
+
+### Background:
+VAE从x到z不是无参的过程，而是通过网络预测的，且最终得到的z不一定与x无关  
+
+### 问题：
+
+### 扩散过程 forward
+$q(x_t|x_{t-1})$  
+**给定初始数据分布 $x \thicksim q(x)$ ，向分布中不断添加高斯噪声（均值和标准差不含可训练参数）**，该过程是一个马尔可夫链过程  
+标准差由指定值 $\beta_t$ 确定  
+均值由指定值 $\beta_t$ 和当前 $t$ 时刻数据 $x_t$ 确定  
+$\beta_t$ 随着 $t$ 的增大（数据越来越接近噪声分布）而增大   
+$x_t$ 是一个关于 $x_0$ 的概率分布
+随着 $t$ 的不断增大，**最终数据分布 $x_T$ 变为各项独立（各向同性）的高斯分布**   
+
+VAE中x和z维度不一定是一样的；但在扩散模型的扩散过程中，维度始终与x保持一致   
+<br>
+
+### 逆扩散过程 reverse
+**从高斯噪声中恢复原始数据 $x_0$**；可以假设它也是一个高斯分布，但无法逐步地去拟合分布，需要构建一个参数分布去估计。逆扩散过程仍然是一个马尔可夫链过程   
+通过网络 $\theta$ 构建条件概率：$p_\theta(x_{t-1}|x_t) = N(x_{t-1};\mu_\theta(x_t, t),\sum_\theta(x_t, t))$ （网络以 $x_t$ 和 $t$ 作为输入）  
+联合概率分布：$p_\theta(x_{0:T})=p(x_T) \prod_{t-1}^T p_\theta(x_{t-1}|x_t)$  
+
+<br>
+
+------
 # 2D Segment
 ---
 ## （ICCV2023）Segment Anything 
@@ -201,6 +248,9 @@ keywords: **基于文本的3D生成**；diffusion；
 
 ### Background：
 2D图像生成模型的发展得益于大型对齐的图像-文本数据集以及可扩展的生成模型架构  
+
+### 问题：
+1、如何从参数空间而不是像素空间中采样？
 
 <br>
 

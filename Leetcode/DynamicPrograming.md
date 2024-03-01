@@ -612,6 +612,37 @@ public:
 <br>
 
 ---
+### &emsp; 2369. 检查数组是否存在有效划分 MID
+关键思路：  
+- 状态定义：数组前i位是否存在有效划分
+
+<details> 
+<summary> <b>C++ Code</b> </summary>  
+
+```c++
+class Solution {
+public:
+    bool validPartition(vector<int>& nums) {
+        int n = nums.size();
+        vector<bool> dp(n + 1);
+        dp[0] = true;
+        for(int i = 1; i <= n; i++)
+        {
+            if(i >= 2 && nums[i-1] == nums[i-2])
+                dp[i] = dp[i] | dp[i-2];
+            if(i >= 3 && nums[i-1] == nums[i-2] && nums[i-1] == nums[i-3])
+                dp[i] = dp[i] | dp[i-3];
+            if(i >= 3 && nums[i-1] == nums[i-2] + 1 && nums[i-2] == nums[i-3] + 1)
+                dp[i] = dp[i] | dp[i-3];
+        }
+        return dp[n];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 2707. 字符串中的额外字符 MID
 关键思路：  
 - 将字典中的字符串存入set中
@@ -1672,6 +1703,18 @@ public:
 ---
 
 ### 题目
+---
+### &emsp; 分割一个集合，使得两个子集的和尽可能接近
+- 本质为 <b>枚举一个集合可以构造出的子集的和 找到最接近`sum/2`的结果</b>
+- 开一个dp数组 `dp[sum/2 + 1]` 表示：子集可以达到的和，初始只有`dp[0] = true`
+- 遍历集合成员 遍历所有状态并更新状态（注意逆序，不然会重复更新）：
+```c++
+for(int j = sum; j >= nums[i]; j--)
+    dp[j] |= dp[j - nums[i]];
+```
+
+<br>
+
 ---
 ### &emsp; 1079. 活字印刷 MID
 关键思路：  
