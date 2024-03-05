@@ -164,10 +164,31 @@ keywords：2D图像分割；
 N
 
 ### 问题：
-1、  
+1、task如何设计？（借鉴了NLP，用prompt引导，但prompt不局限于文字，而还可以是一个点、一个box）
+2、如何设计模型，对于prompt输入和image输入产生mask输出    
+3、如何处理模棱两可的prompt？（输出3个mask备选，训练过程中只反向传播masks中最小的损失）  
 
-### 3
-属性：三维位置，不透明度𝛼，各向异性协方差，球谐（SH）系
+<br>
+
+### image encoder
+相对耗时，但一张图只用运行一次    
+
+<br>
+
+### prompt encoder
+*借用现有模型*  
+将prompt分为稀疏的（如文本、点、boxes）和稠密的（如mask）
+**不同类型的prompt对应不同的encoder模块**（如文本可以使用CLIP的文本编码器；points和boxes可以采用位置编码；而对于稠密的mask，可以采用卷积）  
+<br>
+
+### mask decoder
+采用基于transformer的decoder模块和动态mask预测头  
+**在两个方向（prompt to image embedding及其反向）上使用自注意力和交叉注意力（以实现更好的特征融合）**    
+
+最后对图像嵌入进行上采样并用MLP映射将输出token映射到linear classifer，得到每个图像位置对应的 mask foreground probability  
+
+### Data Engine设计
+用模型不断产生数据，又用这些数据不断优化模型性能  
 
 <br>
 

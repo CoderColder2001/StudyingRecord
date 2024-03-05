@@ -749,9 +749,10 @@ public:
 BFS思想 求单源最短路 不能有负边  
 `dis[N]`：保存当前最短路长度  
 `vis[N]`：保存已经找到最短路的节点集合（划分节点集）  
-每一轮最小`dis`的顶点在`vis`中标记（加入集合） &emsp; 再用它的边来更新`dis`
+每一轮 <b>最小`dis`的顶点</b> 在`vis`中标记（加入集合） &emsp; 再用它的边来更新`dis`
 
-堆优化Dijkstra（优先队列存放） O(mlogn) ； 当 边数 m < n^2 （相对稀疏时）优先采用堆优化
+堆优化Dijkstra（优先队列存放）（适用于稀疏图） O(mlogn) ； 当 边数 m < n^2 （相对稀疏时）优先采用堆优化  
+（同一点可能多次入队，m轮出队才能保证所有节点计算完毕）  
 
 <br>
 
@@ -859,6 +860,64 @@ public:
         for(auto& qry : queries)
             ans.push_back(f[qry[0]][qry[1]]);
         return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2976. 到达目的地的方案数 MID
+关键思路：
+- Dijkstra更新节点最短路距离的过程中DP，统计到每个节点最短路的个数
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    const int MOD = 1e9 + 7;
+    int countPaths(int n, vector<vector<int>>& roads) {
+        vector<vector<pair<int, int>>> g(n);
+        for(auto &r : roads)
+        {
+            int from = r[0], to =r[1], cost = r[2];
+            g[from].emplace_back(to, cost);
+            g[to].emplace_back(from, cost);
+        }
+        vector<long long> dis(n, LLONG_MAX);
+        dis[0] = 0;
+        vector<int> dp(n); // 到节点的最短路个数
+        dp[0] = 1;
+        priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq; // 堆优化
+        pq.emplace(0, 0);
+        while(true)
+        {
+            auto [dx, x] = pq.top();
+            pq.pop();
+            if(x == n-1)
+            {
+                return dp[n-1]; // 边权都是正数 不可能找到更短的了
+            }
+            if(dx > dis[x])
+                continue;
+            for(auto &[y, d] : g[x])
+            {
+                long long new_dis = dx + d;
+                if(new_dis < dis[y])
+                {
+                    dis[y] = new_dis;
+                    dp[y] = dp[x]; // 最短路经过x
+                    pq.emplace(new_dis, y);
+                }
+                else if (new_dis == dis[y])
+                {
+                    dp[y] = (dp[y] + dp[x]) % MOD;
+                }
+            }
+        }
+        return -1;
     }
 };
 ```
