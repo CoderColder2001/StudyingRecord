@@ -150,6 +150,56 @@ $\mu_\theta$ 最直接的参数化是一个预测 $\widetilde{\mu_t}$（正向�
 <br>
 
 ------
+# Visual Language Pre-training
+---
+## （2024CVPR）Alpha-CLIP: A CLIP Model Focusing on Wherever You Want
+ 
+keywords：图像-文本；  
+
+在CLIP的基础上，识别特定区域（由点、笔画或掩码定义）的能力  
+引入了额外的alpha通道，通过SAM等构建了数百万个RGBA区域-文本对进行微调训练  
+模型的输出空间与CLIP一致，可以无缝应用到CLIP的下游任务中  
+
+应用前景：
+- 图像区域识别
+- 可以在MLLM（Multi-modal Large Language Models）框架内促进区域级理解和VQA（与Large Language Model结合）
+- 2D、3D生成（与Diffusion Model 结合）；能够从复杂的图像中提取subjects，用于subject-driven generation    
+
+<br>
+
+### Background：
+CLIP建立了 **从图像和文本中提取语义上一致的特征** 的框架
+但CLIP对齐了文本和视觉模式来理解整个图像，包括所有的细节，甚至是那些与特定任务无关的细节  
+
+现今取得region-focused CLIP features的方法：
+- 将感兴趣的区域裁剪成不同的patch，或者通过maskes，排除非相关区域（这种方法破坏了全局上下文信息）
+- 通过圆或mask轮廓等突出感兴趣的区域后再输入给CLIP（这种方法改变了图像原有内容）
+
+CLIP广泛应用于MLLM框架中，作为vision backbone
+
+### 问题：
+1、如何让CLIP根据用户输入的点、boxes、masks或SAM等模型关注特定区域以实现更精细的理解和可控制的内容生成？（如何取得region-focused CLIP features？）  
+
+<br>
+
+### 构建RGBA区域-文本对
+grounding data：基于GRIT数据集，使用GLIP和CLIP自动提取 box region-text的数据对，再用SAM对每个box生成mask region-text数据对    
+classification data：使用SAM为imageNet数据集的每个图像生成多个masks，裁切、居中、放大后用CLIP计算每个mask对各个类别的得分   
+<br>
+
+### Alpha-CLIP 设计
+在CLIP图像编码器的ViT结构中，第一层对图像进行RGB卷积  
+引入一个平行于RGB卷积层的alpha卷积层，使得CLIP图像编码器能够接受一个额外的alpha通道作为输入（初始化alpha卷积核权值为零，以使得初始的Alpha-CLIP忽略了alpha通道作为输入）  
+alpha通道输入被设置为来自`[0,1]`的范围，其中1表示前景，0表示背景  
+<img src = ".\pic\Alpha-CLIP_1.png" width = "40%">  
+
+【模型训练】：  
+保持CLIP文本编码器fixed，只训练Alpha-CLIP图像编码器（意思是固定RGB Conv，只训练Alpha Conv？）  
+对后续的transfomer块采用较低的学习率  
+为了保持CLIP对全图像的全局识别能力，在训练过程中采样一些原始image-text数据对替代RGBA数据对（设置alpha通道全1）  
+<br>
+
+------
 # 2D Segment
 ---
 ## （ICCV2023）Segment Anything 
@@ -293,9 +343,8 @@ keywords: **基于文本的3D生成**；diffusion；
 <br>
 
 ---
-## GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
-
-arxiv202311  
+## （2024CVPR）GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
+ 
 keywords：**基于文本的3D编辑（分割、变换、生成、删除）**；3D高斯；  
 
 通过自然语言编辑GS场景；**利用GS的显式表示的典型特性来提升3D编辑的效果**；在随机梯度引导下获得精细的结果     
