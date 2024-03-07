@@ -13,7 +13,9 @@ sum(x >= y for x, y in pairwise(word))
 ```
 `itertool.pairwise()`（python3.10+）：获取对象中重叠的连续对的迭代器（如"abcd"中"ab""bc""cd"）  
 
-`str[::-1]` 字符串反转
+`str[::-1]` 字符串反转  
+
+`[..., None]` 在最后增加一个维度  
 <br>
 
 ------
@@ -193,3 +195,18 @@ numbers = [10, -5, 20, -15]
 is_positive = all(num > 0 for num in numbers) 
 has_negative = any(num < 0 for num in numbers) 
 ```
+
+<br>
+
+------
+# Pytorch
+
+`torch.stack(...)`:  
+沿着一个新维度对输入张量序列进行连接(如把二维堆成三维)   
+
+`xxx.detach()`:  
+切断一些分支的反向传播  
+返回一个新tensor，与原始张量共享数据，但不再参与任何梯度计算  
+
+`@torch.no_grad():`   
+上下文管理器中执行张量操作时，PyTorch 不会为这些操作计算梯度  

@@ -1,10 +1,12 @@
 # LINUX & WSL2
 基于WSL2或双系统  
-记录LINUX的常用命令与有关知识
+记录LINUX的常用命令与有关知识  
 
 ------
 ## Content
 - 双系统安装
+- 软件安装links
+- 常用命令
 
 ------
 ## 双系统安装
@@ -42,8 +44,17 @@ sudo apt install nvidia-utils-470
 <br>
 
 ------
+## 软件安装links
+<https://archive.ubuntukylin.com/ubuntukylin/pool/partner/>     
+
+
+------
 ## 常用命令
 ```
 uname -a // 查看linux内核版本号、操作系统版本号
 nvcc --version // 查看已安装的cuda
+
+nvidia-smi // 查看显卡状态
+
+sudo dpkg -i xxx.deb // 安装deb软件包
 ```
