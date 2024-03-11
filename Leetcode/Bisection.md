@@ -1,3 +1,4 @@
+[TOC]
 ## 二分法
 ---
 <b>最大化最小值</b> 或 <b>最小化最大值</b> => 二分答案  
@@ -199,6 +200,59 @@ public:
                 left = mid + 1;
         }
         return left;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2386. 找出数组的第K大和 :rage: HARD
+关键思路：
+- 所有正数的和既是最大的子序列和 `summax`
+- 用`summax`减去某些正数元素或加上某些负数元素，即得到其他子序列和；而减去正数和加上负数都相当于减去 $|nums[i]|$
+- 故问题等价于 求序列 $|nums[i]|$ 的第 k 小子序列和（`summax`减去这个和即为第 k 大的子序列）
+- <b>二分法判断是否有至少 k 个子序列，其元素和 `s` 不超过 `sumLimit`</b>
+- 法二：见 `STLUsing.md` 使用优先队列枚举子序列
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long kSum(vector<int>& nums, int k) {
+        long sum = 0;
+        for(int &x : nums)
+        {
+            if(x >= 0)
+                sum += x;
+            else
+                x = -x;
+        }
+        ranges::sort(nums);
+
+        auto check = [&](long sum_limit) -> bool {
+            int cnt = 1;
+            function<void(int, long long)> dfs = [&](int i , long long s)
+            {
+                if(cnt == k || i == nums.size() || s + nums[i] > sum_limit)
+                    return;
+                cnt++;
+                dfs(i + 1, s + nums[i]); // 选
+                dfs(i + 1, s); // 不选
+            };
+            dfs(0, 0);
+            return cnt == k; // 找到 k 个元素和不超过 sum_limit 的子序列
+        };
+
+        long long left = -1, right = accumulate(nums.begin(), nums.end(), 0LL);
+        while(left + 1 < right) // 开区间
+        {
+            long long mid = (left + right)/2;
+            (check(mid)? right : left) = mid;
+        }
+        return sum - right;
     }
 };
 ```

@@ -603,6 +603,55 @@ public:
 <br>
 
 ---
+### &emsp; 2386. 找出数组的第K大和 :rage: HARD
+关键思路：
+- 所有正数的和既是最大的子序列和 `summax`
+- 用`summax`减去某些正数元素或加上某些负数元素，即得到其他子序列和；而减去正数和加上负数都相当于减去 $|nums[i]|$
+- 故问题等价于 求序列 $|nums[i]|$ 的第 k 小子序列和（`summax`减去这个和即为第 k 大的子序列）
+- <b>使用优先队列（最小堆）枚举子序列</b>
+- 堆中维护 子序列的和 以及 下一个要添加/替换的元素下标
+- 法二：见`Bisection.md`，使用二分法找到sumLimit
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long kSum(vector<int>& nums, int k) {
+        long sum = 0L;
+        for(int &x : nums)
+        {
+            if(x >= 0)
+                sum += x;
+            else
+                x = -x;
+        }
+        ranges::sort(nums);
+
+        priority_queue<pair<long, int>, vector<pair<long, int>>, greater<>> pq;
+        pq.emplace(0, 0); // 空子序列
+        while(--k) // 第k小
+        {
+            auto [s, i] = pq.top();
+            pq.pop();
+            if(i < nums.size())
+            {
+                pq.emplace(s + nums[i], i + 1); // 在子序列末尾添加nums[i]
+                if(i) // 不是第一个
+                {
+                    pq.emplace(s + nums[i] - nums[i-1], i + 1); // 替换
+                }
+            }
+        }
+        return sum - pq.top().first;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2751 机器人碰撞 :rage: HARD
 关键思路：  
 - <b>使用栈</b>维护向右运动（等待被碰撞的机器人）  

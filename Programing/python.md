@@ -27,6 +27,10 @@ conda info --envs // 查看环境列表
 conda list // 查看当前环境下的包
 ```
 
+### pycharm + conda
+配置conda环境中 选择 '...\Anaconda\condabin\conda.bat'  
+再选择相应的虚拟环境  
+
 <br>
 
 ------
