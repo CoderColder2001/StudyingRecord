@@ -3,7 +3,7 @@
 ## Content
 - Machine Learning Arch
 - Visual-Language Pre-training
-- 2D Segment 
+- 2D Semantic 
 - 3D Graphics 几何
 - 3D Semantic
 
@@ -158,34 +158,42 @@ $\mu_\theta$ 最直接的参数化是一个预测 $\widetilde{\mu_t}$（正向�
 keywords：图像-文本；  
 
 在CLIP的基础上，识别特定区域（由点、笔画或掩码定义）的能力  
+获取 **region-focused CLIP features**  
 引入了额外的alpha通道，通过SAM等构建了数百万个RGBA区域-文本对进行微调训练  
-模型的输出空间与CLIP一致，可以无缝应用到CLIP的下游任务中  
+模型的输出空间与CLIP一致，可以无缝应用到CLIP的下游任务中   
+同时不影响原始CLIP的效果（想注意全局时依然有CLIP的能力）  
 
 应用前景：
 - 图像区域识别
 - 可以在MLLM（Multi-modal Large Language Models）框架内促进区域级理解和VQA（与Large Language Model结合）
-- 2D、3D生成（与Diffusion Model 结合）；能够从复杂的图像中提取subjects，用于subject-driven generation    
+- 2D、3D生成（与Diffusion Model 结合）；能够从复杂的图像中提取subjects，用于subject-driven generation（使用原始CLIP部署BLIP-diffusion时，只支持简单图像中的单个主题）    
 
 <br>
 
 ### Background：
-CLIP建立了 **从图像和文本中提取语义上一致的特征** 的框架
+CLIP建立了 **从图像和文本中提取语义上一致的特征** 的框架；广泛应用于MLLM框架中，作为vision backbone  
 但CLIP对齐了文本和视觉模式来理解整个图像，包括所有的细节，甚至是那些与特定任务无关的细节  
+原始CLIP的视觉特征混合了不同的物体和太多的前景对象  
 
-现今取得region-focused CLIP features的方法：
-- 将感兴趣的区域裁剪成不同的patch，或者通过maskes，排除非相关区域（这种方法破坏了全局上下文信息）
-- 通过圆或mask轮廓等突出感兴趣的区域后再输入给CLIP（这种方法改变了图像原有内容）
+现今取得 region-focused CLIP features 的方法：  
+- 将感兴趣的区域裁剪成不同的patch，或者通过masks，排除非相关区域（这种方法破坏了全局上下文信息）
+- 通过圆或mask轮廓等突出感兴趣的区域后再输入给CLIP（这种方法改变了图像原有内容）  
 
-CLIP广泛应用于MLLM框架中，作为vision backbone
+*这些方法的不足主要是其导致了 图像的局部特征 或 全局上下文 的改变，  或微调时和原始CLIP预训练的数据集形式不一样*  
+
+<br>
 
 ### 问题：
-1、如何让CLIP根据用户输入的点、boxes、masks或SAM等模型关注特定区域以实现更精细的理解和可控制的内容生成？（如何取得region-focused CLIP features？）  
+1、如何让CLIP可以根据用户输入的点、boxes、masks或SAM等模型 去关注特定区域以实现更精细的理解和可控制的内容生成？（如何取得region-focused CLIP features？）  
+2、如何构造 region-text dataset 进行训练？（使用SAM分割、BLIP2生成文本prompt）
 
 <br>
 
 ### 构建RGBA区域-文本对
-grounding data：基于GRIT数据集，使用GLIP和CLIP自动提取 box region-text的数据对，再用SAM对每个box生成mask region-text数据对    
-classification data：使用SAM为imageNet数据集的每个图像生成多个masks，裁切、居中、放大后用CLIP计算每个mask对各个类别的得分   
+grounding data：（生成带alpha通道的自然图像的区域-文本对）基于GRIT数据集，使用GLIP和CLIP自动提取 box region-text的数据对，再用SAM对每个box生成mask region-text数据对   
+
+classification data：（生成只含有前景对象的区域-文本对）使用SAM为imageNet数据集的每个图像生成多个masks，裁切、居中、放大后用CLIP计算每个mask对各个类别的得分；将前景对象放置在一个纯白色的背景后，使用BLIP-2生成文本注解   
+
 <br>
 
 ### Alpha-CLIP 设计
@@ -198,10 +206,42 @@ alpha通道输入被设置为来自`[0,1]`的范围，其中1表示前景，0表
 保持CLIP文本编码器fixed，只训练Alpha-CLIP图像编码器（意思是固定RGB Conv，只训练Alpha Conv？）  
 对后续的transfomer块采用较低的学习率  
 为了保持CLIP对全图像的全局识别能力，在训练过程中采样一些原始image-text数据对替代RGBA数据对（设置alpha通道全1）  
+
 <br>
 
 ------
-# 2D Segment
+# 2D Semantic
+
+---
+## （2023SIGGRAPH）LayerDiffusion: Layered Controlled Image Editing with Diffusion Models
+ 
+keywords：2D图片语义编辑；分层编辑；diffusion  
+
+基于语义的分层控制图片编辑方法    
+采用分层控制的优化策略，并结合分层的diffusion训练  
+
+使用LatentDiffusion   
+pipeline：  
+1、首先，利用mask消除来自前景物体的干扰；  
+2、然后，应用分层控制优化策略来优化从文本编码器获得的text embedding，根据目标文本进行分割，从而生成与参考图像具有显著相似性的图像背景；  
+3、再采用分层扩散训练策略对模型进行微调，以增强其保持特定主题、背景和输入图像之间的相似性的能力   
+4、最后，在使用微调后模型的diffuison process中，采用迭代的引导策略，迭代地采用高度约束的text embedding对图像进行去噪  
+
+<br>
+
+### Background：
+CL
+
+### 问题：
+1、如何在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中，同时适应多种编辑指令？   
+
+<br>
+
+### 构
+ground
+
+<br>
+
 ---
 ## （ICCV2023）Segment Anything 
  
@@ -320,7 +360,7 @@ over-reconstruction（高方差区域中的大高斯分布）：使用原始的3
 ------
 # 3D Semantic
 ---
-## (2023ICLR) DreamFusion: Text-to-3d using 2d diffusion
+## （2023ICLR） DreamFusion: Text-to-3d using 2d diffusion
 
 keywords: **基于文本的3D生成**；diffusion；
 

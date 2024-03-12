@@ -652,6 +652,40 @@ public:
 ---
 ### 题目
 ---
+### &emsp; 1261. 在受污染的二叉树中查找元素 MID
+关键思路：
+- 二进制数位即代表了向左/向右的移动路径
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class FindElements {
+    TreeNode *root;
+public:
+    FindElements(TreeNode* root) : root(root){
+
+    }
+    
+    bool find(int target) {
+        target++;
+        auto cur = root;
+        for(int i = 30 - __builtin_clz(target); i >= 0; i--) // 从次高位开始枚举
+        {
+            int bit = target >> i & 1;
+            cur = bit ? cur->right : cur->left;
+            if(cur == nullptr)
+                return false; // 走到空节点
+        }
+        return true;
+    }
+};
+```
+</details>
+<br>
+
+
+---
 ### &emsp; 2673. 使二叉树所有路径值相等的最小代价 MID
 关键思路：
 - 影响一个节点值的同时，也会影响它的子孙节点的路径值
