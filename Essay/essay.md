@@ -166,7 +166,7 @@ keywords：图像-文本；
 应用前景：
 - 图像区域识别
 - 可以在MLLM（Multi-modal Large Language Models）框架内促进区域级理解和VQA（与Large Language Model结合）
-- 2D、3D生成（与Diffusion Model 结合）；能够从复杂的图像中提取subjects，用于subject-driven generation（使用原始CLIP部署BLIP-diffusion时，只支持简单图像中的单个主题）    
+- 2D、3D生成（与Diffusion Model 结合）；能够从复杂的图像中提取subjects（根据用户提供的区域prompt，使 BLIP-Diffusion 能够聚焦于参考图的某个区域的内容进行生成），用于 <b>subject-driven generation</b>（使用原始CLIP部署BLIP-diffusion时，只支持简单图像中的单个主题）    
 
 <br>
 
@@ -209,6 +209,23 @@ alpha通道输入被设置为来自`[0,1]`的范围，其中1表示前景，0表
 
 <br>
 
+### Alpha通道的使用
+用户画出的prompt区域  
+（我感觉缺陷是，当前由用户指定时无法很好地确定alpha具体取值）  
+
+与Nerf集成做生成式任务时，**对应Nerf的density integration（密度积分？）**；梯度可以从alpha通道回传，以优化生成   
+Alpha-CLIP能够直接**优化三维表示的密度参数**，并且**在某一单一视角下只关注前景区域**；有助于生成更加连贯、整体一致且与输入文本紧密匹配的场景对象  
+
+<br>
+
+### 不足
+AlphaCLIP当前的结构和训练过程限制了它 <b>关注多个对象</b> 或 <b>建模不同对象之间的关系</b>的能力  
+目前的训练方法限制了alpha通道推广超过0与1的中间值
+用户无法指定注意的幅度  
+另一个在Alpha-CLIP和原始CLIP都存在的限制是低分辨率，这阻碍了对小物体的识别  
+
+<br>
+
 ------
 # 2D Semantic
 
@@ -220,6 +237,8 @@ keywords：2D图片语义编辑；分层编辑；diffusion
 基于语义的分层控制图片编辑方法    
 采用分层控制的优化策略，并结合分层的diffusion训练  
 
+可以对特定subjects进行非刚性编辑和属性修改，生成与文本描述一致的图像，同时保持和背景特征以及输入图像的一致性  
+
 使用LatentDiffusion   
 pipeline：  
 1、首先，利用mask消除来自前景物体的干扰；  
@@ -230,7 +249,7 @@ pipeline：
 <br>
 
 ### Background：
-CL
+现今的基于输入文本的图像编辑方法很难在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中  
 
 ### 问题：
 1、如何在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中，同时适应多种编辑指令？   
