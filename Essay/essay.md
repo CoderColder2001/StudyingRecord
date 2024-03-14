@@ -234,10 +234,12 @@ AlphaCLIP当前的结构和训练过程限制了它 <b>关注多个对象</b> �
  
 keywords：2D图片语义编辑；分层编辑；diffusion  
 
-基于语义的分层控制图片编辑方法    
+基于语义的分层控制图片编辑方法   
+利用目标文本描述来微调模型，并可以进行各种图像编辑操作   
 采用分层控制的优化策略，并结合分层的diffusion训练  
 
 可以对特定subjects进行非刚性编辑和属性修改，生成与文本描述一致的图像，同时保持和背景特征以及输入图像的一致性  
+允许使用单一的输入图像同时编辑特定的subjects和背景  
 
 使用LatentDiffusion   
 pipeline：  
@@ -249,16 +251,42 @@ pipeline：
 <br>
 
 ### Background：
-现今的基于输入文本的图像编辑方法很难在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中  
+现今由文本驱动的图像编辑任务主要由结合预训练模型的文本引导Diffusion实现（利用预训练模型作为生成性的先验）  
+
+现今方法很难在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中  
+
+<br>
 
 ### 问题：
 1、如何在新的背景中保留特定主题的独特特征，并确保它们无缝而自然地整合到场景中，同时适应多种编辑指令？   
 
 <br>
 
-### 构
-ground
+### LayerDiffusion设计
+fine-tune 了 LatentDiffusion   
+对背景和特定的前景对象的分层进行编辑  
 
+应用一种分层控制的优化策略来优化从来自目标文本的text encoder中获得的分割文本embedding   
+识别与目标文本嵌入附近的期望目标背景一致的最佳文本嵌入  
+
+分离背景和前景，以减少不同文本信息之间的干扰  
+将文本$T$分解为分别描述对象的属性和背景的$T_a$和$T_b$，再输给text encoder，得到$e_a$、$e_b$   
+优化$e_a$、$e_b$ 使$e_a$和$e_b$ 尽可能匹配我们的输入图像背景，并在一个close embedding space 中  
+冻结diffusion model的参数，使用diffusion model的目标来优化$e_a$和$e_b$：  
+$[\widehat{e_a},\widehat{e_b}]=argmin E_{x_t,\epsilon \thicksim N(0, I)}[||M*(\epsilon -f_\theta(x_t,t,[e_a,e_b]))||^2]$， 其中M由SAM获得   
+
+通过线性插值对多个优化的文本嵌入，得到了最终的文本嵌入$e_{opt} = \alpha*\widehat{e_a}+(1-\alpha)*\widehat{e_b}$  
+（优化后的文本嵌入，使得调整$e_a$和$e_b$ 的线性插值具有意义）  
+
+<br>
+
+### diffusion process中的迭代引导策略
+*在diffusion process中缺乏与被编辑属性的文本描述对应的强约束*  
+由于diffusion process中网络倾向于初始图像的物体属性，采用一种迭代的扩散过程，以强化文本的物体属性：  
+$I_{t-1}=\begin{cases}
+        D(I_t|\widehat{e_a}),\ if\ t \% 2 ==0\\
+        D(I_t|\widehat{e_{opt}}),\ otherwise
+        \end{cases}$  
 <br>
 
 ---
