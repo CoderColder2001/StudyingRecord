@@ -407,6 +407,56 @@ over-reconstruction（高方差区域中的大高斯分布）：使用原始的3
 ------
 # 3D Semantic
 ---
+---
+## （2023NeurIPS）OpenMask3D: Open-Vocabulary 3D Instance Segmentation
+ 
+keywords：3D场景分割；物体实例查询；open-vocabulary
+
+相较于基于点的特征计算方法，提出了一种**基于实例mask的特征计算方法**  
+能够在给定的3D场景中分割对象实例，通过描述对象属性的开放词汇表查询，如语义、几何、启示、材料属性和情境上下文  
+
+学习场景中每个实例的可查询mask-feature  
+在估计出的类不可知的3Dmask的指引下，通过**融合多个视图的基于clip的图像嵌入**来聚合每个mask的特征  
+【两阶段pipeline】：
+1、生成类无关的mask  
+2、查找该实例高度可见的视图，聚合mask特征  
+
+zero-shot使用CLIP特征，不进行微调或任何额外的训练，并使用预测的3D实例mask计算2Dmask
+<br>
+
+### Background：
+Open-vocabulary 2D image segmentation：  
+依赖于基础模型获取text-image embeddings  
+其中像素级嵌入的方法，强依赖于2D分割mask的准确性，并且需要一定程度的训练
+
+一些方法基于迁移这些2D open-vocabulary的特征到3D中  
+为场景中的每个三维点获得一个与任务无关的特征表示（特征向量），它可用于查询具有开放词汇表描述的概念，如对象语义、功能支持或材料属性  
+它们的查询输出通常是场景中各点上的热图，这在某些方面的应用程序有限，例如处理对象实例   
+
+（图像分割的基础模型）SAM能够为一个对象实例生成一个与类无关的2D mask，并给定属于该实例的一组点  
+
+当前的open-vocabulary 3d分割方法对物体“instances”的理解有限  
+
+<br>
+
+### 问题：
+1、语义嵌入的过程
+2、如何让实例的语义能够感知它的“状态”  
+
+<br>
+
+### 类无关的mask proposals
+
+### 计算mask特征
+
+
+### 不足和思考
+1、如何提升初始 3dmask proposals的质量？  
+2、只能在相机视锥范围内感知场景上下文，缺少对场景全局以及场景中所有元素的空间关系的理解   
+3、先分割好了物体的mask 无法适应不同的分割粒度？（如泰迪熊、泰迪熊的头部）  
+
+<br>
+
 ## （2023ICLR） DreamFusion: Text-to-3d using 2d diffusion
 
 keywords: **基于文本的3D生成**；diffusion；
