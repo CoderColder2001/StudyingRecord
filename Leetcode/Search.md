@@ -776,6 +776,63 @@ DP思想 求单源最短路 可以有负边 可以判断存在负环（最短路
 ---
 ### 题目
 ---
+### &emsp; 310. 最小高度树 MID
+关键思路：
+- <b>拓扑排序</b>，从外向内剥离叶子节点
+- 从所有叶子节点（出度为1）出发BFS
+- 最后一层则对应可作为最小高度树的根节点
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+        if(n == 1)
+            return {0};
+        
+        vector<vector<int>> g(n);
+        vector<int> degree(n, 0);
+        for(auto& e : edges)
+        {
+            int a = e[0], b = e[1];
+            g[a].push_back(b);
+            g[b].push_back(a);
+            degree[a]++;
+            degree[b]++;
+        }
+
+        queue<int> q;
+        vector<int> ans;
+        for(int i = 0; i < n; i++)
+        {
+            if(degree[i] == 1)
+                q.emplace(i);
+        }
+        while(!q.empty())
+        {
+            ans.clear();
+            for(int i = q.size(); i > 0; i--) // 一次“推进”一层
+            {
+                int cur = q.front();
+                q.pop();
+                ans.push_back(cur);
+                for(auto& v : g[cur])
+                {
+                    if(--degree[v] == 1)
+                        q.emplace(v);
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 787. K站中转内最便宜的航班 MID
 关键思路：
 - 有边数限制的最短路 使用 <b>BellmanFord</b>
