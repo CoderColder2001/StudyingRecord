@@ -446,12 +446,22 @@ Open-vocabulary 2D image segmentation：
 <br>
 
 ### 类无关的mask proposals
+生成M个类无关的3D mask proposals（binary mask，用二进制$m_{ij}$值表示属于哪个mask）  
+将Mask3D的模型架构调整为专门使用binary mask，并完全丢弃预测的类标签和置信度分数  
+保留了Mask3D的掩码模块所提出的所有mask，不做任何排序、过滤  
+
+对于非空间连续的mask，原始Mask3D采用了DBSCAN聚类，将其分解为一系列更小的、空间连续的mask类  
+
+query paremeter指定了从基于transformer的体系结构中所需获取mask  proposals的数量
 
 ### 计算mask特征
+选出该物体最可见的k个视图  
+每一个视图由3Dmask投影计算出2Dmask，再用SAM精细化这些mask  
+利用CLIP编码器获得基于计算得到的2Dmask的多尺度image-crops的图像嵌入  
 
 
 ### 不足和思考
-1、如何提升初始 3dmask proposals的质量？  
+1、如何提升初始 3Dmask proposals的质量？（用Mask3D感觉很奇怪）  
 2、只能在相机视锥范围内感知场景上下文，缺少对场景全局以及场景中所有元素的空间关系的理解   
 3、先分割好了物体的mask 无法适应不同的分割粒度？（如泰迪熊、泰迪熊的头部）  
 

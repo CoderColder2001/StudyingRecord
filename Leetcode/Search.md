@@ -381,6 +381,50 @@ public:
 <br>
 
 ---
+### &emsp; 2684. 矩阵中移动的最大次数 MID
+关键思路：
+- DFS or BFS 向矩阵右边遍历，记录能达到的最大列号
+- DFS可以把`grid[i][j]`置为 0，标记已访问过的格子
+- <b>标记优化BFS 通过`grid[i][j] *= -1`记录已入队的元素</b> 从而无需队列和vis数组
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int maxMoves(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        for(auto &row : grid)
+            row[0] *= -1; // 入队标记
+        
+        for(int j = 0; j < n - 1; j++) // BFS 一次向前一列
+        {
+            bool ok = false;
+            for(int i = 0; i < m; i++)
+            {
+                if(grid[i][j] > 0) // 不在队列中
+                    continue;
+                for(int k = max(i - 1, 0); k < min(i + 2, m); k++)
+                {
+                    if(grid[k][j + 1] > -grid[i][j])
+                    {
+                        grid[k][j + 1] *= -1;
+                        ok = true;
+                    }
+                }
+            }
+            if(!ok) // 不能再往右了
+                return j;
+        }
+        return n - 1;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2867. 统计树中的合法路径数目 :rage: HARD
 关键思路：
 - <b>质数节点把这棵树分成了若干个连通块</b>
