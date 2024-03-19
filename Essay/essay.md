@@ -455,15 +455,38 @@ Open-vocabulary 2D image segmentation：
 query paremeter指定了从基于transformer的体系结构中所需获取mask  proposals的数量
 
 ### 计算mask特征
-选出该物体最可见的k个视图  
-每一个视图由3Dmask投影计算出2Dmask，再用SAM精细化这些mask  
-利用CLIP编码器获得基于计算得到的2Dmask的多尺度image-crops的图像嵌入  
+<b>1、选出该物体最可见的`k`个视图</b>   
+基于每个视图`j`中的每个掩模`i`的可见性分数$s_{ij} = \frac{vis(i,j)}{max_{j'}(vis(i, j'))}$（$vis(i, j)$ 为 $mask_i$ 在 $frame_j$ 中**可见的点数量**）来选择  
 
+<b>2、精细化mask并选出视图的最优裁切尺度</b>   
+*简单地考虑掩模的所有投影点往往会导致不精确和有噪声的边界框，很大程度上受到异常值的影响*   
+每一个instance的视图由3Dmask投影计算出2Dmask，再用SAM精细化这些mask   
+借鉴了RANSAC的思想，迭代地采样几个初始mask点作为给SAM的输入点（prompt），每次输出一个2Dmask和一个置信得分，选择最终得分最高的2Dmask  
+
+根据精细化的2Dmask及其包围盒在该视图上生成级数`L=3`的图像裁切  
+
+<b>3、获取并聚合CLIP特征</b>   
+对一个实例，总共`k*L`张图像  
+利用CLIP编码器获得基于计算得到的2Dmask的多尺度image-crops的图像嵌入（通过average pool 聚合）  
+
+*可以通过 将给定的文本或基于图像的query送入同样的 CLIP encoder，来用于各种基于实例的任务*  
+
+<br>
+
+### mask模块的泛化性能评估实验
+*由于mask模块是在封闭词汇数据集ScanNet200上训练的，需要评估泛化性*   
+
+1、将ScanNet200标签分为两个子集：基类和新类（与ScanNet20中的类相似度较小），使用小数据集ScanNet20训练mask模块，评估它在更大数据集上的泛化性   
+2、使用ScanNet200训练，在另一个数据集Replica上评估  
+
+<br>
 
 ### 不足和思考
 1、如何提升初始 3Dmask proposals的质量？（用Mask3D感觉很奇怪）  
-2、只能在相机视锥范围内感知场景上下文，缺少对场景全局以及场景中所有元素的空间关系的理解   
-3、先分割好了物体的mask 无法适应不同的分割粒度？（如泰迪熊、泰迪熊的头部）  
+2、观测物体实例mask的帧是怎么来的？  
+3、只能在相机视锥范围内感知场景上下文，缺少对场景全局以及场景中所有元素的空间关系的理解   
+4、先分割好了物体的mask 无法适应不同的分割粒度（需要看看Mask3D的实现）？& mask之间的层级关系定义（如泰迪熊、泰迪熊的头部）  
+5、聚合CLIP特征的方式（当前average pool）
 
 <br>
 
