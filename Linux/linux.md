@@ -28,6 +28,10 @@ WPS Office
 <https://blog.csdn.net/Kevin__47/article/details/131564415>  
 <https://www.cnblogs.com/E-Dreamer-Blogs/p/13052655.html>  
 
+```
+ubuntu-drivers devices   // 查询所有ubuntu推荐的驱动
+sudo ubuntu-drivers autoinstall // 安装所有推荐的驱动程序
+```
 中途禁用了集显驱动，但还没有安装好nvidia驱动，导致开机黑屏  
 Ctrl+Alt+F2 进入命令行  
 ```

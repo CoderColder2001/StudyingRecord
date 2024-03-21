@@ -4,6 +4,41 @@
 ### 题目
 
 ---
+### &emsp; 50. Pow(x, n) MID
+关键思路：  
+- 快速幂 利用<b>二进制展开</b>
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    double myPow(double x, int n) {
+        long long N = n;
+        if(N < 0)
+        {
+            x = 1.0/x;
+            N = -N;
+        }
+        double ans = 1.0;
+        double x_contribute = x;
+        while(N > 0)
+        {
+            if(N & 0x1 == 1)
+                ans *= x_contribute;
+            
+            x_contribute *= x_contribute; // 将贡献不断地平方
+            N >>= 1;
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1015. 可被K整除的最小整数 MID
 关键思路：  
 - <b>模运算转化</b>
