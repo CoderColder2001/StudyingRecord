@@ -157,6 +157,40 @@ public:
 <br>
 
 ---
+### &emsp; 518. 零钱兑换II MID
+关键思路：  
+- 背包类<b>构造型问题</b> 求解方案个数
+- <b>枚举能用的，去更新各个结果的方案数</b>
+- 状态转移式子第一维只与上一层有关，可以进一步空间优化
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        int n = coins.size();
+        vector<vector<int>> dp(n + 1, vector<int>(amount + 1));
+        dp[0][0] = 1;
+        for(int i = 0; i < n; i++) // 枚举能用的硬币
+        {
+            for(int c = coins[i]; c <= amount; c++) // 影响各个金额的方案
+            {
+                if(c < coins[i])
+                    dp[i + 1][c] = dp[i][c];
+                else
+                    dp[i + 1][c] = dp[i][c] + dp[i + 1][c - coins[i]];
+            }
+        }
+        return dp[n][amount];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 978. 最长湍流子数组 MID
 关键思路：  
 - 定义两个状态量`up`，`down` 
