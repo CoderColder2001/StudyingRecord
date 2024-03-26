@@ -550,6 +550,28 @@ keywords: 语义场重建；3D高斯；
 
 <br>
 
+### 基于SAM的层次语义计算方法
+
+具有预定义好的语义尺度  
+
+一个场景中所有的分割区域都稀疏地分布在CLIP隐空间中，允许我们使用一个场景特定的自动编码器进一步压缩这些CLIP特征  
+使用SAM masks的CLIP特征来训练一个对应于场景的CLIP特征的自动编码器  
+
+<br>
+
+### open-vocabulary query
+与LERF类似，计算每个query的相关性得分  
+对于每个文本查询，获得三个相关性maps，每个map表示在特定的语义级别上的结果；选取具有最高相关性得分的级别   
+
+对于3D语义分割任务，过滤相关性分数低于设定阈值的点，并预测剩余区域的对象mask  
+
+<br>
+
+### 思考
+对应于场景的CLIP特征的自动编码器，不灵活，且需要额外训练  
+
+<br>
+
 ---
 ## （2024CVPR）GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting
  
