@@ -1,8 +1,9 @@
-# LINUX & WSL2
+# LINUX & WSL2 & 服务器
 基于WSL2或双系统  
 记录LINUX的常用命令与有关知识  
 
-<a href = "">ubuntu服务器安装桌面</a>
+<a href = "">ubuntu服务器安装桌面</a>  
+windows安装winScp传文件到服务器  
 
 ------
 ## Content

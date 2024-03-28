@@ -748,7 +748,37 @@ public:
 };
 ```
 </details>
+<br>
 
+--- 
+### &emsp; 1997. 访问完所有房间的一天 MID
+关键思路：
+- nextVisit 是回访（<= i） 奇数次访问一个房间时会回退
+- 对于一个房间 i 来说，一定访问了偶数次它左边的房间（否则不可能到达 i）
+- 从 “奇数次访问房间i” 到 “偶数次访问房间i” 为一个周期
+- 定义一个周期所需天数 $f[i] = 2 + \sum_{k=j}^{i-1}{f[k]}$ ，j为奇数次访问i时的回访房间
+- 用前缀和优化sum 带入前缀和递推式$s[i+1] = s[i]+f[i]$
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int firstDayBeenInAllRooms(vector<int>& nextVisit) {
+        const int MOD = 1e9+7;
+        int n = nextVisit.size();
+        vector<long> s(n);
+        for(int i = 0; i < n - 1; i++)
+        {
+            int j = nextVisit[i];
+            s[i+1] = (s[i] + s[i] - s[j] + 2 + MOD) % MOD;
+        }
+        return s[n-1];
+    }
+};
+```
+</details>
 <br>
 
 ------
@@ -1363,6 +1393,39 @@ public:
             left++;
         }
         return cnt;
+    }
+};
+```
+</details>
+<br>
+
+--- 
+### &emsp; 2580. 统计将重叠区间合并成组的方案数 MID
+关键思路：
+- 题目转化：一个区间的成员必定与另一个区间都无交集
+- <b>把所有有交集的区间合并到一个大区间（把有交集的区间合并，分成不同的相互之间不相交的区间集合）</b>
+- <b>按左端点从小到大排序，维护当前遍历区间右端点的最大值</b>，利用<b>单调性</b>（当前区间与之前遍历的区间没交集，那么之后的区间也和之前遍历的区间没交集）
+- 最终答案为$2^m$，`m`为集合个数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    const int  MOD = 1e9+7;
+    int countWays(vector<vector<int>>& ranges) {
+        ranges::sort(ranges, [](auto &a, auto &b) { return a[0] < b[0];}); // 按左端点从小到大排序
+        int ans = 1, max_r = -1;
+        for(auto &p : ranges)
+        {
+            if(p[0] > max_r)
+            {
+                ans = ans * 2 % MOD;
+            }
+            max_r = max(max_r, p[1]); // 合并
+        }
+        return ans;
     }
 };
 ```
