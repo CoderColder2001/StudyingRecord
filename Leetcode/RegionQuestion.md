@@ -1431,3 +1431,37 @@ public:
 ```
 </details>
 <br>
+
+--- 
+### &emsp; 2908. 元素和最小的山形三元组I EASY
+关键思路：
+- 三元组 通常<b>枚举中间的数</b>
+- 先预处理出后缀最小值，再在枚举的过程中维护前缀最小值
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumSum(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> suf(n); // 后缀最小值
+        suf[n-1] = nums[n-1];
+        for(int i = n - 2; i > 1; i--)
+            suf[i] = min(suf[i+1], nums[i]);
+
+        int ans = INT_MAX;
+        int pre = nums[0]; // 枚举过程中 维护前缀最小值
+        for(int j = 1; j < n-1; j++)
+        {
+            if(pre < nums[j] && nums[j] > suf[j+1])
+                ans = min(ans, pre + nums[j] + suf[j + 1]);
+            pre = min(pre, nums[j]);
+        }
+        return ans == INT_MAX ? -1 : ans;
+    }
+};
+```
+</details>
+<br>

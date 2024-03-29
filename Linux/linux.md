@@ -5,11 +5,14 @@
 <a href = "">ubuntu服务器安装桌面</a>  
 windows安装winScp传文件到服务器  
 
+<a href = "https://blog.csdn.net/qq_38048756/article/details/117935610">windows下的pycharm配置连接linux </a>  
+
 ------
 ## Content
 - 双系统安装
 - 软件安装links
 - 常用命令
+- vim
 
 ------
 ## 双系统安装
@@ -65,3 +68,7 @@ nvidia-smi // 查看显卡状态
 
 sudo dpkg -i xxx.deb // 安装deb软件包
 ```
+
+------
+## vim
+dd 删除当前一行  
