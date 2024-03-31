@@ -43,7 +43,6 @@
 - 使用vector维护 *数组 row从值到索引的映射* （位置buffer）
 - `lover = a ^ 1` 取相邻的奇偶数
 
-
 <details> 
 <summary> <b>C++ Code</b> </summary>
 
@@ -67,6 +66,39 @@ public:
                 loc[row[i+1]] = loc[lover]; // 更新位置buffer
                 swap(row[i+1], row[loc[lover]]); // 交换 更新row
                 loc[lover] = i+1; // 更新位置buffer
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 2952. 需要添加的硬币的最小数量 MID
+关键思路：
+- 基于贪心策略进行递推构造
+- 由归纳法思考，假设现在可以得到区间 `[0, s−1]` 中的所有整数 如何添加？
+- 添加后，可以得到 `[0, 2s−1]` 中的所有整数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumAddedCoins(vector<int>& coins, int target) {
+        ranges::sort(coins);
+        int ans = 0, s = 1, i = 0; // s 指示下一步要构造出的数
+        while(s <= target)
+        {
+            if(i < coins.size() && coins[i] <= s)
+                s += coins[i++]; // 更新区间 可以得到 [0, s+x−1]
+            else // 无法得到s
+            {
+                s *= 2; // 添加coins[i] 更新区间
                 ans++;
             }
         }

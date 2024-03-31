@@ -652,6 +652,40 @@ public:
 ---
 ### 题目
 ---
+### &emsp; 331. 验证二叉树的前序序列化 MID
+关键思路：
+- 遍历序列的过程其实等价于遍历这颗树
+- <b>统计树的“出度-入度”值`diff`</b>
+- 根节点提供2出度，非空节点提供1入度2出度，空节点提供1入度
+- 法二：也可以利用 <b>栈</b>，每次遍历到两个空节点时意味着遇到了一个叶子节点，顶部三个元素出栈，替换成一个`"#"`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    bool isValidSerialization(string preorder) {
+        stringstream ss(preorder);
+        string s;
+        int diff = 1;
+        while(getline(ss, s, ','))
+        {
+            diff--; // 入度+1
+            if(diff < 0 ) // 还没有遍历它的子节点 必须满足出度大于入度
+                return false;
+
+            if(s != "#")
+                diff += 2;
+        }
+        return diff == 0;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 1261. 在受污染的二叉树中查找元素 MID
 关键思路：
 - 二进制数位即代表了向左/向右的移动路径
@@ -683,7 +717,6 @@ public:
 ```
 </details>
 <br>
-
 
 ---
 ### &emsp; 2673. 使二叉树所有路径值相等的最小代价 MID
