@@ -32,26 +32,44 @@ WPS Office
 <https://blog.csdn.net/Kevin__47/article/details/131564415>  
 <https://www.cnblogs.com/E-Dreamer-Blogs/p/13052655.html>  
 
-```
+```sh
 ubuntu-drivers devices   // 查询所有ubuntu推荐的驱动
 sudo ubuntu-drivers autoinstall // 安装所有推荐的驱动程序
 ```
 中途禁用了集显驱动，但还没有安装好nvidia驱动，导致开机黑屏  
 Ctrl+Alt+F2 进入命令行  
-```
-sudo vi /etc/modprobe.d/blacklist.conf  //删去此前在末尾新加的 
+```sh
+sudo vi /etc/modprobe.d/blacklist.conf  # 删去此前在末尾新加的 
 或
-rm -f /etc/modprobe.d/blacklist-nouveau.conf  //删除黑名单文件
+rm -f /etc/modprobe.d/blacklist-nouveau.conf  # 删除黑名单文件
 update-initramfs -u
 reboot
 ```
 
 cuda  
-```
+```sh
 sudo apt install nvidia-utils-470
 ```   
 
+``` sh
+vim ~/.bashrc
+
+export LD_LIBRARY_PATH=/usr/local/cuda-11.3/lib64:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda-11.3/bin:$PATH
+export CUDA_HOME=/usr/local/cuda-11.3
+
+source ~/.bashrc
+```
+
 <br>
+
+### 卸载CUDA
+```sh
+cd /usr/local/cuda/bin
+./cuda-uninstaller
+sudo rm -rf /usr/local/cuda-xx.x # 删除残余cudnn
+```
+<a href="https://blog.csdn.net/weixin_45347379/article/details/120260072">Linux卸载重新安装cuda，cudnn和pytorch的误区和相关常用命令</a>
 
 ------
 ## 软件安装links
@@ -60,9 +78,10 @@ sudo apt install nvidia-utils-470
 
 ------
 ## 常用命令
-```
+```sh
+lsb_release -a // 查看ubuntu版本
 uname -a // 查看linux内核版本号、操作系统版本号
-nvcc --version // 查看已安装的cuda
+nvcc --version // 查看已安装的cuda（通过/bin里的nvcc）
 
 nvidia-smi // 查看显卡状态
 

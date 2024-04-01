@@ -21,15 +21,27 @@ sum(x >= y for x, y in pairwise(word))
 ------
 ## Conda
 
-常用命令
-```
-conda info --envs // 查看环境列表
-conda list // 查看当前环境下的包
+### 常用命令
+```sh
+conda info --envs # 查看环境列表
+conda list # 查看当前环境下的包
+
+conda create --name=xxx python=x.x.x # 创建环境
+conda env remove --name xxx # 删除环境
+
+conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装pytorch前）
 ```
 
 ### pycharm + conda
 配置conda环境中 选择 '...\Anaconda\condabin\conda.bat'  
 再选择相应的虚拟环境  
+
+### 环境配置的经验
+对于一些子项目，可以先git clone下来，到对应目录`pip install .`（凭借setup.py）  
+
+```sh
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package # 临时使用清华源安装some-package
+```
 
 <br>
 
@@ -205,6 +217,16 @@ has_negative = any(num < 0 for num in numbers)
 ------
 # Pytorch
 
+## torch 相关配置
+
+```sh
+python -c "import torch; print(torch.__version__, torch.version.cuda )" # 检测pytorch版本和对应的cuda支持
+```
+```python
+torch.cuda.is_available()
+```
+
+## torch 相关方法
 `torch.stack(...)`:  
 沿着一个新维度对输入张量序列进行连接(如把二维堆成三维)   
 
