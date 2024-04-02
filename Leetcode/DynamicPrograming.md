@@ -858,6 +858,44 @@ public:
 </details> 
 <br>
 
+---
+### &emsp; 894. 所有可能的真二叉树 MID
+关键思路：  
+- 分析问题性质：真二叉树一定是奇数个节点；且每增加两个叶子，整棵树就会多一个叶子，故一个n节点真二叉树恰好有 `(n+1)/2` 个叶子
+- <b>DP：枚举左子树有多少个叶子，划分子问题</b>
+- `dp[i]`：有i个叶子的所有真二叉树的列表  
+- （为什么从叶子节点数入手思考？因为叶子节点数每一个值都有意义，但总节点数如果不是奇数就没有意义；其实二者是等价的）
+
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+vector<TreeNode*> dp[11];
+auto init = [] {
+    dp[1] = {new TreeNode()};
+    for(int i = 2; i < 11; i++) // 计算dp[1]
+    {
+        for(int j = 1; j < i; j++) // 枚举左子树叶子树
+        {
+            for(auto left : dp[j]) // 枚举左子树
+                for(auto right : dp[i - j]) // 枚举右子树
+                    dp[i].push_back(new TreeNode(0, left, right));
+        }
+    }
+    return 0;
+}();
+
+class Solution {
+public:
+    vector<TreeNode*> allPossibleFBT(int n) {
+        return dp[n % 2 ? (n + 1)/2 : 0];
+    }
+};
+```
+</details> 
+<br>
+
 ------
 ## 序列DP
 ### 概念

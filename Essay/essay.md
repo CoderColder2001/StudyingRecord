@@ -160,6 +160,47 @@ $\mu_\theta$ 最直接的参数化是一个预测 $\widetilde{\mu_t}$（正向�
 # Visual Language Pre-training
 
 ---
+## （2021ICML）（CLIP）Learning Transferable Visual Models From Natural Language Supervision
+ 
+keywords：图像-文本；  
+
+借鉴了NLP领域中 从大量原始文本中预训练模型（具有上下文语境的学习方式）
+构建 **（image,text）数据对**  
+**设置训练任务为对比任务：判定image和text是否为配对**    
+
+特点：
+- 打破了固定种类标签的模型训练范式
+- 利用自然语言作为监督信号训练视觉模型 而非标签值；使得模型的输入、输出有更高的自由度
+- 利用自然语言的好处：不需要标注数据，且不需要设计如何标注数据
+- 可以直接迁移到下游任务，无需在下游任务的数据集上重新训练（高泛化性）
+- 由于训练时把视觉和文字绑定在一起，所学习到的不仅是视觉特征，而是**多模态的特征**
+- 之前的自监督或无监督的方法主要是在学习一种特征表示的能力（学习一种泛化性比较好的特征）
+- 借助文本训练后，使用文本作为引导，实现zero-shot的迁移学习
+
+<br>
+
+### Background：
+CL
+
+<br>
+
+### 问题：
+1、如
+
+<br>
+
+### 构
+g
+
+<br>
+
+### 思考
+1、如何进一步变成生成式模型（GPT化）？输出图像的文本标签  
+2、多模态融合模块的实现比较简单；适合抽特征、retrieve等任务；无法分析更复杂的关系  
+
+<br>
+
+---
 ## （2024CVPR）Alpha-CLIP: A CLIP Model Focusing on Wherever You Want
  
 keywords：图像-文本；  
