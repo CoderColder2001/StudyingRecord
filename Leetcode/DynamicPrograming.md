@@ -712,6 +712,76 @@ public:
 <br>
 
 ---
+### &emsp; 2617. 网格图中最少访问的格子数 :rage:HARD
+关键思路：  
+- 定义`f[i][j]`：从`(i, j)` 到 `(m-1, n-1)`经过的最少格子数
+- 状态转移：可以从行转`f[k][j]`也可以从列转`f[i][k]`，取能够作为转移来源的最小`f`
+- $f[i][j]=min(min_{k=j+1}^{j+g}f[i][k], min_{k=i+1}^{i+g}f[k][j]) + 1$
+- 注意状态转移过程的单调性（枚举遍历的过程）：从f[i][j]到f[i][k]，倒序枚举 `j` 时，`k` 的左边界 `j+1` 单调减小，右边界无单调性
+- 使用一个 <b>根据`f`值单调递增的栈</b> 维护 `f[i][j]` 以及 `j`，由于是在倒序枚举 `j` 的过程，对于 `j` 来说在栈中是单调递减的
+- 因此<b>在单调栈上二分查找（利用有序性）最大的不超过 `j+g` 的下标`k`，对应 `f[i][k]` 就是最小的 `f[i][k]`</b>
+- 由于按照先行再列的顺序遍历，只需要一个行单调栈维护当前行的信息
+- 法二：用并查集合并访问过的节点，见Union-find.md
+
+<details> 
+<summary> <b>C++ Code</b> </summary>  
+
+```c++
+class Solution {
+public:
+    int minimumVisitedCells(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<pair<int, int>>> col_stacks(n); // 每列的单调栈
+        vector<pair<int, int>> row_st; // 行单调栈
+        // 栈内保存 (f[id1][id2], id)
+        int mn; // 缓存f[i][j] 
+        for(int i = m - 1; i >= 0; i--)
+        {
+            row_st.clear();
+            for(int j = n - 1; j >= 0; j--)
+            {
+                int g = grid[i][j];
+                auto &col_st = col_stacks[j];
+                mn = i < m - 1 || j < n - 1 ? INT_MAX : 1;
+                if(g != 0) // 可以向右/向下
+                {
+                    // 在单调栈上二分查找最优转移的来源
+                    // 对于k来说是单调减栈（逆序遍历过程）
+                    auto it = lower_bound(row_st.begin(), row_st.end(), j + g, 
+                        [](const auto &a, const int b) {
+                            return a.second > b;
+                        });
+                    if(it < row_st.end())
+                        mn = it->first + 1;
+
+                    it = lower_bound(col_st.begin(), col_st.end(), i + g,
+                        [](const auto &a, const int b) {
+                            return a.second > b;
+                        });
+                    if(it < col_st.end())
+                        mn = min(mn, it->first + 1);
+                }
+                if(mn < INT_MAX) // 插入单调栈中
+                {
+                    // f值单调增
+                    while(!row_st.empty() && mn <= row_st.back().first)
+                        row_st.pop_back();
+                    row_st.emplace_back(mn, j);
+
+                    while(!col_st.empty() && mn <= col_st.back().first)
+                        col_st.pop_back();
+                    col_st.emplace_back(mn, i);
+                }
+            }
+        }
+        return mn < INT_MAX ? mn : -1; // 最后一个算出的 mn 就是 f[0][0]
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 2707. 字符串中的额外字符 MID
 关键思路：  
 - 将字典中的字符串存入set中
