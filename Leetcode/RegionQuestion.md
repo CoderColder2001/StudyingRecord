@@ -356,6 +356,37 @@ public:
 <br>
 
 ---
+### &emsp; 2009. 使数组连续的最少操作数 :rage: HARD
+关键思路：
+- <b>逆向考虑问题</b> 最多有多少个元素保持不变？
+- 最终的“连续数组”对应一个窗口
+- 排序去重后 <b>滑动窗口</b> 计算窗口内最多可以包含多少个元素
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minOperations(vector<int>& nums) {
+        ranges::sort(nums);
+        int n = nums.size();
+        int m = unique(nums.begin(), nums.end()) - nums.begin(); // 去重
+        int ans = 0, left = 0;
+        for(int i = 0; i < m; i++)
+        {
+            while(nums[left] < nums[i] - n + 1)
+                left++;
+            ans = max(ans, i - left + 1);
+        }
+        return n - ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2762. 不间断子数组 MID
 关键思路：
 - 滑动窗口 使用<b>平衡树or哈希表</b> 维护窗口内最大值与最小值
