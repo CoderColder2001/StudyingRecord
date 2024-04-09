@@ -15,7 +15,7 @@ sum(x >= y for x, y in pairwise(word))
 
 `str[::-1]` 字符串反转  
 
-`[..., None]` 在最后增加一个维度  
+`[..., None]` （在最后）增加一个维度  
 <br>
 
 ------

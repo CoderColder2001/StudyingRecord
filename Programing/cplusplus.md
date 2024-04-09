@@ -298,6 +298,11 @@ explicit 指定符可以与常量表达式一同使用，函数若且唯若 该�
 
 ------
 ## DataStructure
+### map/set
+查询、插入操作时间复杂度稳定为$O(logN)$   
+优点：有序性   
+缺点：空间占用率高，以红黑树作为内部实现时，每一个节点都需要额外保存父节点、孩子节点和红/黑性质等数据字段，使得每一个节点都占用大量的空间    
+
 ### multiset
 允许重复元素（允许多个元素具有相同关键字key）  
 与`unordered_xxx`不同 会对内部元素进行排序 基于红黑树  
@@ -328,6 +333,11 @@ priority_queue<Tweet*, vector<Tweet*>, cmp> q;
 ### vector
 
 TODO：大小改变的过程？？  
+
+默认实现：在每次扩容时将当前容量翻倍  
+
+`vector.reserve(n)`至少分配与需求一样大的内存空间（可能更大），而当`n`小于当前容量时，什么也不做，容器不会退回内存空间   
+`resize`只改变容器中元素的数目，而不改变容器的容量  
 
 将哈希表内容存到vector中，并根据value降序排序，按值重复存放到string中：  
 ``` c++
@@ -372,6 +382,8 @@ for (auto &[ch, num] : vec) {
 
 ---
 ### unordered_map、unordered_set
+缺点：建立较为耗时；部分情况下，性能不稳定。如当大量插入数据时，可能触发大量rehash；当哈希函数设置不合理时，冲突过多，单次查询/插入操作最坏时间复杂度达到$O(N)$  
+
 无序容器在存储上组织为一系列桶，性能依赖于哈希函数质量以及桶的数量和大小。 理想状态下哈希函数将每个特定值映射到唯一的桶，但当一个桶保存多个元素时，需要顺序查找。  
 
 默认情况下，无序容器使用关键字类型的 `==` 运算符来比较元素，使用 `hash<key_type>` 类型的对象生成每个元素的哈希值  
@@ -489,6 +501,8 @@ KSQLiteManager* KSQLiteManager::getInstance()
 ### std::mutex
 
 ### std::atomic（C++11）
+（实现“无锁编程”）  
+
 原子变量是一个模板类，包含成员函数`load`和`store`，用于对其进行读操作和写操作。即使是在最低的同步等级下，也能保证多线程并行场景中对原子变量的读写是原子操作  
 
 atomic利用 <b>CAS（Compare And Swap）思想</b> 保证原子性：
@@ -496,13 +510,41 @@ atomic利用 <b>CAS（Compare And Swap）思想</b> 保证原子性：
 成员函数`compare_exchange_weak()`是一个基础的CAS：其返回值为`bool`，至少接受两个参数，第一个称为`expected`，第二个称为`desired`，并且可以接受更多的`std::memory_order`作为第三、第四参数来控制同步行为   
 如果`*this`和`expected`按位相等，那么则将`desired`中的值赋给`*this`，并返回`true`；否则，将`*this`中的实际值加载进`expected`，并返回`false` 
 
-可能带来ABA问题（两个线程把x从100赋值到50，此时第三个线程给x加20，理论结果应该为70，但可能为50）  
+可能带来ABA问题（物理上同一个A在不同的时间上可能是两个业务状态，前面的业务状态失效并不能代表新的业务状态已失效。ABA中丢失了时间，以及时间带来的业务含义 <a href = "https://blog.csdn.net/WSYW126/article/details/53979918">AtomicInteger、Unsafe类、ABA问题</a>）  
 简单的解决思路：在变量前面加上版本号，每次变量更新的时候变量的版本号都+1  
 
 <br>
 
 ### std::memory_order（C++11）
-<b>内存序</b> 用于控制原子变量的线程间同步行为  
+用于描述线程间同步行为的内存模型
+<b>内存序</b> 用于控制原子变量的线程间同步行为    
+
+```c++
+typedef enum memory_order {
+    memory_order_relaxed, // 仅保证操作本身的原子性，不提供任何同步或 ordering 保证
+
+    memory_order_consume, // 暂不建议
+
+    memory_order_acquire, // 确保此操作前的写操作对于随后在相同线程中的读操作是可见的，并且对其他线程的释放操作具有同步效果
+    memory_order_release, // 确保此操作后的读写操作对于在此操作之前的写操作具有同步效果，并且使得这些写操作对其他线程的获取操作可见。
+    memory_order_acq_rel, // acquire-release 带此参数的读写操作既是获得操作又是释放操作。当前线程的读或写内存不能被重排到此store/load之前或之后
+
+    memory_order_seq_cst // 确保所有线程看到的操作都是全局一致的顺序
+} memory_order;
+```
+包括四种类型：  
+- Relaxed Ordering，宽松顺序 (涉及内存序参数 <b>`memory_order_relaxed`</b>)
+    只保证对目标atomic变量的`load()`和`store()`操作是原子性的  
+- Release-Acquire Ordering，释放-获得顺序 (涉及内存序参数<b>`memory_order_release`</b>, <b>`memory_order_acquire`</b>, <b>`memory_order_acq_rel`</b>)
+    在前者实现原子操作的基础上，atomic变量会在程序中引入多个内存屏障，限制指令重排与CPU乱序执行
+    - `memory_order_acquire`用于限制`load()`，受此限制的读操作被称为 acquire 操作（获得操作），**此 load 之后的内存读写操作不能被指令重排到此 load 之前**；此外，当`load()`成功获得其他线程释放的值后，在该释放操作之前的 所有内存写入 都对本`load()`所在线程可见。
+    - `memory_order_release`用于限制`store()`，受此限制的写操作被称为release 操作（释放操作），**此 store 之前的内存读写操作不能被指令重排到此 store 之后**；当前线程的所有内存写入，可见于获得该同一原子变量的其他线程
+- Release-Consume Ordering，释放-消费顺序（涉及内存序参数 <b>`memory_order_consume`</b>和之前出现的 <b>`memory_order_release`</b>）
+    一般不用，也不是所有编译器都支持
+- Sequentially Consistent Ordering，序列一致顺序 (涉及内存序参数`memory_order_seq_cst`)
+    确保所有线程看到的操作都是全局一致的顺序，提供最严格的线程同步
+
+<br>
 
 ### shared_lock & unique_lock（C++14）
 
