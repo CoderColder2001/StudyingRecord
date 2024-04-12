@@ -497,6 +497,7 @@ KSQLiteManager* KSQLiteManager::getInstance()
 - 多核CPU缓存一致性
 
 ### std::thread
+线程API  
 
 ### std::mutex
 
