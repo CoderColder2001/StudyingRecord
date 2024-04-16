@@ -589,6 +589,81 @@ public:
 <br>
 
 ---
+### &emsp; 1766. 互质树 :rage: HARD
+关键思路：
+- 对一个节点`x` <b>枚举</b> `[1,50]` 中与 `nums[x]` 互质的数
+- <b>通过一个映射关系找到深度最大的某一值对应的节点</b>
+- 存储节点值等于 `i` 的最近祖先的深度和节点编号（递归到这一层时的“信息”）
+- <b>DFS的过程中更新各节点的信息与当前“全局信息”</b>
+- 回溯时 恢复现场
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+const int MX = 51;
+vector<int> coprime[MX];
+// 预处理 在coprime[i]保存[1, MX)中所有与i互质的数
+auto init = [] {
+    for(int i = 1; i < MX; i++) 
+    {
+        for(int j = 1; j < MX; j++)
+            if(gcd(i, j) == 1)
+                coprime[i].push_back(j);
+    } 
+    return 0;
+}();
+
+class Solution {
+    vector<vector<int>> g;
+    vector<int> ans;
+    pair<int, int> val_depth_id[MX]; // 节点值等于i的最近祖先（最深）的深度和节点编号
+
+    void dfs(int x, int fa, int depth, vector<int> &nums)
+    {
+        int val = nums[x]; // x 的节点值
+        // 计算与 val 互质的数中，深度最大的节点编号
+        int max_depth = 0;
+        for(int j : coprime[val]) // 枚举 遍历互质的val
+        {
+            auto [depth, id] = val_depth_id[j];
+            if(depth > max_depth) 
+            {
+                max_depth = depth;
+                ans[x] = id;
+            }
+        }
+
+        auto tmp = val_depth_id[val]; // 用于恢复现场
+        val_depth_id[val] = {depth, x}; // 更新递归到此时 val 对应的节点深度和节点编号
+        for(int y : g[x]) 
+        {
+            if(y != fa)
+                dfs(y, x, depth + 1, nums);
+        }
+        val_depth_id[val] = tmp; // 恢复现场
+    }
+public:
+    vector<int> getCoprimes(vector<int>& nums, vector<vector<int>>& edges) {
+        int n = nums.size();
+        g.resize(n);
+        for(auto &e : edges)
+        {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        ans.resize(n, -1);
+        dfs(0, -1, 1, nums);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2003. 每棵子树内缺失的最小基因值 :rage: HARD
 关键思路：
 - 思考问题转化： 以每个节点为根的子树中，权重集合在 [1,n+1] 范围内缺失的最小数

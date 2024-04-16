@@ -6,6 +6,7 @@
 windows安装winScp传文件到服务器  
 
 <a href = "https://blog.csdn.net/qq_38048756/article/details/117935610">windows下的pycharm配置连接linux </a>  
+右键工程文件夹目录upload  
 
 ------
 ## Content
@@ -19,7 +20,11 @@ windows安装winScp传文件到服务器
 2023.11  主要参考了<https://zhuanlan.zhihu.com/p/363640824>  用师兄做好的启动盘  
 注意U盘启动时用UEFI启动  
 
+<br>
+
 ### 环境配置
+<a href = "https://zhuanlan.zhihu.com/p/359354934">~/.bashrc-Linux环境变量配置超详细教程</a>
+
 命令行安装  
 gcc、make、git  
 
@@ -31,6 +36,8 @@ WPS Office
 ### 显卡驱动与CUDA
 <https://blog.csdn.net/Kevin__47/article/details/131564415>  
 <https://www.cnblogs.com/E-Dreamer-Blogs/p/13052655.html>  
+
+<a href = "https://blog.csdn.net/Dove_Dan/article/details/130667793?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-130667793-blog-107234271.235%5Ev43%5Epc_blog_bottom_relevance_base6&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-130667793-blog-107234271.235%5Ev43%5Epc_blog_bottom_relevance_base6&utm_relevant_index=1">linux系统非root用户安装cuda和cudnn，不同版本cuda切换</a>
 
 ```sh
 ubuntu-drivers devices   // 查询所有ubuntu推荐的驱动
@@ -95,3 +102,7 @@ sudo dpkg -i xxx.deb // 安装deb软件包
 ------
 ## vim
 dd 删除当前一行  
+
+
+------
+## Envrionment modules工具

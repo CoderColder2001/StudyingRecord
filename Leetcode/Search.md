@@ -10,7 +10,9 @@
 ------
 ## BFS/DFS
 ### 概念
----
+关于 路径 / 连通性  
+定义“图上的状态”  
+
 ---
 ### 题目
 ---
@@ -130,6 +132,62 @@ public:
             }
             q = move(nxt); // 用move
         }
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 924. 尽量减少恶意软件的传播 :rage: HARD
+关键思路： 
+- <b>图结构中的连通性</b>
+- 问题转化：寻找只包含一个被感染节点的最大连通块
+- 如何表达“连通块内有一个或多个被感染的节点”（对应连通块的不同状态）
+- 通过`vis`记录已访问节点，以免重复遍历连通块
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minMalwareSpread(vector<vector<int>>& graph, vector<int>& initial) {
+        set<int> st(initial.begin(), initial.end());
+        int n = graph.size();
+        vector<int> vis(n);
+        int node_id, size;
+        function<void(int)> dfs = [&](int x) {
+            vis[x] = true;
+            size++;
+            if(node_id != -2 && st.contains(x)) // 更新连通块状态
+                node_id = node_id == -1 ? x : -2;
+            for(int y = 0; y < n; y++)
+            {
+                if(graph[x][y] && !vis[y])
+                    dfs(y);
+            }
+        };
+
+        int ans = -1, max_size = 0;
+        for(int x : initial)
+        {
+            if(vis[x])
+                continue;
+
+            node_id = -1;
+            size = 0;
+            dfs(x); // 寻找连通块
+            if(node_id >= 0)
+            {
+                if(size > max_size || (size == max_size && node_id < ans))
+                {
+                    ans = node_id;
+                    max_size = size;
+                }
+            }
+        }
+        return ans < 0 ? ranges::min(initial) : ans;
     }
 };
 ```
