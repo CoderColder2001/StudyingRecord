@@ -39,6 +39,7 @@ conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装py
 ### 环境配置的经验
 对于一些子项目，可以先git clone下来，到对应目录`pip install .`（凭借setup.py）  
 
+`~/.condarc`  
 ```sh
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package # 临时使用清华源安装some-package
 ```

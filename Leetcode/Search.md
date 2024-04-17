@@ -4,14 +4,14 @@
 - BFS/DFS
 - 状态压缩 + BFS/DFS
 - 图论
+- 连通性问题
   
 <br>
 
 ------
 ## BFS/DFS
 ### 概念
-关于 路径 / 连通性  
-定义“图上的状态”  
+关于 路径 / “路径上的状态”    
 
 ---
 ### 题目
@@ -132,62 +132,6 @@ public:
             }
             q = move(nxt); // 用move
         }
-    }
-};
-```
-</details> 
-<br>
-
----
-### &emsp; 924. 尽量减少恶意软件的传播 :rage: HARD
-关键思路： 
-- <b>图结构中的连通性</b>
-- 问题转化：寻找只包含一个被感染节点的最大连通块
-- 如何表达“连通块内有一个或多个被感染的节点”（对应连通块的不同状态）
-- 通过`vis`记录已访问节点，以免重复遍历连通块
-
-<details> 
-<summary> <b>C++ Code</b> </summary>
-
-```c++
-class Solution {
-public:
-    int minMalwareSpread(vector<vector<int>>& graph, vector<int>& initial) {
-        set<int> st(initial.begin(), initial.end());
-        int n = graph.size();
-        vector<int> vis(n);
-        int node_id, size;
-        function<void(int)> dfs = [&](int x) {
-            vis[x] = true;
-            size++;
-            if(node_id != -2 && st.contains(x)) // 更新连通块状态
-                node_id = node_id == -1 ? x : -2;
-            for(int y = 0; y < n; y++)
-            {
-                if(graph[x][y] && !vis[y])
-                    dfs(y);
-            }
-        };
-
-        int ans = -1, max_size = 0;
-        for(int x : initial)
-        {
-            if(vis[x])
-                continue;
-
-            node_id = -1;
-            size = 0;
-            dfs(x); // 寻找连通块
-            if(node_id >= 0)
-            {
-                if(size > max_size || (size == max_size && node_id < ans))
-                {
-                    ans = node_id;
-                    max_size = size;
-                }
-            }
-        }
-        return ans < 0 ? ranges::min(initial) : ans;
     }
 };
 ```
@@ -1279,4 +1223,135 @@ public:
 };
 ```
 </details>
+<br>
+
+------
+## 连通性问题
+### 概念
+由连通性定义 “图上的状态” / 图的划分  
+
+---
+### 题目
+---
+### &emsp; 924. 尽量减少恶意软件的传播 :rage: HARD
+关键思路： 
+- <b>图结构中的连通性</b>
+- 问题转化：寻找只包含一个被感染节点的最大连通块
+- 如何表达“连通块内有一个或多个被感染的节点”（对应连通块的不同状态）
+- 通过`vis`记录已访问节点，以免重复遍历连通块
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minMalwareSpread(vector<vector<int>>& graph, vector<int>& initial) {
+        set<int> st(initial.begin(), initial.end());
+        int n = graph.size();
+        vector<int> vis(n);
+        int node_id, size;
+        function<void(int)> dfs = [&](int x) {
+            vis[x] = true;
+            size++;
+            if(node_id != -2 && st.contains(x)) // 更新连通块状态
+                node_id = node_id == -1 ? x : -2;
+            for(int y = 0; y < n; y++)
+            {
+                if(graph[x][y] && !vis[y])
+                    dfs(y);
+            }
+        };
+
+        int ans = -1, max_size = 0;
+        for(int x : initial)
+        {
+            if(vis[x])
+                continue;
+
+            node_id = -1;
+            size = 0;
+            dfs(x); // 寻找连通块
+            if(node_id >= 0)
+            {
+                if(size > max_size || (size == max_size && node_id < ans))
+                {
+                    ans = node_id;
+                    max_size = size;
+                }
+            }
+        }
+        return ans < 0 ? ranges::min(initial) : ans;
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 928. 尽量减少恶意软件的传播II :rage: HARD
+关键思路： 
+- 与 T924.的不同 删除节点会改变图的结构（从而导致DFS遍历的结构变化）
+- 先求出initial节点对图的划分
+- 从不在 initial 中的点 `v` 出发 DFS，在不经过 initial中的节点的前提下，看看 `v` 是只能被一个点感染到，还是能被多个点感染到
+- 如果 `v` 只能被点 `x=initial[i]` 感染到，那么在本次 DFS 过程中访问到的其它节点，也只能被点 `x` 感染到
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minMalwareSpread(vector<vector<int>>& graph, vector<int>& initial) {
+        unordered_set<int> st(initial.begin(), initial.end());
+        vector<int> vis(graph.size());
+        int node_id, size;
+        function<void(int)> dfs = [&](int x) {
+            vis[x] = true;
+            size++;
+            for(int y = 0; y < graph[x].size(); y++)
+            {
+                if(graph[x][y] == 0)
+                    continue;
+
+                if(st.contains(y))
+                {
+                    if(node_id != -2 && node_id != y) // 更新连通块状态
+                        node_id = node_id == -1 ? y : -2;
+                }
+                else if(!vis[y]) // dfs只递归访问不在initial的节点
+                {
+                    dfs(y);
+                }
+            }
+        };
+
+        unordered_map<int, int> cnt; // 统计某一initial作为唯一感染节点感染的连通块节点数
+        for(int i = 0; i < graph.size(); i++)
+        {
+            if(vis[i] || st.contains(i))
+                continue;
+
+            node_id = -1;
+            size = 0;
+            dfs(i);
+            if(node_id >= 0) // 这个连通块只连接一个在intial中的节点
+                cnt[node_id] += size;
+        }
+
+        int max_cnt = 0;
+        int min_node_id = 0;
+        for(auto [node_id, c] : cnt)
+        {
+            if(c > max_cnt || (c == max_cnt && node_id < min_node_id))
+            {
+                max_cnt = c;
+                min_node_id = node_id;
+            }
+        }
+        return cnt.empty() ? ranges::min(initial) : min_node_id;
+    }
+};
+```
+</details> 
 <br>
