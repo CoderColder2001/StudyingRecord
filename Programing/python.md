@@ -41,6 +41,8 @@ conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装py
 
 `~/.condarc`  
 ```sh
+conda config --remove-key channels #
+
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package # 临时使用清华源安装some-package
 ```
 
