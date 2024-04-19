@@ -349,6 +349,14 @@ promptable的分割任务 + SAM model + SA-1B data collect engine
 模型被设计和训练成promptable的，因此它可以将zero-shot transfer到新的图像分布和任务（通过 prompt engineering 实现zeroshot transfer）  
 输入prompt（或者如交互时点击、方框），返回分割区域  
 
+*参考NLP基础模型的训练任务 “预测下一个token”*  
+
+通过 <b>prompt engineering</b> 解决下游任务   
+prompt可以是指示在图像中分割什么的任何信息  
+对模棱两可的prompt可以返回多种备选  
+
+模型可以作为一个更大的系统中的一个组件，并在推理时执行新的、不同的任务  
+
 <br>
 
 ### Background：
@@ -357,6 +365,7 @@ promptable的分割任务 + SAM model + SA-1B data collect engine
 CLIP 和 ALIGN 使用对比学习来训练文本和图像编码器，以对齐这两种模态  
 这些 encoder 还可以与其他模块结合应用到各种下游任务上   
 
+<br>
 
 ### 问题：
 1、task如何设计？（借鉴了NLP，用prompt引导，但prompt不局限于文字，而还可以是一个点、一个box）
@@ -366,11 +375,8 @@ CLIP 和 ALIGN 使用对比学习来训练文本和图像编码器，以对齐�
 
 <br>
 
-### 训练任务
-参考NLP基础模型的训练任务“预测下一个token”  
-通过prompt engineering解决下游任务   
-
 ### image encoder
+MAE pre-trained Vision Transformer (ViT)  
 相对耗时，但一张图只用运行一次（相同的图像嵌入可以被不同的提示重复使用）    
 
 <br>
@@ -379,13 +385,18 @@ CLIP 和 ALIGN 使用对比学习来训练文本和图像编码器，以对齐�
 *借用现有模型*  
 将prompt分为稀疏的（如文本、点、boxes）和稠密的（如mask）
 **不同类型的prompt对应不同的encoder模块**（如文本可以使用CLIP的文本编码器；points和boxes可以采用位置编码；而对于稠密的mask，可以采用卷积）  
+
 <br>
 
 ### mask decoder
 采用基于transformer的decoder模块和动态mask预测头  
 **在两个方向（prompt to image embedding及其反向）上使用自注意力和交叉注意力（以实现更好的特征融合）**    
 
-最后对图像嵌入进行上采样并用MLP映射将输出token映射到linear classifer，得到每个图像位置对应的 mask foreground probability  
+最后对图像嵌入进行上采样，并用MLP映射将输出token映射到linear classifer，得到每个图像位置对应的 mask foreground probability  
+
+每个prompt输出三个masks；训练过程中只反向传播masks中最小的损失  
+
+<br>
 
 ### Data Engine设计
 用模型不断产生数据，又用这些数据不断优化模型性能  
@@ -394,6 +405,7 @@ CLIP 和 ALIGN 使用对比学习来训练文本和图像编码器，以对齐�
 
 ### 思考
 由text生成mask还不是很稳定  
+？dataengine没看懂  
 
 ------
 # 3D Graphics

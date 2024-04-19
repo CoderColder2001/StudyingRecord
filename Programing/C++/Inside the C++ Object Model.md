@@ -41,3 +41,13 @@ C struct在C++中的一个合理用途是当要传递“一个复杂class object
 被编译器合成的 default constructor 只满足编译器的需要（关于部分member objects或base class的初始化，或为每一个object初始化其虚函数机制与虚基类机制（成员访问）），而不是程序的需要   
 
 编译器会扩张已存在的 constructors，使得在 user code 执行前，先调用必要的内含 member class objects 的默认构造函数（按照它们的声明顺序）；对于声明或继承虚函数或派生链中含有虚基类的class，同时还需要扩张代码已产生`vtbl`和`vptr`，以及改写有关的调用（以使用`vptr`和 `vtbl`中的条目）    
+
+<br>
+
+当一个 class 不展现“bitwise copy semantics”时，编译器会合成 copy constructor：  
+- 此 class 内含有 member object 而后者的声明有一个 copy constructor
+- 此 class 继承自一个 base class 而后者存在一个 copy constructor
+- 此 class 声明了一个或多个虚函数（需要对`vptr`适当地初始化）
+- 此 class 派生自一个继承串链，其中有一个或多个虚基类（安插一些代码以设定 virtual base class pointer / offset 的值）  
+
+编译器对虚拟继承的支持代表着 **让派生类对象中的虚基类子对象的位置在执行期准备妥当**    
