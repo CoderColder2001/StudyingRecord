@@ -171,6 +171,34 @@ mutex_unlock(&mutex);
 调度器（生产者）分配任务给worker（消费者）  
 为每一个节点设置一个条件变量  
 
+<br>
+
+如何实现release-acquire？（维护 “happens-before” 关系）  
+信号量：可以在不同线程中进行获取和释放（条件为`count > 0`的条件变量）   
+信号量 API：
+```c++
+void P(sem_t *sem)
+{
+    atomic {
+        wait_until(sem->count > 0) {
+            sem->count--;
+        }
+    }
+}
+void V(sem_t *sem)
+{
+    atomic {
+        sem->count++;
+    }
+}
+```
+mutex 可以视为 n=1 的信号量
+每个信号量都有一个计数器 <b>管理计数型资源</b>   
+当能用一个整数表达同步条件时，就可以使用信号量实现  
+
+*使用两个信号量`empty`（初始为 n）和 `fill`（初始为 0）描述“生产者-消费者”*   
+
+
 ------
 ## 虚拟内存
 为每个进程分配<b>独立的一套虚拟地址</b>，从而可以把进程所使用的地址隔离开来  

@@ -652,6 +652,57 @@ public:
 <br>
 
 ---
+### &emsp; 2462. 雇佣K位工人的总代价 MID
+关键思路：
+- 用两个最小堆前后`candidates`个数中的最小值
+- 用两个指针记录当前已入堆的下标范围
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long totalCost(vector<int>& costs, int k, int candidates) {
+        int n = costs.size();
+        if(candidates*2 + k > n) // 此时直接选到cost最小的k个数
+        {
+            ranges::nth_element(costs, costs.begin() + k); // 范围排序
+            return accumulate(costs.begin(), costs.begin() + k, 0LL);
+        }
+
+        priority_queue<int, vector<int>, greater<>> pre, suf;
+        for(int i = 0; i < candidates; i++)
+        {
+            pre.push(costs[i]);
+            suf.push(costs[n - 1 - i]);
+        }
+
+        long long ans = 0;
+        int i = candidates, j = n - 1 - candidates; // 标志加入堆范围的指针
+        while(k--)
+        {
+            if(pre.top() <= suf.top())
+            {
+                ans += pre.top();
+                pre.pop();
+                pre.push(costs[i++]);
+            }
+            else
+            {
+                ans += suf.top();
+                suf.pop();
+                suf.push(costs[j--]);
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2751 机器人碰撞 :rage: HARD
 关键思路：  
 - <b>使用栈</b>维护向右运动（等待被碰撞的机器人）  
