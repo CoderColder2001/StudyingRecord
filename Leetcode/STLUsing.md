@@ -378,9 +378,9 @@ public:
 ---
 ### &emsp; 857.雇佣K名工人的最低成本 :rage: HARD
 关键思路：
-- 对各个工人的 `wage[i]/quality[i]` 排序
-- 从[0,k-1]开始 向右 <b>枚举</b> 各个可选的子区间 判断是否能更新 `ans= q_sum * wage[i]/quality[i]`
-- <b>优先队列</b> &emsp; quality的大顶堆 计算当前可选的子区间最小的k个quality和
+- 对各个工人的 `r = wage[i]/quality[i]` 从小到大排序
+- 从`[0, k-1]`开始 向右 <b>枚举</b> 各个可选的子区间（枚举选谁的`r`值作为基准） 判断是否能更新 `ans= q_sum * wage[i]/quality[i]`
+- 利用 <b>优先队列</b> 寻找最小化的`q_sum` &emsp; `quality`的小顶堆 计算当前可选的子区间最小的`k`个`quality[i]`之和
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -605,12 +605,13 @@ public:
 ---
 ### &emsp; 2386. 找出数组的第K大和 :rage: HARD
 关键思路：
-- 所有正数的和既是最大的子序列和 `summax`
+- 所有正数的和即是最大的子序列和 `summax`
 - 用`summax`减去某些正数元素或加上某些负数元素，即得到其他子序列和；而减去正数和加上负数都相当于减去 $|nums[i]|$
-- 故问题等价于 求序列 $|nums[i]|$ 的第 k 小子序列和（`summax`减去这个和即为第 k 大的子序列）
+- 故问题等价于 *求序列 $|nums[i]|$ 的第 k 小子序列和*（`summax` 减去这个和即为第 k 大的子序列）
 - <b>使用优先队列（最小堆）枚举子序列</b>
-- 堆中维护 子序列的和 以及 下一个要添加/替换的元素下标
-- 法二：见`Bisection.md`，使用二分法找到sumLimit
+- *通过不断地 添加 / 替换 构造这些子序列*
+- 堆中维护 <b>子序列的和</b> 以及 <b>下一个要添加 / 替换的元素下标</b>
+- 法二：见`Bisection.md`，使用二分法找到`sumLimit`
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -631,14 +632,14 @@ public:
 
         priority_queue<pair<long, int>, vector<pair<long, int>>, greater<>> pq;
         pq.emplace(0, 0); // 空子序列
-        while(--k) // 第k小
+        while(--k) // 第k小 每轮循环最小的出队
         {
             auto [s, i] = pq.top();
             pq.pop();
             if(i < nums.size())
             {
                 pq.emplace(s + nums[i], i + 1); // 在子序列末尾添加nums[i]
-                if(i) // 不是第一个
+                if(i) // 不是第一个 考虑“替换”的情况
                 {
                     pq.emplace(s + nums[i] - nums[i-1], i + 1); // 替换
                 }
@@ -703,7 +704,7 @@ public:
 <br>
 
 ---
-### &emsp; 2751 机器人碰撞 :rage: HARD
+### &emsp; 2751. 机器人碰撞 :rage: HARD
 关键思路：  
 - <b>使用栈</b>维护向右运动（等待被碰撞的机器人）  
 - 遇到向左的机器人，考虑与栈中机器人依次碰撞
