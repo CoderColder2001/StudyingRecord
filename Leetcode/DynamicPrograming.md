@@ -1233,14 +1233,12 @@ public:
 <br>
 
 ---
-### &emsp; 1187. 使数组严格递增 :rage: HARD
+### &emsp; 1235. 规划兼职工作 :rage: HARD
 关键思路：  
-- <b>对于最长递增子序列问题（或者一般的序列DP问题），通常都可以用「选或不选」和「枚举选哪个」来启发思考</b> 
-- 本题解法为 “枚举选哪个”
-- 最终要寻找一个符合条件（不在其中的元素可以被替换）的LIS；把重点放在 LIS 上，关注哪些 a[i] 没有被替换，那么答案就是 n − length(lis)
-- <b>dp求a[i]能链上的最长的LIS链</b>
-- b[k]为 大于等于 a[i]的最小元素 则b[k-1]为 小于 a[i]的最大元素
-- dp[i] 表示以 a[i] 结尾的 LIS 的长度
+- 将工作按照结束时间排序 考虑<b>“选或不选”</b>
+- 选第`i`个工作时，找`[0, i)`工作中最大的满足 `endTime[j] < startTime[i]` 的 `j`
+- <b>二分查找前驱状态</b>（注意未找到时对`-1`的处理方法）
+- `dp[i+1]`:按`endTime`排序后 至第`i`个工作的最大报酬
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -1248,36 +1246,33 @@ public:
 ```c++
 class Solution {
 public:
-    int makeArrayIncreasing(vector<int>& arr1, vector<int>& arr2) {
-        vector<int> a(arr1), b(arr2);
-        a.push_back(INT_MAX);
-        sort(b.begin(), b.end());
-        b.erase(unique(b.begin(), b.end()), b.end()); // 原地去重
+    int jobScheduling(vector<int>& startTime, vector<int>& endTime, vector<int>& profit) {
+        int n = startTime.size();
+        vector<int> id(n);
+        iota(id.begin(), id.end(), 0);
+        ranges::sort(id, [&](int i, int j) {return endTime[i] < endTime[j];}); // id按照endTime排序
 
-        int n = a.size();
-        int dp[n];
-        for(int i = 0; i < n; i++)
+        auto findEndTime = [&](int left, int right, int value) {
+            while(left < right) // [left, right)
+            {
+                int mid = (left + right) / 2;
+                if(endTime[id[mid]] > value)
+                    right = mid;
+                else
+                    left = mid + 1;
+            }
+            return left - 1;
+        };
+
+        vector<int> dp(n + 1); // dp[i + 1]:按endTime排序后 至第i个工作的最大报酬
+        dp[0] = 0;
+        for(int i = 0; i < n; i++) // 以第i小的结束时间作为ddl
         {
-            int k = lower_bound(b.begin(), b.end(), a[i]) - b.begin(); // b[k]为>= a[i]的最小元素 则b[k-1]为 < a[i]的最大元素
-            // 考察以a[i]作为lis的开始
-            int res = k < i ? INT_MIN : 0; // 不足以替换a[i]前所有数时，初始化为INT_MIN
-            
-            // 考察a[i]是否能链在某个lis末尾
-            if(i && a[i-1] < a[i]) // 递增 无需替换
-            {
-                res = max(dp[i-1], res);
-            }
-            for(int j = i - 2; j >= i-k-1 && j >= 0; j--)
-            {
-                if(b[k - (i-j-1)] > a[j]) // 往前找i-(j+1)个元素
-                {
-                    // a[j+1] 到 a[i-1] 可以替换成 b[k-(i-j-1)] 到 b[k-1]
-                    res = max(dp[j], res);
-                }
-            }
-            dp[i] = res + 1; // 取能链上的最长的lis 长度+1
+            int j = max(findEndTime(0, i, startTime[id[i]]), -1); // 二分查找前驱状态
+            dp[i + 1] = max(dp[i], dp[j + 1] + profit[id[i]]);
+
         }
-        return dp[n-1] > 0 ? n - dp[n-1] : -1;
+        return dp[n];
     }
 };
 ```
