@@ -2,6 +2,17 @@
 # Golang
 
 ------
+## Goroutine
+概念上（使用上）是线程，实际上是线程+协程  
+每个CPU上有一个 Go Worker，运行协程  
+协程执行blocking API（如sleep、read）时：创建一个“事件”放在队列里，然后直接执行`yield()`切换到另一个协程    
+（把所有同步IO变成异步IO）  
+
+使用管道channels实现线程/协程之间的同步与通信（避免通过共享内存）  
+
+<br>
+
+------
 ## zerolog
 
 ------

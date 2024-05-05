@@ -629,6 +629,8 @@ keywords: 语义场重建；3D高斯；
 对于每一2D图像，使用SAM获得了三个不同语义级别的分割良好的maps；随后提取每个具有精确对象边界的mask的CLIP特征，并将该特征分配给相应mask上的每个点    
 解决了点的语义模糊问题，使三维语义场更加精确和可靠  
 
+给定任意的文本查询，可以生成精确的对象mask  
+
 <br>
 
 ### Background：
@@ -667,12 +669,22 @@ $L_{ae}=\sum_{level\in\{s,p,w\}}\sum_{t=1}^Td_{ae}(\Psi(E(L_t^l(v))),L_t^l(v))$�
 <br>
 
 ### 3D高斯的语义嵌入
-$F$
+扩展每一个3D高斯，增加三个语义向量$\{f^s,f^p,f^w\}$  
+渲染图像素`v`在语义级别`l`处的特征向量：  
+$F^l(v)=\sum_{i\in N}f_i^l\alpha_i\prod_{j=1}^{i-1}(1-\alpha_j), l\in\{s,p,w\}$  
 
-$L_{lang}$
+图像的CLIP特征由autoencoder压缩编码为$H_t^l$  
+训练的语义损失函数：  
+$L_{lang}=\sum_{l\in\{s,p,w\}}\sum_{t=1}^T d_{lang}(F_t^l(v),H_t^l(v))$   
 
-### open-vocabulary query
+<br>
+
+### Open-vocabulary Query
+$F_t^l(v)$经过decoder得到CLIP特征向量 $\Psi(F_t^l(v))$，从而可以与CLIP text encoder实现开放词汇查询  
+
 与LERF类似，计算每个query的相关性得分  
+$RelevancyScore = min_i \frac{exp(\phi_{img}*\phi_{qry})}{exp(\phi_{img}*\phi_{qry})+exp(\phi_{img}*\phi_{canon}^i)}$，其中$\phi_{canon}^i$是预定义的正则短语CLIP embeddings  
+
 对于每个文本查询，获得三个相关性maps，每个map表示在特定的语义级别上的结果；选取具有最高相关性得分的级别   
 
 对于3D语义分割任务，过滤相关性分数低于设定阈值的点，并预测剩余区域的对象mask  
@@ -680,7 +692,8 @@ $L_{lang}$
 <br>
 
 ### 思考：
-1、对应于场景的CLIP特征的自动编码器，不灵活，且需要额外训练  
+1、对应于场景的CLIP特征的自动编码器，不灵活，且需要额外训练&依赖原始图像输入    
+2、语义损失部分，编码后的监督图CLIP特征是如何对应到渲染像素的？  
 
 <br>
 
