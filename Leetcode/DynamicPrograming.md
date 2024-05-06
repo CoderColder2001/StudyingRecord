@@ -223,6 +223,54 @@ public:
 <br>
 
 ---
+### &emsp; 741. 摘樱桃 :rage: HARD
+关键思路：  
+- 两条路径的并集 问题可以等价为：*两个点同时从左上角开始，最终都走到右下角时的最大得分*
+- `dp[k][i1][i2]`：当前走了k步，第一个点在i1行，第二个点在i2行
+- 如何记录“不可达”？初始化为`INT_MIN`（注意dp值为0未必意味着不可达）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int cherryPickup(vector<vector<int>>& grid) {
+        int n = grid.size();
+        vector<vector<vector<int>>> dp(2*n + 1, vector<vector<int>>(n + 1, vector<int>(n + 1, INT_MIN)));
+        dp[2][1][1] = grid[0][0];
+        for(int k = 3; k <= 2*n; k++)
+        {
+            for(int i1 = 1; i1 <= n; i1++)
+            {
+                for(int i2 = 1; i2 <= n; i2++)
+                {
+                    int j1 = k - i1, j2 = k - i2;
+                    if(j1 <= 0 || j1 > n || j2 <= 0 || j2 > n)
+                        continue;
+
+                    int A = grid[i1 - 1][j1 - 1], B = grid[i2 - 1][j2 - 1];
+                    if(A == -1 || B == -1) 
+                        continue;
+
+                    int last1 = dp[k-1][i1-1][i2], last2 = dp[k-1][i1-1][i2-1], last3 = dp[k-1][i1][i2-1], last4 = dp[k-1][i1][i2];
+                    int t = max(max(last1, last2), max(last3, last4)); 
+
+                    t += A;// A摘樱桃
+                    if(i1 != i2)
+                        t += B; // 不重合时 B摘樱桃
+                    dp[k][i1][i2] = t;
+                }
+            }
+        }
+        return max(dp[2*n][n][n], 0);
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 978. 最长湍流子数组 MID
 关键思路：  
 - 定义两个状态量`up`，`down` 

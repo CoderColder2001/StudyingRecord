@@ -106,3 +106,14 @@ dd 删除当前一行
 
 ------
 ## Envrionment modules工具
+```sh
+module avail  # 查看可用模块
+module list  # 查看已加载模块 
+
+module load | add  # 加载环境变量
+module switch  # 改变环境变量的版本号
+
+module unload | rm # 卸载环境变量
+
+module swap # 替换环境变量
+```
