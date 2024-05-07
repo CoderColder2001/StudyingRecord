@@ -695,6 +695,7 @@ $RelevancyScore = min_i \frac{exp(\phi_{img}*\phi_{qry})}{exp(\phi_{img}*\phi_{q
 1、对应于场景的CLIP特征的自动编码器，不灵活，且需要额外训练&依赖原始图像输入    
 2、语义损失部分，编码后的监督图CLIP特征是如何对应到渲染像素的？ 
 3、基于SAM定义语义层级 是否可有更好的方案？   
+4、依赖渲染出2D语义图（依赖alpha-blending的弊端 遮挡、半透明等）
 
 <br>
 
