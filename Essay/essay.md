@@ -691,11 +691,20 @@ $RelevancyScore = min_i \frac{exp(\phi_{img}*\phi_{qry})}{exp(\phi_{img}*\phi_{q
 
 <br>
 
+### Code & Pipline
+- 先colmap恢复相机位姿，用原始GS训练几何（保存30000轮的ckpt）    
+- `preprocess.py`：对每一输入图像的三个尺度的SAM Masks，经过裁切、padding后，提取CLIP特征，存放到`output/language_features`目录下  
+- 训练autoencoder（`train.py`）、并用训练好的autoencoder得到各输入图像的低维CLIP特征（`test.py`）
+- 在不同语义级别上训练LangSplat
+
+<br>
+
 ### 思考：
 1、对应于场景的CLIP特征的自动编码器，不灵活，且需要额外训练&依赖原始图像输入    
 2、语义损失部分，编码后的监督图CLIP特征是如何对应到渲染像素的？ 
 3、基于SAM定义语义层级 是否可有更好的方案？   
 4、依赖渲染出2D语义图（依赖alpha-blending的弊端 遮挡、半透明等）
+5、几何和语义分开训练？  
 
 <br>
 

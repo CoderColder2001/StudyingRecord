@@ -230,7 +230,10 @@ torch.cuda.is_available()
 ```
 
 ## torch 相关方法
-`torch.stack(...)`:  
+`xxx.half()`：  
+转换为半精度浮点数，减少内存占用、提升计算速度  
+
+`xxx.stack(...)`:  
 沿着一个新维度对输入张量序列进行连接(如把二维堆成三维)   
 
 `xxx.detach()`:  
