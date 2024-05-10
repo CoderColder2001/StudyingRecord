@@ -694,7 +694,7 @@ $RelevancyScore = min_i \frac{exp(\phi_{img}*\phi_{qry})}{exp(\phi_{img}*\phi_{q
 ### Code & Pipline
 - 先colmap恢复相机位姿，用原始GS训练几何（保存30000轮的ckpt）    
 - `preprocess.py`：对每一输入图像的三个尺度的SAM Masks，经过裁切、padding后，提取CLIP特征，存放到`output/language_features`目录下  
-- 训练autoencoder（`train.py`）、并用训练好的autoencoder得到各输入图像的低维CLIP特征（`test.py`）
+- 训练autoencoder（`train.py`）、并用训练好的autoencoder得到各输入图像的低维CLIP特征（`test.py`），存放到`output/language_features_dim3`目录下
 - 在不同语义级别上训练LangSplat
 
 <br>
