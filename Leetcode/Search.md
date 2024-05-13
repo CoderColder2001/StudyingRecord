@@ -271,6 +271,50 @@ public:
 <br>
 
 ---
+### &emsp; 1553. 吃掉N个橘子的最少天数 :rage: HARD
+关键思路：
+- 用 <b>求最短路</b> 的方式思考状态的转移；可以执行的操作 对应 节点间连接的边
+- 对于“减一”操作，只有在不能整除2或3的时候才会做；故可以设置修改边权（节点间距离）为`x % d + 1`，合并“除`d`”与此前的“减一”操作
+- Dijkstra，堆中存放`（最短路值，节点id）`；答案对应 n 到 0 的最短路
+- 代码实现时，无需建图，根据出堆的数字 `x` 计算出对应的邻居和边权
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int minDays(int n) {
+        unordered_map<int, int> dis;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+        pq.emplace(0, n);
+        while(true)
+        {
+            auto [dx, x] = pq.top();
+            pq.pop();
+            if(x <= 1)
+                return dx + x;
+            if(dx > dis[x])
+                continue;
+
+            for(int d = 2; d <= 3; d++)
+            {
+                int y = x / d;
+                int dy = dx + x % d + 1;
+                if(!dis.contains(y) || dy < dis[y])
+                {
+                    dis[y] = dy;
+                    pq.emplace(dy, y);
+                }
+            }
+        }
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 1654. 到家的最少跳跃次数 MID
 关键思路：
 - <b>BFS记忆化搜索最短路径</b>

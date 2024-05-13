@@ -229,6 +229,8 @@ python -c "import torch; print(torch.__version__, torch.version.cuda )" # 检测
 torch.cuda.is_available()
 ```
 
+<br>
+
 ## torch 相关方法
 `xxx.half()`：  
 转换为半精度浮点数，减少内存占用、提升计算速度  
@@ -242,3 +244,19 @@ torch.cuda.is_available()
 
 `@torch.no_grad():`   
 上下文管理器中执行张量操作时，PyTorch 不会为这些操作计算梯度  
+
+<br>
+
+### nn.Module
+所有神经网络模块的基类  
+通过创建一个继承自`nn.Module`的类，定义了一个可以包含其他模块、执行前向传播、以及包含参数和缓冲区的神经网络模块  
+
+<br>
+
+### torch.autograd.Function
+用于定义 自定义的<b>自动微分操作</b> 的 抽象类  
+通过继承 `torch.autograd.Function` 并实现`forward`和`backward`方法来在PyTorch的自动微分系统中创建一个自定义函数  
+
+`ctx` 对象常用于在前向传播和反向传播之间传递信息，例如保存中间结果或梯度  
+
+<br>
