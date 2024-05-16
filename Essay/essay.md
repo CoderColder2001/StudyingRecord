@@ -522,6 +522,13 @@ cuda 需要手动实现forward和backward
 - 3、计算高斯的前后顺序（`rasterizer_impl.cu`：`forward(...)`）
 - 4、计算每个像素的颜色（`forward.cu`：`renderCUDA(...)`）
 
+`rasterize_points.cu`：接口，调用CUDA计算，返回torch张量  
+`rasterizer_impl.h`：
+- `GeometryState`
+- `ImageState`：维护 ranges
+- `BinningState`：维护了 tile 对应的高斯点的序列  
+
+<br>
 
 ------
 # 3D Semantic
