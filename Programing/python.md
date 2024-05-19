@@ -242,8 +242,11 @@ torch.cuda.is_available()
 切断一些分支的反向传播  
 返回一个新tensor，与原始张量共享数据，但不再参与任何梯度计算  
 
-`@torch.no_grad():`   
+`@torch.no_grad()`:     
 上下文管理器中执行张量操作时，PyTorch 不会为这些操作计算梯度  
+
+`ctx.save_for_backward(...)`:  
+在自定义forward函数时，保存张量以便在反向传播过程中使用  
 
 <br>
 

@@ -1464,6 +1464,86 @@ public:
 <br>
 
 --- 
+### &emsp; 2589. 完成所有任务的最少时间 :rage: HARD
+关键思路：
+- 按照`end`对任务列表升序排序
+- 排序后 遍历`tasks[i]`，其右侧的任务区间要么和它没有交集，要么包含它的一部分后缀  
+- 维护一个数组`run`，用值（0或1）表示当前时间点是否运行；在一个区间上对run求和即得到这个区间内运行的总时长
+- 贪心策略 对`tasks[i]`当前运行时长不足时，尽可能往后添加新的运行时间点（以使得 `run` 值为 1 的部分与后续的 `tasks[i']` 更可能有交集）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findMinimumTime(vector<vector<int>>& tasks) {
+        ranges::sort(tasks, [](auto &a, auto &b) {return a[1] < b[1];}); // 按照end升序排序
+        int ans = 0;
+        vector<int> run(tasks.back()[1] + 1, 0); // 区间值表示运行时间点
+        for(auto &t : tasks)
+        {
+            int start = t[0], end = t[1], d = t[2];
+            d -= reduce(run.begin() + start, run.begin() + end + 1); // 计算区间与运行时间重合部分对应时间
+            
+            for(int i = end; d > 0; i--) // 填充区间后缀  从end开始倒序添加运行时间（贪心）
+            {
+                if(!run[i])
+                {
+                    run[i] = true;
+                    d--;
+                    ans++;
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+
+优化思路：
+- 当前运行的时间 对应 一段段不相交的区间，<b>用一个栈维护这些区间（保存其左右端点与累计的区间长度之和）</b>
+- 每次新增运行时间点时，合并可能的区间
+- <b>在栈中二分查找包含了左端点 `start` 的区间</b>；利用栈中保存的区间长度值得到`[start, end]`中的运行时间
+- 与栈顶进行合并判断
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findMinimumTime(vector<vector<int>>& tasks) {
+        ranges::sort(tasks, [](auto &a, auto &b) {return a[1] < b[1];}); // 按照end升序排序
+        vector<array<int, 3>> st{{-2, -2, 0}}; // 压栈一个不与任何区间相交的哨兵，以便二分查找
+        
+        for(auto &t : tasks)
+        {
+            int start = t[0], end = t[1], d = t[2];
+            auto[_, r, s] = *(ranges::lower_bound(st, start, {}, [](auto &x) {return x[0];}) - 1); // 二分查找包含start的区间
+            d -= st.back()[2] - s; // 去掉运行中的时间点
+            if(start <= r) // [start, r]
+                d -= r - start + 1;
+
+            if(d <= 0)
+                continue;
+            while(end - st.back()[1] <= d) // 填充后与当前栈顶区间相交 合并
+            {
+                auto [l, r, _] = st.back();
+                st.pop_back();
+                d += r - l + 1;
+            }
+            st.push_back({end - d + 1, end, st.back()[2] + d});
+        }
+        return st.back()[2];
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 2908. 元素和最小的山形三元组I EASY
 关键思路：
 - 三元组 通常<b>枚举中间的数</b>

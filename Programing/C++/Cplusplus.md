@@ -411,16 +411,23 @@ unordered_set<pair<int, int>, pairHash> visited;
 ### accumulate
 第三个参数是和的初值，其类型决定了函数中使用哪个加法运算符以及返回值的类型  
 
+### reduce (C++17)
+相比accumalate，不保证累加时的顺序   
+（注意不要在`vector<bool>`上做累加）  
+
 ### sort
+传入lambda表达式：  
 ```c++
 sort(idx.begin(), idx.end(), [&](int i, int j) {
     return heights[i] > heights[j]; // 按heights降序排序
 });
+
+ranges::sort(tasks, [](auto &a, auto &b) {return a[1] < b[1];}); // 按照tasks[i][1]升序排序
 ```
 
 ### unique
 去除相邻重复元素（故使用前一般要先sort），将重复的元素放到容器的末尾，返回值是去重之后的尾地址  
-容器实现原地去重：
+容器实现原地去重：  
 ```c++
 sort(xxx.begin(), xxx.end());
 xxx.erase(unique(xxx.begin(), xxx.end()), xxx.end());
