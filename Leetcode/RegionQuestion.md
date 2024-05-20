@@ -664,6 +664,46 @@ public:
 <br>
 
 --- 
+### &emsp; 1542. 找出最长的超赞子字符串 :rage: HARD
+关键思路：
+- <b>异或前缀和</b> 用一个长为10的二进制数`mask`记录子串中每个数字出现的奇偶性
+- 寻找子串的构造规则
+- 子串长度为偶数时，要求 `pre[j]^pre[i] == 0`，即 `pre[i] == pre[j]`
+- 子串长度是奇数时，要求 `pre[j]&pre[i] == pow(2, k)`，即 `pre[i] == pre[j]^pow(2, k)`
+- 遍历时 <b>记录当前能构造的前缀和对应的下标</b>
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+    const int D = 10;
+public:
+    int longestAwesome(string s) {
+        int n = s.size();
+        vector<int> pos(1 << D, n); // n 表示目前还没有找到
+        pos[0] = -1;
+        int ans = 0, pre = 0;
+        for(int i = 0; i < n; i++)
+        {
+            pre ^= 1 << (s[i] - '0'); // 异或前缀和
+
+            for(int d = 0; d < D; d++)
+            {
+                ans = max(ans, i - pos[pre ^ (1 << d)]); // 奇数 找之前所有的pre^(1 << d)
+            }
+            ans = max(ans, i - pos[pre]); // 偶数 找第一个pre出现的地方
+            if(pos[pre] == n)
+                pos[pre] = i;
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 1590. 使数组和能被P整除 MID
 关键思路：
 - 设所有元素和modP为`countModP` 问题转化为：寻找最短的一段区间，其区间和与所有元素和modP同余
