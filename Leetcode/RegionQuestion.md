@@ -534,6 +534,48 @@ public:
 </details>
 <br>
 
+---
+### &emsp; 2831. 找出最长等值子数组 MID
+关键思路：
+- <b>根据值分组统计 并在各个分组上滑动窗口</b>
+- 分组时，利用下标`i`得到当前前序空缺（需要删除的数字）数量
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int longestEqualSubarray(vector<int>& nums, int k) {
+        int n = nums.size();
+        unordered_map<int, vector<int>> posLists;
+        for(int i = 0; i < n; i++)
+        {
+            int x = nums[i];
+            posLists[x].push_back(i - posLists[x].size()); // 利用下标i得到当前前序空缺数量
+        }
+
+        int ans = 0;
+        for(auto &[_, pos] : posLists)
+        {
+            int left = 0;
+            if(pos.size() <= ans)
+                continue;
+            for(int right = 0; right < pos.size(); right++)
+            {
+                while(pos[right] - pos[left] > k) // 要删除的太多了
+                    left++;
+        
+                ans = max(ans, right - left + 1);
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 前缀和： 
 可以快速求子数组的和（转换为两个前缀和的差）  

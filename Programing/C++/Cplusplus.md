@@ -325,16 +325,16 @@ struct cmp {
 priority_queue<Tweet*, vector<Tweet*>, cmp> q;
 ```
 ---
-### array(C++ 11)
+### array（C++11）
 固定长度的数组  
 相较于内置数组而言可以支持迭代器访问、对象赋值、拷贝、获取容量等操作，并也可以获取原始指针    
 
 ---
 ### vector
-
-TODO：大小改变的过程？？  
+底层是数组，内存空间连续，遍历时有 <b>更好的空间局部性</b>  
 
 默认实现：在每次扩容时将当前容量翻倍  
+（扩容后迭代器会失效）  
 
 `vector.reserve(n)`至少分配与需求一样大的内存空间（可能更大），而当`n`小于当前容量时，什么也不做，容器不会退回内存空间   
 `resize`只改变容器中元素的数目，而不改变容器的容量  
@@ -366,7 +366,20 @@ for (auto &[ch, num] : vec) {
 
 `std::remove` 不会改变输入vector的长度。其过程相当于去除指定的字符，剩余字符往前靠；  
 返回新范围的末尾迭代器的下一个（指向第一个无效值）；同`erase`搭配使用删除指定条件的元素   
-如`xxx.erase(remove(xxx.begin(), xxx.end(), 0), xxx.end());` 删除0  
+如`xxx.erase(remove(xxx.begin(), xxx.end(), 0), xxx.end()); // 删除0`    
+
+---
+### list
+双向链表；C++11 开始有一个记录长度信息的头节点   
+在随机插入数据、随机删除数据时不会导致数据搬移；所以 **在频繁的随机插入/删除的场景使用list**  
+
+list 在 pop_front/pop_back 时需要判断 size 是否为0  
+
+排序使用`list.sort()`  
+
+---
+### forward_list（C++11）
+单向链表  
 
 ---
 ### string
@@ -411,11 +424,12 @@ unordered_set<pair<int, int>, pairHash> visited;
 ### accumulate
 第三个参数是和的初值，其类型决定了函数中使用哪个加法运算符以及返回值的类型  
 
-### reduce (C++17)
+### reduce（C++17）
 相比accumalate，不保证累加时的顺序   
 （注意不要在`vector<bool>`上做累加）  
 
 ### sort
+需要容器有随机访问迭代器（支持vector、deque等）  
 传入lambda表达式：  
 ```c++
 sort(idx.begin(), idx.end(), [&](int i, int j) {
