@@ -1215,6 +1215,37 @@ public:
 <br>
 
 --- 
+### &emsp; 1673. 找出最具竞争力的子序列 MID
+关键思路：
+- 字典序最小的子序列
+- <b>出栈条件</b> 有限制地弹出单调栈顶元素：保证栈中元素个数加上剩余元素个数大于`k`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> mostCompetitive(vector<int>& nums, int k) {
+        vector<int> st;
+        for(int i = 0; i < nums.size(); i++)
+        {
+            int x = nums[i];
+            while(!st.empty() && x < st.back() && st.size() + nums.size() - i > k)
+            {
+                st.pop_back();
+            }
+            if(st.size() < k)
+                st.push_back(x);
+        }
+        return st;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 2818. 操作使得分最大 :rage: HARD
 关键思路：
 - 预处理 计算每个数字的不同质因子数目（omega） 
