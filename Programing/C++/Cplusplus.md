@@ -252,17 +252,27 @@ vector<int>::iterator num = find(num_list.begin(), num_list.end(), find_num);  /
 <br>
 
 ### 范围库 ranges（C++ 20）
+处理<b>序列</b>  
 操作具有 `begin()` 和 `end()` 的范围  
 提供了描述范围和对范围的操作的统一接口  
 
+基本概念
+- Range： 一个范围代表了一组元素，可以通过迭代器进行遍历。
+- View： 一个View是一个轻量级的、非拥有的Range。它可以对现有的Range进行转换、过滤等操作，而不需要拷贝数据。
+- Adaptor： 适配器是用于转换Range的工具。例如，可以使用filter适配器来过滤Range中的元素。
+
 ranges中的算法是惰性的（懒求值）  
+ranges中的算法接受范围对象作为参数，而std中的算法接受迭代器对  
+
 使用视图views作为在范围上应用并执行某些操作的东西  
-可以将各种view的关系转化用符号 `|` 串联起来
+可以将各种view的关系转化用符号 `|` 串联起来  
+（允许组合多个算法和视图，形成一个管道pipeline）  
 
 some example：
 ```c++
 ranges::count(str, '1');
 ```
+
 <br>
 
 ------
@@ -437,6 +447,13 @@ sort(idx.begin(), idx.end(), [&](int i, int j) {
 });
 
 ranges::sort(tasks, [](auto &a, auto &b) {return a[1] < b[1];}); // 按照tasks[i][1]升序排序
+```
+
+### nth_element
+从某个序列中找到第 n 小的元素`K`，并将`K`移动到序列中第 n 的位置处，确保其前元素都比它小，其后元素都比它大  
+```c++
+std::nth_element(iter_first, iter_kth, iter_end);
+ranges::nth_element(a, a.end() - x);
 ```
 
 ### unique
