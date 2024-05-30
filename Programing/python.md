@@ -48,6 +48,18 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package # 临时使
 
 <br>
 
+### conda install 和 pip install
+安装位置：
+- conda install 安装的库都会放在anaconda3/pkgs目录下  
+- 在conda虚拟环境下使用 pip install 安装的库： 如果使用系统的的python，则库会被保存在 ~/.local/lib/python3.x/site-packages 文件夹中；如果使用的是conda内置的python，则会被保存到 anaconda3/envs/current_env/lib/site-packages中
+
+pip 从PyPI（Python Package Index）上拉取数据；conda 从 Anaconda.org 上拉取数据（比较少）  
+
+conda会检查当前环境下所有包之间的依赖关系，保证当前环境里的所有包的所有依赖都会被满足   
+（但有时候会乱改？）  
+
+<br>
+
 ------
 ### python中一切皆对象  
 参数的对象绑定 &emsp; 调用时绑定参数对象 &emsp; 定义时绑定参数默认值  
