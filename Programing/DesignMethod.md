@@ -1,3 +1,4 @@
+[TOC]
 # 设计模式
 把“变化”限制在局部的地方  
 
@@ -165,7 +166,7 @@ Memento模式的核心是信息隐藏，即 originator 既要向外界隐藏信�
 
 ---
 ### Composite 组合模式
-将对象组合成树形结构以表示“部分-整体”的层次结构，同时使得用户对单个对象和组合对象的使用具有一致性   
+将对象组合成<b>树形结构</b> 以表示 <b>“部分-整体”的层次结构</b>，同时使得用户对单个对象和组合对象的使用具有一致性   
 `Composite`和`Leaf`都继承`Component`的接口  
 
 <br>
@@ -180,3 +181,61 @@ Memento模式的核心是信息隐藏，即 originator 既要向外界隐藏信�
 现代C++基于 template泛型编程 实现 Iterator，而非通过面向对象的方式（避免运行时多态带来的开销）  
 
 <br>
+
+---
+### Chain of Responsibility 职责链模式
+一个请求可能被多个对象处理，但每个请求只能对应一个接收者   
+如何不显示指定接收者？让候选接收者在运行时自动决定处理请求  
+<b>避免请求的发送者和接收者之间的耦合关系</b>  
+
+沿着职责链传递请求  
+```c++
+class ChainHandler {
+    ChainHandeler* nextChain; //基类指针 实现一个多态的链表
+    void sendRequestToNextHandler(const Request &req)
+    {
+        if(nextChain != nullptr)
+            nextChain->handle(req);
+    }
+protected:
+    virtual bool canHandleRequest(const Request &req) = 0; // 是否能处理
+    virtual void handleRequest(cosnt Request &req) = 0;
+public:
+    ChainHandler() 
+    {
+        nextChain = nullptr;
+    }
+    void setNextChain(ChainHandler *next)
+    {
+        nextChain = next;
+    }
+    void handle(const Request &req) // 处理逻辑pipeline
+    {
+        if(canHandleRequest(req))
+            handleRequest(req);
+        else
+            sendRequestToNextHandler(req);
+    }
+}
+
+```
+
+<br>
+
+------
+## 行为变化模式
+- 命令模式
+- 访问器模式
+
+将组件行为与组件本身解耦，支持组件行为的变化  
+
+### Command 命令模式
+将一个请求（行为）封装成对象，从而使得可以用不同的请求对客户进行参数化，将“行为请求者”与“行为实现者”解耦  
+
+<b>用对象表征行为</b>  
+（变成“对象”后提升了灵活度）  
+（对象的意义：可以当作参数来传递、可以序列化进行存储（从而实现redo、undo））  
+
+可以通过Composite组合模式将多个命令封装成一个复合命令   
+
+Command模式以面向对象中的“接口-实现”定义行为规范；C++函数对象
