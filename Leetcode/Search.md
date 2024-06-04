@@ -609,6 +609,56 @@ public:
 <br>
 
 ---
+### &emsp; 3067. 在带权树网络中统计可连接服务器对数目 MID
+关键思路：
+- 枚举根 DFS
+- 看从每个相邻点出发各能达到多少满足要求的节点
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    vector<int> countPairsOfConnectableServers(vector<vector<int>>& edges, int signalSpeed) {
+        int n = edges.size() + 1;
+        vector<vector<pair<int, int>>> g(n);
+        for(auto &e : edges)
+        {
+            int x = e[0], y = e[1], wt = e[2];
+            g[x].push_back({y, wt});
+            g[y].push_back({x, wt});
+        }
+
+        function<int(int, int, int)> dfs = [&](int x, int fa, int sum) -> int {
+            int cnt = sum % signalSpeed == 0;
+            for(auto &[y, wt] : g[x])
+            {
+                if(y != fa)
+                    cnt += dfs(y, x, sum + wt);
+            }
+            return cnt;
+        };
+
+        vector<int> ans(n);
+        for(int i = 0; i < n; i++)
+        {
+            int sum = 0;
+            for(auto &[y, wt] : g[i])
+            {
+                int cnt = dfs(y, i, wt);
+                ans[i] += cnt * sum;
+                sum += cnt;
+            }
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; LCP41. 黑白翻转棋 MID
 关键思路：
 - 枚举空余位置放置黑棋
