@@ -362,3 +362,10 @@ malloc(...)：
   - `malloc(...)`、`free()`在大区间 `[L, R)` 维护互不相交的区间集合
 
 <br>
+
+### InitialRAMFS 初始文件系统
+系统启动后，fireware将操作系统加载到内存，把控制权交给 `init`进程   
+`InitRAMFS`：`init`进程所见初始的“小世界”（系统内初始的对象）  
+由`init`执行一系列系统调用 构建出完整的操作系统环境（各种系统内的对象） 
+调用`switch_root`命令（底层为`pivot_root`系统调用，要求`pid==1`）将根文件系统和控制权移交给另一个程序（如 `systemd`）   
+`systemd` 通过 `mount` 系统调用配置文件系统  
