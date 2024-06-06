@@ -265,3 +265,19 @@ virtual void accept(Visitor &visitor) = 0;
 适用于`Element`类层次结构稳定，但其操作频繁变化的场合  
 
 <br>
+
+------
+## 领域规则模式
+- 解析器模式
+
+可以把问题抽象成某种规则
+
+---
+### Interpreter 解释器模型
+把特定领域的问题表达为（抽象为） <b>某种语法规则下的句子</b>  
+构建语法树（以及自底向上的释放）  
+
+表达式基类`Expression`声明一个抽象的`Interperter`接口  
+每个具体表达式类节点对应具体的`Interpreter`方法实现  
+
+<br>
