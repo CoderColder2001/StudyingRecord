@@ -84,3 +84,16 @@ Point3d::Point3d(const Point3d &rhs)
 编译器会一一操作 initialization list，以在class中的声明顺序在 constructor 之内安插初始化操作，且在任何 explicit user code 之前  
 
 <br>
+
+------
+## 3 Data语义学
+<b>讨论class的对象成员 与 class的层级关系</b>
+
+C++对象模型尽量以空间优化和存取速度优化的考虑来表现 nonstatic data members，并保持与C语言struct的兼容性；但并不强制定义其排列顺序。  
+static data members 保持在程序的 global data segment 中，不影响类实例对象大小，且永远只存在一份（尽管没有实例对象时）  
+
+对象大小的影响因素：
+- 对 virtual base class 的支持：一个指针，指向该virtual base class的subobject 或 一个相关表格（存放subobject的地址或偏移位置）
+- 编译器加上的额外的data members，用以支持某些语言特性（主要是各种virtual特性）
+- 编译器对特殊情况（如不包含实际数据的virtual base class）提供的优化处理
+- 对齐策略
