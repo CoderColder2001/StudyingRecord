@@ -407,3 +407,35 @@ ELF磁盘文件中的 Section 会在进程运行之前加载到内存中并映�
 
 重定向的问题：跳转指令数的位数限制？共享库加载到了哪里？如何访问编译单元外的变量？  
 全部采用直接跳转。对于动态链接，跳转到PLT生成的跳转指令，再二次跳转到相应位置  
+
+<br>
+
+------
+## 系统调用指令
+<b>对操作系统的函数调用</b>  
+保护寄存器现场、跳转到操作系统代码  
+（软中断的一种）   
+在另一个栈中执行，执行时可以直接访问IO设备和内核数据结构，结束后执行`sysret`  
+
+x86中CR3寄存器指向页基地址（标志如何构建出“虚拟环境”）  
+
+<br>
+
+## 调度
+操作系统为每一个进程维护一个数据结构，并维护其现场（寄存器状态）  
+操作系统可以选择任何一个寄存器现场放到CPU上执行   
+
+当前执行的状态对应一个context   
+```c
+Context *on_interrupt(Event ev, Context *ctx)
+{
+  // save context
+  current->context = *ctx;
+
+  // thread schedule
+  current = current->next;
+
+  // restore current thread's context
+  return &current->context;
+}
+```
