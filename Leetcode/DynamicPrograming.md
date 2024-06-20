@@ -1357,6 +1357,52 @@ public:
 <br>
 
 ---
+### &emsp; 2713. 矩阵中严格递增的单元格数 :rage: HARD
+关键思路：  
+- 定义状态`dp[i][j]`：到达某单元格时访问过单元格的最大数量
+- 每个单元格从值比它小的单元格同行或同列单元格转移过来；不需要知道具体从哪个单元格转移过来，只需要知道所有转移来源中dp最大值是多少
+- 按照元素值从小到大计算（<b>状态转移的顺序</b>）
+- 对于某一行、列，用数组`rowMax`、`colMax`维护其最大dp值
+- 对于相同元素值的各个`(i, j)`，算出所有dp值暂存
+- 本质上，问题对应：*在排序后的列表里找一个最长的严格递增序列，保证序列相邻元素的横坐标相同或纵坐标相同*
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxIncreasingCells(vector<vector<int>>& mat) {
+        int m = mat.size(), n = mat[0].size();
+        map<int, vector<pair<int, int>>> g; // 根据元素值进行排序分组，保存位置
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+                g[mat[i][j]].emplace_back(i, j);
+        }
+
+        vector<int> rowMax(m), colMax(n);
+        for(auto &[_, pos] : g) // 从小到大
+        {
+            vector<int> dp_new;  // 各个(i,j)的dp转移结果
+            for(auto &[i, j] : pos)
+                dp_new.push_back(max(rowMax[i], colMax[j]) + 1);
+
+            for(int k = 0; k < pos.size(); k++)
+            {
+                auto &[i, j] = pos[k];
+                rowMax[i] = max(rowMax[i], dp_new[k]); // 更新第i行最大dp值
+                colMax[j] = max(colMax[j], dp_new[k]); // 更新第j列最大dp值
+            } 
+        }
+        return ranges::max(rowMax);
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 2809. 使数组和小于等于k的最小时间 :rage: HARD
 关键思路：  
 - 对每个元素，至多操作一次（否则只操作最后一次就可以更优了）；总体最多操作 n 次

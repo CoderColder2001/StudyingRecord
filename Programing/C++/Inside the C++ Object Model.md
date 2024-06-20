@@ -91,9 +91,22 @@ Point3d::Point3d(const Point3d &rhs)
 
 C++对象模型尽量以空间优化和存取速度优化的考虑来表现 nonstatic data members，并保持与C语言struct的兼容性；但并不强制定义其排列顺序。  
 static data members 保持在程序的 global data segment 中，不影响类实例对象大小，且永远只存在一份（尽管没有实例对象时）  
+程序员声明的同一 access section 内的 nonstatic data members 总是按其被声明的顺序排列（但不一定连续）  
 
 对象大小的影响因素：
 - 对 virtual base class 的支持：一个指针，指向该virtual base class的subobject 或 一个相关表格（存放subobject的地址或偏移位置）
 - 编译器加上的额外的data members，用以支持某些语言特性（主要是各种virtual特性）
 - 编译器对特殊情况（如不包含实际数据的virtual base class）提供的优化处理
 - 对齐策略
+
+<br>
+
+### Data Member的存取
+static data members 被视作全局变量（但只在 class 生命范围内可见），其存取不需要通过 class object；内部会转化为对该唯一 extern 实例的直接参考操作   
+
+每一个 nonstatic data member 的偏移位置（即使它属于一个派生自单一或多重继承链的类）在编译时期即可确定  
+
+通过对象访问数据成员 与 通过指针访问对象成员 的差异？  
+当某个类的继承结构中包含虚基类，存取该虚基类继承而来的member时，通过指针访问不能确认指针属于哪一个class type，该存取操作需要延迟至执行期  
+
+<br>
