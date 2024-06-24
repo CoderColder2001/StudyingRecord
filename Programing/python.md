@@ -4,6 +4,7 @@
 ------
 ## 常用语法
 `map(function, iterable, ...)`：对指定序列进行映射；以参数序列中的每一个元素调用 function 函数，返回包含每次 function 函数返回值的新列表    
+返回一个 `map` 对象（一个惰性计算的迭代器）
 
 `chr(i)`转化成字符，`ord(c)`转化成编码   
 
@@ -228,6 +229,14 @@ has_negative = any(num < 0 for num in numbers)
 ```
 
 <br>
+
+------
+# Numpy
+`np.column_stack(...)`：接收一系列数组或类似的序列对象（例如列表或元组），然后将它们按列堆叠  
+```python
+xys = np.column_stack([tuple(map(float, elems[0::3])),
+                        tuple(map(float, elems[1::3]))])
+```
 
 ------
 # Pytorch

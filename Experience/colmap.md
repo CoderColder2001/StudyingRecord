@@ -110,6 +110,8 @@ File-》export model as text 选择`sparse\sparse`文件夹，以txt格式导出
 Q：去畸变后，如何导出相机为PINHOLE模型？  
 undistortion结束后 需要先import加载 再导出  
 
+<a href = "https://blog.csdn.net/qq_43307074/article/details/127964162">COLMAP输出的文件类型(bin, txt)</a>  
+
 <br>
 
 ------
