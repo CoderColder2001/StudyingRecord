@@ -1153,6 +1153,82 @@ public:
 <br>
 
 ---
+### &emsp; 2065. 最大化一张图中的路径价值 :rage: HARD
+关键思路：
+- DFS 暴力搜索
+- 利用 Dijkstra 预处理0至所有节点的最短路，用于剪枝：下一个节点若无法在剩余时间内回到 0 则不向下递归
+- 每次回到 0 时查看是否能更新答案
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maximalPathQuality(vector<int>& values, vector<vector<int>>& edges, int maxTime) {
+        int n = values.size();
+        vector<vector<pair<int, int>>> g(n);
+        for(auto &e : edges)
+        {
+            int x = e[0], y = e[1], t = e[2];
+            g[x].emplace_back(y, t);
+            g[y].emplace_back(x, t);
+        }
+
+        // Dijkstra
+        vector<int> dis(n, INT_MAX);
+        dis[0] = 0;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+        pq.emplace(0, 0);
+        while(!pq.empty())
+        {
+            auto [dx, x] = pq.top();
+            pq.pop();
+            if(dx > dis[x]) // x 已出过堆
+                continue;
+
+            for(auto &[y, d] : g[x])
+            {
+                int new_dis = dx + d;
+                if(new_dis < dis[y])
+                {
+                    dis[y] = new_dis; // 更新 x 的邻居的最短路
+                    pq.emplace(new_dis, y);
+                }
+            }
+        }
+
+        int ans = 0;
+        vector<int> vis(n);
+        vis[0] = true;
+        function<void(int, int, int)> dfs = [&](int x , int sum_time, int sum_value) -> void {
+            if(x == 0) // 回到0时查看是否能更新答案
+                ans = max(ans, sum_value);
+            
+            for(auto &[y, t] : g[x])
+            {
+                if(sum_time + t + dis[y] > maxTime) // 不够时间回去
+                    continue;
+                
+                if(vis[y])
+                    dfs(y, sum_time + t, sum_value); // 已经算入过价值
+                else
+                {
+                    vis[y] = true;
+                    dfs(y, sum_time + t, sum_value + values[y]);
+                    vis[y] = false; // 恢复现场
+                }
+            }
+        };
+        dfs(0, 0, values[0]);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 2976. 到达目的地的方案数 MID
 关键思路：
 - Dijkstra更新节点最短路距离的过程中DP，统计到每个节点最短路的个数
