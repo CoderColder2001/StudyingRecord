@@ -894,6 +894,64 @@ public:
 </details>
 <br>
 
+--- 
+### &emsp; 3086. 拾起 K 个 1 需要的最少行动次数 :rage: HARD
+关键思路：
+- 贪心：在操作数`maxChanges`范围内，可以先用第一种操作把`0`变成`1`，再用第二种操作拾起`1`，两次操作即可拾起一个
+- 注意对于初始已经在`aliceIndex − 1`和`aliceIndex + 1`位置上的`1`，只需操作`1`次就能得到
+- 而超出`maxChanges`范围，即只能使用第二种操作时，对应还需要拾起 `k - maxChanges`个`1`；问题转化为：*计算所有长为 `k − maxChanges` 的子数组的货仓选址问题（<b>中位数贪心</b>），并取最小值*
+- 利用 <b>前缀和</b> 计算子数组元素到其中位数的距离之和
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long minimumMoves(vector<int>& nums, int k, int maxChanges) {
+        vector<int> pos;
+        int c = 0; // 连续的1长度
+        for(int i = 0; i < nums.size(); i++)
+        {
+            if(nums[i] == 0)
+                continue;
+            pos.push_back(i);
+            c = max(c, 1);
+            if(i > 0 && nums[i - 1] == 1) 
+            {
+                if(i > 1 && nums[i - 2] == 1)
+                    c = 3; // 有 3 个连续的 1
+                else
+                    c = max(c, 2); // 有 2 个连续的 1
+            }
+        }
+        c = min(c, k);
+        if(maxChanges >= k - c)
+            return max(c - 1, 0) + (k - c)*2;
+
+        int n = pos.size();
+        vector<long long> presum(n + 1); // pos数组的前缀和 以求1之间的距离
+        for(int i = 0; i < n; i++)
+            presum[i + 1] = presum[i] + pos[i];
+
+        long long ans = LLONG_MAX;
+        int size = k - maxChanges;
+        for(int right = size; right <= n; right++)
+        {
+            int left = right - size;
+            int i = left + size / 2; // 中位数
+            long long index = pos[i];
+            long long s1 = index * (i - left) - (presum[i] - presum[left]);
+            long long s2 = presum[right] - presum[i] - index*(right - i);
+            ans = min(ans, s1 + s2);
+        }
+        return ans + maxChanges * 2;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 差分： 
 用于维护 <b>在一段区间上的操作</b>

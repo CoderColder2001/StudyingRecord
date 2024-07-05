@@ -30,6 +30,8 @@ conda list # 查看当前环境下的包
 conda create --name=xxx python=x.x.x # 创建环境
 conda env remove --name xxx # 删除环境
 
+conda create --name new_env --clone source_env # 本机复制环境
+
 conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装pytorch前）
 ```
 
