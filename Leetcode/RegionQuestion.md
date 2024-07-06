@@ -576,6 +576,37 @@ public:
 </details>
 <br>
 
+---
+### &emsp; 3101. 交替子数组计数 MID
+关键思路：
+- 从 0 开始 遍历子区间右端点
+- 由 子区间的“最大长度” 确定 可能的子区间“数量”
+- 如果新的右端点能与前一端点“交替” 则数量`cnt++`（可能的最大子区间长度 + 1）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long countAlternatingSubarrays(vector<int>& nums) {
+        long long ans = 0;
+        int cnt = 0;
+        for(int i = 0; i < nums.size(); i++)
+        {
+            if(i > 0 && nums[i] != nums[i - 1])
+                cnt++;
+            else
+                cnt = 1;
+            ans += cnt;
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 前缀和： 
 可以快速求子数组的和（转换为两个前缀和的差）  
