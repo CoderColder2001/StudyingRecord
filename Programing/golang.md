@@ -2,6 +2,13 @@
 # Golang
 
 ------
+## Basic
+`go build` 生成可执行文件   
+`go run` 编译并立即运行 Go 程序（开发时）  
+
+<br>
+
+------
 ## Goroutine
 概念上（使用上）是线程，实际上是线程+协程  
 每个CPU上有一个 Go Worker，运行协程  
@@ -53,3 +60,8 @@ func (ctx *RequestContext) BindAndValidate(obj interface{}) error {
 	return ctx.getBinder().BindAndValidate(&ctx.Request, obj, ctx.Params)
 }
 ```
+
+<br>
+
+### Hertz 优雅停机
+确保正在处理的请求完成而不会中断  
