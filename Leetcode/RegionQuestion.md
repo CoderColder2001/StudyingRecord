@@ -1778,3 +1778,47 @@ public:
 ```
 </details>
 <br>
+
+--- 
+### &emsp; 3102. 最小化曼哈顿距离 :rage: HARD
+关键思路：
+- 曼哈顿距离转化为切比雪夫距离：通过将点旋转45度并坐标扩大$\sqrt2$倍，`(x, y)`变为`(x + y, y- x)`；而再把曼哈顿距离投影到x轴或y轴，缩小了$\sqrt2$倍（投影长度较长者对应原曼哈顿距离）
+- 枚举要移除的点 
+- 用两个有序集合维护其他`n-1`各点的`x`和`y` 用`max{max(x)-min(x), max(y)-min(y)}`更新答案
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumDistance(vector<vector<int>>& points) {
+        multiset<int> xs, ys; // 旋转后 x y 的有序集合
+        for(auto &p : points) // 旋转45度并扩大
+        {
+            xs.insert(p[0] + p[1]);
+            ys.insert(p[1] - p[0]);
+        }
+
+        int ans = INT_MAX;
+        for(auto &p : points) // 枚举移除哪个点
+        {
+            // 移除一个点
+            int x = p[0] + p[1], y = p[1] - p[0]; // 旋转45度并扩大
+            xs.erase(xs.find(x));
+            ys.erase(ys.find(y));
+
+            int dx = *xs.rbegin() - *xs.begin();
+            int dy = *ys.rbegin() - *ys.begin();
+            ans = min(ans, max(dx, dy));
+
+            // 恢复现场
+            xs.insert(x);
+            ys.insert(y);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
