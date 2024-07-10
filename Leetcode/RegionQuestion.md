@@ -577,6 +577,44 @@ public:
 <br>
 
 ---
+### &emsp; 2972. 统计移除递增子数组的数目 :rage: HARD
+关键思路：
+- 可以分为 删除的子数组在中间（后缀部分保留）or 删除的子数组是一个后缀 两种情况
+- 先寻找最长的递增前缀`[0, i + 1)`；若数组完全递增，则所有非空子数组都可以移除
+- 不保留后缀：从`[0, i + 1]`选择起点开始一直删到结束，共 `i + 2` 种选择
+- 保留后缀：<b>双指针</b> `p_j`从尾部枚举后缀起点（这一枚举过程保证后缀递增），对于每一个后缀起点，用另一个指针`p_i`定位前缀的最大长度（最大的结束点）；由于后缀枚举过程是递增，`p_i`在递增前缀上只需要向左移动
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int incremovableSubarrayCount(vector<int>& nums) {
+        int n = nums.size();
+        int i = 0;
+        while(i < n - 1 && nums[i] < nums[i + 1])
+            i++;
+        
+        if(i == n - 1)
+            return n*(n + 1)/2;
+
+        int ans = i + 2; // 不保留尾部 从[0, i + 1]选择起点一直删完
+        // 枚举保留的后缀 nums[j:] 由此得到前缀条件
+        for(int j = n - 1; j == n - 1 || nums[j] < nums[j + 1]; j--)
+        {
+            while(i >= 0 && nums[i] >= nums[j]) // nums[i]较大时 i 回退
+                i--;
+            ans += i + 2; // 从[0, i + 1]中选择前缀的结束点
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 3101. 交替子数组计数 MID
 关键思路：
 - 从 0 开始 遍历子区间右端点
