@@ -447,10 +447,85 @@ MAE pre-trained Vision Transformer (ViT)
 由text生成mask还不是很稳定  
 ？dataengine没看懂  
 
+<br>
+
+---
+## （2024CVPR）MESA: Matching Everything by Segmenting Anything 
+ 
+keywords：2D图像特征匹配； 
+
+p  
+
+利用 **图结构** 进行特征匹配
+模
+
+<br>
+
+### Background：
+大  
+
+<br>
+
+### 问题：
+1、  
+2、如何进行匹配？（在另一张图对应的结构中找到与节点对应区域最匹配的节点）   
+
+<br>
+
+### 图模型区域匹配
+两种类型的边分别将AG转化成两类图模型：无向边对应 Markov Random Fields；有向边对应 Bayesian Network  
+区域匹配问题可以在图模型的框架中自然地表示  
+
+
+---
+## （2024CVPR）MASA: Matching anything by Segmenting Anything 
+ 
+keywords：2D图像特征匹配；实例分割；多目标检测； 
+
+利用SAM中丰富的对象分割，MASA通过全面的数据转换来学习实例级别的对应关系  
+将SAM输出视为稠密的的对象区域proposals  
+
+MASA pipline目标是从无标签数据集中学习对象级关联，并能将这种可推广的实例跟踪能力与任何检测和分割方法相结合，以帮助他们跟踪他们已经检测到的任何对象   
+关注于如何利用SAM丰富的实例分割知识，学习通用的关联模块  
+
+<b>自监督信号</b>：  
+数据增强（不同的几何变换）中可以直接得到像素级的对应关系  
+而SAM能够获得基于实例的像素分组，促进像素级到实例级的转换  
+
+<br>
+
+### Background：
+目前的方法多是基于带标签数据集，不能保证模型所提取的相似度特征跨领域的泛化性  
+学习有效的对象关联通常需要大量的注释数据  
+
+可以通过对比性的自监督学习技术来学习普遍的外观特征  
+但目前对比学习方法依赖于干净的、以物体为中心的图片/视频，且主要关注于不同帧之间的相似性；它们无法充分利用实例信息，且难以在具有多个实例的复杂域中学习有区别性的实例表示  
+
+<br>
+
+### 问题：
+1、如何训练以克服当前通过对比学习获取特征的方法的局限？（从两个角度增加多样性：训练图像多样性 和 实例多样性）  
+2、对于多个实例，如何挖掘包含在这些原始图像中的各实例信息？（使用SAM对像素进行分组，并提供检测到实例的形状和边界信息）  
+
+<br>
+
+### MASA training pipeline
+通过数据增强获得不同视图以其像素级对应关系  
+
+SAM生成一个密集和多样化的实例proposals集合，从而使数据增强的像素级对应转化为实例级对应，构建自监督信号，学习一个有区别的对比嵌入空间：  
+对比学习损失：$L_c = -\sum_{q\in Q}log\frac{e^{\frac{sim(q, q^+)}{\tau}}}{e^{\frac{sim(q, q^+)}{\tau}} + \sum_{q^- \in Q^-}e^{\frac{sim(q, q^-)}{\tau}}}$，其中sim为余弦相似度，$\tau$为温度系数    
+SAM生成的密集的实例proposals 天然地为对比学习提供了负样本  
+
+<br>
+
+###  MASA Adapter
+用于扩展现有的分割、检测的预训练模型（如SAM）  
+由于并不是所有预训练的特征都具有跟踪的对象可鉴别性，首先将这些冻结的backbone的特征转换为更适合跟踪的新特征   
+
 ------
 # 3D Graphics
 ---
-## （SIGGRAPH2023）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
+## （2023SIGGRAPH）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
  
 keywords：3D高斯；场景表示；可微渲染  
 
