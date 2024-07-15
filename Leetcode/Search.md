@@ -1458,8 +1458,74 @@ public:
 ### 概念
 由连通性定义 “图上的状态” / 图的划分  
 
+一次搜索对应一个连通块；每轮搜索用一个集合记录当前连通块的节点，并所有搜索共同维护一个`vis`记录已访问节点，以免重复遍历连通块  
+
 ---
 ### 题目
+---
+### &emsp; 721. 账户合并 MID
+关键思路： 
+- 同名且有共同的邮箱地址时，为同一个人
+- 在账户名（对应`accounts`的id）与其邮箱地址之间连边，即对应一个 无向图（二分图）
+- <b>DFS 求图中的每个连通块</b>
+- 过程相当于 *通过账号对应到各个邮箱，再由邮箱寻找记录了这一邮箱的不同账号*
+- <b>预处理出一个email2idx映射 维护连接关系（记录了该邮箱的所有用户名）</b>
+- `unordered_set`记录每次DFS遍历的一个连通块
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<vector<string>> accountsMerge(vector<vector<string>>& accounts) {
+        unordered_map<string, vector<int>> email2idx;
+        for(int i = 0; i < accounts.size(); i++)
+        {
+            for(int k = 1; k < accounts[i].size(); k++)
+                email2idx[accounts[i][k]].push_back(i);
+        }
+
+        unordered_set<string> emailSet; // DFS时记录已访问的 一个连通块
+        vector<int> vis(accounts.size());
+        function<void(int)> dfs = [&](int i) -> void {
+            vis[i] = true;
+            for(int k = 1; k < accounts[i].size(); k++) // 当前账号的所有邮箱
+            {
+                string &email = accounts[i][k];
+                if(emailSet.contains(email))
+                    continue;
+                emailSet.insert(email); // 加入连通块
+
+                for(int j : email2idx[email]) // 所有包含该邮箱地址的账户 j
+                {
+                    if(!vis[j])
+                        dfs(j);
+                }
+            }
+        };
+
+        vector<vector<string>> ans;
+        for(int i = 0; i < vis.size(); i++)
+        {
+            if(vis[i])
+                continue;
+
+            emailSet.clear();
+            dfs(i);
+            vector<string> res = {accounts[i][0]};
+            res.insert(res.end(), emailSet.begin(), emailSet.end());
+            sort(res.begin() + 1, res.end());
+
+            ans.push_back(res);
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>
+
 ---
 ### &emsp; 924. 尽量减少恶意软件的传播 :rage: HARD
 关键思路： 
