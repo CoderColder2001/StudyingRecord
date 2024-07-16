@@ -769,7 +769,7 @@ public:
 
 ### 题目
 ---
-### &emsp; 447 回旋镖的数量 MID
+### &emsp; 447. 回旋镖的数量 MID
 关键思路：
 - 两趟遍历，枚举中间的点 i
 - 统计有多少对`(j,k)`， 满足`dis(i, j) = dis(i, k)`
@@ -986,6 +986,34 @@ public:
             ans += leftNum * midNum * rightNum;
             leftNum += midNum; // 去当左侧元素
         }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2956. 找到两个数组中的公共元素 EASY
+关键思路： 
+- 用 <b>哈希集合</b> 分别记录两个数组中出现过的元素
+- 遍历数组并查找另一哈希集合、计数
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> findIntersectionValues(vector<int>& nums1, vector<int>& nums2) {
+        unordered_set<int> set1(nums1.begin(), nums1.end());
+        unordered_set<int> set2(nums2.begin(), nums2.end());
+        vector<int> ans(2, 0);
+        for(int x : nums1)
+            ans[0] += set2.count(x);
+        for(int x : nums2)
+            ans[1] += set1.count(x);
+
         return ans;
     }
 };
