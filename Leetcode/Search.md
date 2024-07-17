@@ -964,10 +964,13 @@ DP思想 求单源最短路 可以有负边 可以判断存在负环（最短路
 
 - ### Floyd O(n^3) 
 贪心 + DP 求所有节点对间的最短路  
-以每个点为「中转站」，刷新所有「入度」和「出度」的距离   
-外层枚举中转节点（能用于作为中转节点的编号）：枚举到第 `i` 轮时，可以理解为“已经计算完可将节点 `0` ~ `i-1` 作为中间节点”的情况  
+以边关系`edges`初始化直接相连的节点对的距离   
+以每个点为「中转站」 **选或不选**，刷新所有「入度」和「出度」的距离   
+外层枚举可选的中转节点（能用于作为中转节点的编号）：枚举到第 `i` 轮时，可以理解为“已经计算完可将节点 `0` ~ `i-1` 作为中间节点”的情况  
+**`dp[k][i][j]`：从 i 到 j 的最短路，且中间节点编号都小于 k**
 
 注：不关心起止点的多源最短路问题可以通过 <b>建立虚拟源点和虚拟汇点</b> 转换为单源最短路问题  
+由于`f[k+1][][]`只与`f[k][][]` 有关，且 `f[k+1][i][k]=f[k][i][k]`、`f[k+1][k][j]=f[k][k][j]`（不会被覆盖），可以空间优化第一维  
 
 <details>
 <summary> <b>C++ Code</b> </summary>
@@ -981,7 +984,7 @@ for(auto &e : edges)
 }
 
 vector<vector<vector<int>>> f(n + 1, vector<vector<int>>(n, vector<int>(n)));
-f[0] = w; // 不经过任何点
+f[0] = w; // 不经过任何点，用边初始化直接相连的节点对的距离
 
 // 最外层枚举k：
 // 要算f[k+1][i][j]，必须先把 f[k][i][j]、f[k][i][k]和f[k][k][j]算出来。
@@ -1447,6 +1450,78 @@ public:
             if (e[2] == -1) // 剩余没修改的边全部改成 1
                 e[2] = 1;
         return edges;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 2959. 关闭分部的可行集合数目 :rage: HARD
+关键思路：
+- 二进制枚举子集
+- Floyd （只考虑在s中的节点）求出所有节点对的最短路
+- 使用 <b>邻接矩阵</b> 存图；对于每一次枚举的子集，使用邻接矩阵的对应行进行初始化（拷贝保留节点的邻接关系）
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int numberOfSets(int n, int maxDistance, vector<vector<int>>& roads) {
+        vector<vector<int>> g(n, vector<int>(n, INT_MAX / 2)); // 防止加法溢出
+        for(auto &e : roads)
+        {
+            int x = e[0], y = e[1], wt = e[2];
+            g[x][y] = min(g[x][y], wt);
+            g[y][x] = min(g[y][x], wt);
+        }
+
+        vector<vector<int>> f(n); // dp数组
+        auto check = [&](int s) -> bool {
+            for(int i = 0; i < n; i++) // 每轮只需重置会用到的行
+            {
+                if((s >> i) & 1)
+                    f[i] = g[i];
+            }
+
+            // Floyd （只考虑在s中的节点）
+            for(int k = 0; k < n; k++)
+            {
+                if(((s >> k) & 1) == 0)
+                    continue;
+                
+                for(int i = 0; i < n; i++)
+                {
+                    if(((s >> i) & 1) == 0)
+                        continue;
+
+                    for(int j = 0; j < n; j++)
+                        f[i][j] = min(f[i][j], f[i][k] + f[k][j]);
+                }
+            }
+
+            // check maxDistance
+            for(int i = 0; i < n; i++)
+            {
+                if(((s >> i) & 1) == 0)
+                    continue;
+                
+                for(int j = 0; j < i; j++)
+                {
+                    if((s >> j) & 1 && f[i][j] > maxDistance)
+                        return false;
+                }
+            }
+            return true;
+        };
+
+        int ans = 0;
+        for(int s = 0; s < (1 << n); s++) // 枚举子集
+            ans += check(s);
+
+        return ans;
     }
 };
 ```
