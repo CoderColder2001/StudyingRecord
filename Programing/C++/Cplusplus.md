@@ -464,6 +464,20 @@ sort(xxx.begin(), xxx.end());
 xxx.erase(unique(xxx.begin(), xxx.end()), xxx.end());
 ```
 
+### next_permutation && next_permutation
+迭代器范围内 下一/上一 全排列（默认为字典序）  
+要遍历所有全排列，应确保进行迭代前已经排好序
+``` c++
+bool next_permutation(iterator start, iterator end, Compare comp); // 改变对象为下一全排列，若无则返回false
+
+// example
+do{
+    ...
+}while(next_permutation(nums.begin(), nums.end()));
+```  
+
+<br>
+
 ### lower_bound
 底层为二分查找  
 有序容器中，返回 `[first,last)` 中指向第一个值不小于val的位置（第一个 >= val 的位置）  

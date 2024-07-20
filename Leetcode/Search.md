@@ -16,6 +16,48 @@
 ---
 ### 题目
 ---
+### &emsp; 47. 全排列II MID
+关键思路：
+- DFS 参数x为当前正在排的位置 
+- `[0, x)`已经排完；`[x, n]`枚举选哪个排列到这个位置 
+- 用一个 set 避免在当前位置重复考虑相同值的元素 
+- 交换元素 并向下递归
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        vector<vector<int>> res;
+        function<void(int)> dfs = [&](int x)
+        {
+            if(x == nums.size() - 1)
+            {
+                res.emplace_back(nums);
+                return;
+            }
+            set<int> st;
+            for(int i = x; i < nums.size(); i++)
+            {
+                if(st.find(nums[i]) != st.end())
+                    continue;
+                st.insert(nums[i]);
+                swap(nums[i], nums[x]); // 交换 将 nums[i] 固定在第 x 位
+                dfs(x + 1);
+                swap(nums[i], nums[x]);
+            }
+        };
+        dfs(0);
+        return res;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 365. 水壶问题 MID
 关键思路：
 - “状态转移” 实际上也是一个图
