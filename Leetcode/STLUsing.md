@@ -994,6 +994,35 @@ public:
 <br>
 
 ---
+### &emsp; 2766. 重新放置石块 MID
+关键思路： 
+- 操作的前后状态都对应于 “石头的位置”
+- 用 <b>哈希集合</b> 来维护这些石头的位置，注意这个过程并不关心每个位置有多少石块
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> relocateMarbles(vector<int>& nums, vector<int>& moveFrom, vector<int>& moveTo) {
+        unordered_set<int> st(nums.begin(), nums.end());
+        for(int i = 0; i < moveFrom.size(); i++)
+        {
+            st.erase(moveFrom[i]);
+            st.insert(moveTo[i]);
+        }
+        vector<int> ans(st.begin(), st.end());
+        ranges::sort(ans);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+
+---
 ### &emsp; 2956. 找到两个数组中的公共元素 EASY
 关键思路： 
 - 用 <b>哈希集合</b> 分别记录两个数组中出现过的元素
