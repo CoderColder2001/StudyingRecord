@@ -1570,6 +1570,56 @@ public:
 </details>
 <br>
 
+---
+### &emsp; 3112. 访问消失节点的最少时间 MID
+关键思路：
+- 在Dijkstra的过程中，添加判断当前最短距离是否小于消失时间
+- 若不满足，即无法及时到达该节点，则不更新
+- 堆优化Dijkstra注意判断 `if(dx > dis[x]) // x之前出堆过`
+
+<details>
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> minimumTime(int n, vector<vector<int>>& edges, vector<int>& disappear) {
+        vector<vector<pair<int, int>>> g(n); // 稀疏图用邻接表
+        for(auto &e : edges)
+        {
+            int x = e[0], y = e[1], wt = e[2];
+            g[x].emplace_back(y, wt);
+            g[y].emplace_back(x, wt);
+        }
+
+        vector<int> dis(n, -1);
+        dis[0] = 0;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+        pq.emplace(0, 0);
+        while(!pq.empty())
+        {
+            auto [dx, x] = pq.top();
+            pq.pop();
+            if(dx > dis[x]) // x之前出堆过
+                continue;
+            
+            for(auto &[y, d] : g[x])
+            {
+                int newDis = dx + d;
+                if(newDis < disappear[y] && (dis[y] < 0 || dis[y] > newDis))
+                {
+                    dis[y] = newDis;
+                    pq.emplace(newDis, y);
+                }
+            }
+        }
+        return dis;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 连通性问题
 ### 概念
