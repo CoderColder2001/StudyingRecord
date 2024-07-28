@@ -254,25 +254,144 @@ torch.cuda.is_available()
 
 <br>
 
+---
+## tensor
+tensor（张量）类似于numpy，但特点是可以在GPU上运行，支持自动微分    
+可以由 列表、np_array或另一个tensor创建  
+tensor和numpy可以共享同一块内存   
+```python
+data = [[1, 2], [3, 4]]
+x_data = torch.tensor(data)
+
+a = torch.ones_like(data)
+b = torch.zeros_like(data)
+c = torch.rand((2, 2))
+d = torch.eye(3) # 3*3 对角线1 其他0
+e = torch.full((2,2), 5) # 2*2 值为5
+if torch.cuda.is_available():
+    c.to('cuda') # 移动开销
+
+# 查看信息
+a.dtype
+a.shape
+a.device
+
+torch.arange(start=0, end, step=1, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False) # 创建一维张量
+
+torch.range(start=0, end, step=1, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False) # 创建一维张量（元素数量比arange多一个）
+
+for i in torch.range(10):
+    print("epoch: ", i)
+```
+
+<br>
+
 ## torch 相关方法
+### tensor 操作
 `xxx.half()`：  
 转换为半精度浮点数，减少内存占用、提升计算速度  
 
-`xxx.stack(...)`:  
-沿着一个新维度对输入张量序列进行连接(如把二维堆成三维)   
+---
+`torch.cat(tensors, dim=0, *, out=None)`：  
+将各`tensors`在第`dim`维上连接，要求除`dim`外其他维度形状相同   
+*一个`2*2`的tensor 与一个`2*3`的tensor在 第`1`维上cat，得到`2*5`的 tensor*   
 
+---
+`torch.chunk(tensor, chunks, dim=0)`：  
+将`tensor`在第`dim`维上分割成`chunks`个 tensors  
+
+---
+`torch.split(tensor, split_size_or_sections, dim = 0)`：
+划分tensor；`split_size_or_sections`为整形时指示划分块的大小，为列表时指示各划分的长度  
+
+---
+`torch.stack(tensors, dim=0, *, out=None)`：  
+沿着一个新维度对输入张量序列进行连接(如把二维堆成三维)   
+所有张量大小一致  
+
+---
+`torch.unbind(input, dim=0)`:  
+删去一个维度，返回沿着这个元素对应的所有元组  
+
+---
+`torch.reshape(tensor, shape)`：  
+保持张量元素的顺序，改变形状  
+`shape`为`(-1,)`或`[-1]`时，压缩成一维  
+
+---
+`torch.squeeze(tensor, dim=None, out=None)`：  
+压缩tensor，删去大小为`1`的维   
+
+---
+`torch.unsqueeze(tensor, dim)`：
+在`dim`维上新增一个大小为`1`的维  
+
+---
+`torch.gather(tensor, dim, index, *, sparse_grad=False, out=None)`：  
+沿着第`dim`维（index的值作用于第几维），按照index索引的结果收集`tensor`上的值  
+```python
+out[i][j][k] = input[index[i][j][k]][j][k] # dim == 0
+out[i][j][k] = input[i][index[i][j][k]][k] # dim == 1
+out[i][j][k] = input[i][j][index[i][j][k]] # dim == 2
+```
+input和index的维度（dim）相同，而形状（shape）不必一致  
+
+---
+`xxx.scatter_(dim, index, src)`：  
+沿着第`dim`维（index的值作用于第几维），按照index将`src`对应元素写入`xxx`   
+```python
+self[index[i][j][k]][j][k] = src[i][j][k] # dim == 0
+self[i][index[i][j][k]][k] = src[i][j][k] # dim == 1
+self[i][j][index[i][j][k]] = src[i][j][k] # dim == 2
+```
+`scatter() `不会直接修改原来的 tensor，而 `scatter_()` 会修改原先的 tensor  
+
+---
+`torch.tile(input, dims)`：  
+在`i`维上重复`dims[i]`份input以构造新的tensor  
+
+---
+`torch.transpose(input, dim0, dim1)`：  
+`dim0`维和`dim1`维 转置   
+
+---
+`torch.where(condition, tensorX, tensorY)`：  
+`tensorX`条件成立时的地方为原值，否则为`tensorY`对应位置的值   
+
+---
 `xxx.detach()`:  
 切断一些分支的反向传播  
 返回一个新tensor，与原始张量共享数据，但不再参与任何梯度计算  
 
+---
+`torch.normal(mean, std, size， *, out=None)`： 
+根据正态分布构造tensor   
+或者不指定size参数，而mean或std为列表  
+
+---
 `@torch.no_grad()`:     
 上下文管理器中执行张量操作时，PyTorch 不会为这些操作计算梯度  
 
+---
 `ctx.save_for_backward(...)`:  
 在自定义forward函数时，保存张量以便在反向传播过程中使用  
 
 <br>
 
+------
+### Dataset & DataLoader
+`Dataset`处理单个数据样本   
+继承`Dataset`类，构建自己的数据集类，实现`__init__(...)`（*通常需要传入自己数据集的目录；`transform`和`target_transform`参数表示对特征和标签进行预处理的方法*）、`__getitem__(self, index)`、`__len__(self)`   
+
+`DataLoader`对多个样本（minibatch），同时利用python多进程读取数据   
+```python 
+DataLoader(dataset, batch_size=1, shuffle=False, batch_sampler, num_workers=0) # 常用参数 
+```
+通过`Dataloader`遍历数据集，一次得到一个 batch 的特征和标签  
+
+<br>
+
+------
 ### nn.Module
 所有神经网络模块的基类  
 通过创建一个继承自`nn.Module`的类，定义了一个可以包含其他模块、执行前向传播、以及包含参数和缓冲区的神经网络模块  

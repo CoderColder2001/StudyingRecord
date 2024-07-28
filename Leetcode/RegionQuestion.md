@@ -1585,6 +1585,52 @@ public:
 <br>
 
 --- 
+### &emsp; 699. 掉落的方块 :rage: HARD
+关键思路：
+- 使用 <b>有序集合</b>`heightMap` 记录当前已经落稳的方块的高度
+- 用 `heightMap `记录每一个相对于前一个点而言，堆叠高度发生变化的左端点即变化后的高度 （实际即 **记录 区间的变化情况**）
+- 一个新的方块落下时，判断它会覆盖当前有序集合的哪些点，并计算新的高度
+- 注意要缓存新的方块右侧的高度值`rHeight`，即新的方块的右端点可能会成为一个新的高度变化点存于`heightMap`中
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> fallingSquares(vector<vector<int>>& positions) {
+        int n = positions.size();
+        vector<int> ret(n);
+        map<int, int> heightMap;
+        heightMap[0] = 0;
+        for(int i = 0; i < n; i++)
+        {
+            int size = positions[i][1];
+            int left = positions[i][0], right = positions[i][0] + positions[i][1] - 1;
+            auto lp = heightMap.upper_bound(left), rp = heightMap.upper_bound(right);
+            int rHeight = prev(rp)->second; // 缓存 right + 1 对应的堆叠高度（如果 right + 1 不在 heightMap 中）
+
+            // 计算堆叠高度
+            int height = 0;
+            for(auto p = prev(lp); p != rp; p++)
+                height = max(height, p->second + size); // 区间内最高高度+size
+
+            heightMap.erase(lp, rp); // 删除 (left, right] 随后更新这段区间的堆叠高度
+
+            heightMap[left] = height; // 从left开始 高度为height
+            if(rp == heightMap.end() || rp->first != right + 1) // right + 1 不在 heightMap 中
+                heightMap[right + 1] = rHeight; // 不影响[right+1, ...)
+
+            ret[i] = i > 0? max(ret[i-1], height) : height;
+        }
+        return ret;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 1163. 按字典序排在最后的子串 :rage: HARD
 关键思路：
 - 寻找字典序最大的后缀子串
