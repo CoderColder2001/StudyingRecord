@@ -1,4 +1,30 @@
+[TOC]
 ## Content
+
+---
+### tips
+取模：
+```c++
+MOD = 1_000_000_007
+
+// 加
+(a + b) % MOD
+
+// 减
+(a - b + MOD) % MOD
+
+// 取模到 [0,MOD-1] 中，无论正负
+(a % MOD + MOD) % MOD
+
+// 乘
+a * b % MOD
+
+// 多个数相乘，要步步取模，防止溢出
+a * b % MOD * c % MOD
+
+// 除（MOD 是质数且 b 不是 MOD 的倍数） qpow 为快速幂
+a * qpow(b, MOD - 2, MOD) % MOD
+```
 
 ------
 ### 题目
@@ -7,6 +33,7 @@
 ### &emsp; 50. Pow(x, n) MID
 关键思路：  
 - 快速幂 利用<b>二进制展开</b>
+- 如果要取模，见注释 
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -26,9 +53,10 @@ public:
         while(N > 0)
         {
             if(N & 0x1 == 1)
-                ans *= x_contribute;
+                ans *= x_contribute; // ans = ans * x_contirbute % M
             
             x_contribute *= x_contribute; // 将贡献不断地平方
+            // x_contribute = x_contribute * x_contribute % M
             N >>= 1;
         }
         return ans;
