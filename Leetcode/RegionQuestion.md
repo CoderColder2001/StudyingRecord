@@ -1671,6 +1671,44 @@ public:
 <br>
 
 --- 
+### &emsp; 1262. 可被三整除的最大和 MID
+关键思路：
+- 若所有元素和`s`不能被三整除，对于所有元素，按`x % 3`分组为`a0`、`a1`、`a2`并排序
+- 要构造能被三整除的和，根据`s % 3`分情况讨论
+- `s % 3 == 1`：若`a1`不为空，答案可能是 `s - a1[0]`；若`a2`有至少两个元素，还可能是`s - a2[0] - a2[1]`；若都不满足，则为`0`
+- 以此类推`s % 3 == 2`时，形式类似，代码实现时可以`swap(a1, a2)`，不用实现两次
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxSumDivThree(vector<int>& nums) {
+        int s = reduce(nums.begin(), nums.end(), 0);
+        if(s % 3 == 0)
+            return s;
+        vector<int> a[3];
+        for(int x : nums)
+        {
+            a[x % 3].push_back(x);
+        }
+        ranges::sort(a[1]);
+        ranges::sort(a[2]);
+
+        if(s % 3 == 2)
+            swap(a[1], a[2]);
+        int ans = a[1].size() ? s - a[1][0] : 0;
+        if(a[2].size() > 1)
+            ans = max(ans, s - a[2][0] - a[2][1]);
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 1498. 满足条件的子序列数目 MID
 关键思路：
 - 首先对数组排序
@@ -1901,6 +1939,48 @@ public:
             ys.insert(y);
         }
         return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
+### &emsp; LCP 40. 心算挑战 EASY
+关键思路：
+- 首先计算前`cnt`大的数之和`s`，可以用快速选择将前`cnt`大的数排好序
+- `s`为奇数时，需要去掉已选中的最小奇数，添加未选中的最大偶数，或去掉已选中的最小偶数，添加未选中的最大奇数
+- 上述情况可建模为`max(s + max(mx[0] - mn[1], mx[1] - mn[0]), 0)`，其中`0`为无有效方案
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxmiumScore(vector<int>& cards, int cnt) {
+        ranges::nth_element(cards, cards.end()-cnt); // 快速选择 前cnt大的有序
+        int s = reduce(cards.end()-cnt, cards.end(), 0);
+        if(s % 2 == 0)
+            return s;
+        
+        int n = cards.size();
+        // 加进来的最大偶数/奇数
+        int mx[2] = {INT_MIN / 2, INT_MIN / 2}; // 除2防止减法溢出
+        for(int i = 0; i < n - cnt; i++)
+        {
+            int v = cards[i];
+            mx[v % 2] = max(mx[v % 2], v);
+        }
+
+        // 去掉的最小奇数/偶数
+        int mn[2] = {INT_MAX / 2, INT_MAX / 2};
+        for(int i = n - cnt; i < n; i++)
+        {
+            int v = cards[i];
+            mn[v % 2] = min(mn[v % 2], v);
+        }
+        return max(s + max(mx[0] - mn[1], mx[1] - mn[0]), 0);
     }
 };
 ```
