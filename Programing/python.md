@@ -142,6 +142,9 @@ ages = [25, 30, 35]
 
 for name, age in zip(names, ages):
     print(name, age)
+
+# 遍历计算二维数组grid的列之合
+col_sum = [sum(col) for col in zip(*grid)]
 ```
 ### 10、扩展with语句 创建自定义的上下文管理器
 通过使用 contextlib 模块中的 `@contextmanager` 装饰器将函数转换为上下文管理器  
@@ -392,10 +395,22 @@ DataLoader(dataset, batch_size=1, shuffle=False, batch_sampler, num_workers=0) #
 <br>
 
 ------
+### nn.Parameter
+`Pararmeter(data=None, requires_grad=True) ` 
+Tensor的子类，作为模块参数的张量  
+在 Module 定义 Pararmeter 实例时，会自动加入到 Module 的参数列表中  
+
+<br>
+
+------
 ### nn.Module
 所有神经网络模块的基类  
 通过创建一个继承自`nn.Module`的类，定义了一个可以包含其他模块、执行前向传播、以及包含参数和缓冲区的神经网络模块  
 重写 `__init__ `方法来定义层（内部子模块）和其他属性，重写 `forward` 方法来定义前向传播的计算  
+
+Module成员：
+- `register.buffer('xxx', torch.zeros(num_features))`：用于保存不是模块参数但在模块训练中需要缓存的量（如 BatchNorm 中的`running_mean`），由`persistent`（默认`True`）决定该量是否持久化
+- `register.parameter('xxx', param)`：将paremeter添加到模型参数列表（一个字典）中，以名称`'xxx'`为键  
 
 <br>
 
