@@ -1946,6 +1946,45 @@ public:
 <br>
 
 --- 
+### &emsp; 3143. 正方形中的最多点数 MID
+关键思路：
+- 以所有标签的 距原点的次小的切比雪夫距离 中最小的标签为界
+- <b>维护所有次小距离的最小值</b>
+- 同时，用数组维护所有标签的最小距离 最后遍历这个数组判断有多少点满足在界中（界内一个标签必然最多只有一个点）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxPointsInsideSquare(vector<vector<int>>& points, string s) {
+        int min_d[26], min2 = INT_MAX;
+        ranges::fill(min_d, INT_MAX);
+        for(int i = 0; i < points.size(); i++)
+        {
+            int d = max(abs(points[i][0]), abs(points[i][1]));
+            char c = s[i] - 'a';
+            if(d < min_d[c])
+            {
+                min2 = min(min2, min_d[c]); // 此时min_d[c]要成为次小值了
+                min_d[c] = d;
+            }
+            else
+                min2 = min(min2, d);
+        }
+        int ans = 0;
+        for(int d : min_d)
+            ans += d < min2;
+        
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; LCP 40. 心算挑战 EASY
 关键思路：
 - 首先计算前`cnt`大的数之和`s`，可以用快速选择将前`cnt`大的数排好序

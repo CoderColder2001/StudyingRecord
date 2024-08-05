@@ -21,6 +21,8 @@
 
 关键：
 - 确定搜索区间 `[left, right] 、 [left, right) 、 (left, right)`三种写法 &emsp;这决定了循环结束条件以及转移方程  
+- 左/右边为 闭 时，对应边界更新时要`+1`/`-1`
+- 循环条件对应：区间不为空
 - 确定循环不变量（区间满足的性质，或者说L R满足的性质）
 
 ---
@@ -46,7 +48,7 @@ int binarySearch(int[] nums, int target) {
 
 ### 寻找左侧边界（第一个xxx）
 
-循环不变量： <b>`left-1` 一定指向小于它的数</b> （半闭半开写法）  
+循环不变量： <b>`left-1` 一定指向小于它的数（`left-1`及其左侧一定不满足）</b> （半闭半开写法）  
 
 ```c++
 int left_bound(int[] nums, int target) {
@@ -59,7 +61,7 @@ int left_bound(int[] nums, int target) {
         if (nums[mid] == target) {
             right = mid; // 看看有没有可能更左
         } else if (nums[mid] < target) {
-            left = mid + 1;
+            left = mid + 1; // 左闭
         } else if (nums[mid] > target) {
             right = mid; // 注意
         }
@@ -70,7 +72,7 @@ int left_bound(int[] nums, int target) {
 
 ### 寻找右侧边界（最后一个xxx）
 
-循环不变量： <b>`right` 一定指向大于它的数</b>  （半闭半开写法）  
+循环不变量： <b>`right` 一定指向大于它的数（`right`及其右侧一定不满足）</b>  （半闭半开写法）  
 
 ```c++
 int right_bound(int[] nums, int target) {
@@ -82,7 +84,7 @@ int right_bound(int[] nums, int target) {
         if (nums[mid] == target) {
             left = mid + 1; // 看看有没有可能更右
         } else if (nums[mid] < target) {
-            left = mid + 1;
+            left = mid + 1; // 左闭
         } else if (nums[mid] > target) {
             right = mid;
         }
@@ -347,6 +349,48 @@ public:
                 left = mid + 1;
         }
         return right + 1;
+    }
+};
+```
+</details>
+<br>
+
+---
+### &emsp; 3143. 正方形中的最多点数 MID
+关键思路：
+- 边长越大越不合法 问题具有单调性 二分
+- 用二进制串`vis` 在二分过程中统计遇到的字符数量
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxPointsInsideSquare(vector<vector<int>>& points, string s) {
+        int ans = 0;
+        auto check = [&](int size) -> bool {
+            int vis = 0;
+            for(int i = 0; i < points.size(); i++)
+            {
+                if(abs(points[i][0]) <= size && abs(points[i][1]) <= size)
+                {
+                    char c = s[i] - 'a';
+                    if((vis >> c) & 1)
+                        return false;
+                    vis |= 1 << c;
+                }
+            }
+            ans = __builtin_popcount(vis);
+            return true;
+        };
+        int left = -1, right = 1E9+1;
+        while(left + 1 < right)
+        {
+            int mid = (left + right) / 2;
+            (check(mid) ? left : right) = mid;
+        }
+        return ans;
     }
 };
 ```

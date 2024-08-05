@@ -360,6 +360,57 @@ public:
 <br>
 
 ---
+### &emsp; 572. 另一棵树的子树 EASY
+关键思路：
+- 子问题：判断相同的树（注意两个树的前序序列相同不一定代表树相同）
+- 暴力遍历的优化：只判断深度与`subRoot`相同的节点（递归计算深度时，若当前节点深度与`subRoot`相同，调用isSameTree进行判断）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+``` c++
+class Solution {
+public:
+    int getHeight(TreeNode* root) // 二叉树的最大深度
+    {
+        if(root == nullptr)
+            return 0;
+        int left_h = getHeight(root->left);
+        int right_h = getHeight(root->right);
+        return max(left_h, right_h) + 1;
+    }
+    bool isSameTree(TreeNode* p, TreeNode* q)
+    {
+        if(p == nullptr || q == nullptr)
+            return p == q;
+        return p->val == q->val &&
+                isSameTree(p->left, q->left) &&
+                isSameTree(p->right, q->right);
+    }
+    bool isSubtree(TreeNode* root, TreeNode* subRoot) {
+        int hs = getHeight(subRoot);
+
+        // 返回root的高度以及是否找到了subRoot
+        function<pair<int, bool>(TreeNode*)> dfs = [&](TreeNode* node) -> pair<int, bool> {
+            if(node == nullptr)
+                return {0, false};
+
+            auto [left_h, left_found] = dfs(node->left);
+            auto [right_h, right_found] = dfs(node->right);
+            if(left_found || right_found)
+                return {0, true};
+
+            int node_h = max(left_h, right_h) + 1;
+            return {node_h, node_h == hs && isSameTree(node, subRoot)};
+        };
+        return dfs(root).second;
+    }
+};
+```
+</details>
+<br>
+
+---
 ### &emsp; 979. 在二叉树中分配硬币 MID
 关键思路：
 - 每枚硬币移动的路径长度并不好计算，但是若把这些路径叠起来，**转换成 每条边经过了多少枚硬币** ，就容易计算了
