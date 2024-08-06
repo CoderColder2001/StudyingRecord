@@ -1853,6 +1853,45 @@ public:
 
 ### 题目
 ---
+### &emsp; 600. 不含连续1的非负整数 :rage: HARD
+关键思路：  
+- `pre1`：前一个bit是否为`1`
+- `is_limit`：当前是否受到`n`的约束；为`true`时第`i`位填入的数字至多为`n>>i & 1`（设当前这位能填入的数字上界为`up`）
+- 本题前导`0`对答案无影响，可以不考虑`is_num`（前面是否已有有效数字）
+- 注意`(i, pre1, false)`对应状态只会在递归中出现一次，可以只记忆化 `is_limit == false` 时的状态
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int findIntegers(int n) {
+        int m = __lg(n); // n的最高位
+        vector<array<int, 2>> memo(m + 1, {-1, -1}); // -1 表示没有计算过
+        auto dfs = [&](auto&&dfs, int i, bool pre1, bool is_limit) -> int {
+            if(i < 0)
+                return 1;
+            if(!is_limit && memo[i][pre1] >= 0) // 之前计算过
+                return memo[i][pre1];
+            int up = is_limit ? n>>i & 1 : 1;
+            int res = dfs(dfs, i-1, false, is_limit && up == 0); // 填0
+            if(!pre1 && up == 1) // 可以填1
+                res += dfs(dfs, i - 1, true, is_limit);
+
+            if(!is_limit)
+                memo[i][pre1] = res;
+            
+            return res;
+        };
+        return dfs(dfs, m, false, true);
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 1012. 至少有一位重复的数字 :rage: HARD
 关键思路：  
 - 转换为求无重复数字的个数
@@ -1950,6 +1989,49 @@ public:
             return res;
         };
         return dfs(0, 0, true, true);
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 3130. 找出所有稳定的二进制数组II :rage: HARD
+关键思路：  
+- `dp[i][j][k]`：使用i个0，j个1且最后一个数字是k的稳定的二进制数组的个数
+- 要考虑前导`0`；初始时 `dp[i][0][0] = 1`（`1<=i<= min(limit, zero)`）
+- 状态更新时要 <b>减去可能引入的不合法方案</b>（和末尾相同元素构成连续`limit`长的子数组）；但由于dp记录的是合法方案数，引入转化，如在最后连续`limit`个位置都为`0`的情况下，对应于倒数第`limit+1`的位置一定填了`1`
+- 或理解为 *倒数前`limit`为`0`，第`limit+1`为`1`的合法方案在加入这个`0`后变得不合法*
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int numberOfStableArrays(int zero, int one, int limit) {
+        const int mod = 1e9 + 7;
+        using ll = long long;
+        ll dp[zero + 1][one + 1][2];
+        memset(dp, 0, sizeof(dp));
+
+        // 全填0 or 1时，长度不能超过limit
+        for(int i = 1; i <= min(zero, limit); i++)
+            dp[i][0][0] = 1;
+        for(int j = 1; j <= min(one, limit); j++)
+            dp[0][j][1] = 1;
+
+        for(int i = 1; i <= zero; i++)
+        {
+            for(int j = 1; j <= one; j++)
+            {
+                ll x = i - limit - 1 < 0 ? 0 : dp[i - limit - 1][j][1]; // 倒数前limit为0，第limit+1为1的合法方案在加入这个0后变得不合法
+                ll y = j - limit - 1 < 0 ? 0 : dp[i][j - limit - 1][0]; // 倒数前limit为1，第limit+1为0的合法方案在加入这个1后变得不合法
+                dp[i][j][0] = (dp[i-1][j][0] + dp[i-1][j][1] - x + mod) % mod;
+                dp[i][j][1] = (dp[i][j-1][0] + dp[i][j-1][1] - y + mod) % mod;
+            }
+        }
+        return (dp[zero][one][0] + dp[zero][one][1]) % mod;
     }
 };
 ```

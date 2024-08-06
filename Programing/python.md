@@ -372,6 +372,14 @@ self[i][j][index[i][j][k]] = src[i][j][k] # dim == 2
 或者不指定size参数，而mean或std为列表  
 
 ---
+`xxx.cuda(device=None, non_blocking=False, memory_format=torch.preserve_format) -> Tensor`：  
+拷贝到cuda内存中，返回对象在cuda内存中的拷贝  
+
+---
+`xxx.type(dtype=None, non_blocking=False, **kwarg) -> Str or Tensor`：  
+无`dtype`参数时，返回类型；否则将tensor转化为对应类型  
+
+---
 `@torch.no_grad()`:     
 上下文管理器中执行张量操作时，PyTorch 不会为这些操作计算梯度  
 
@@ -414,6 +422,18 @@ Module成员：
 
 <br>
 
+---
+`xxx._apply(fn)`：  
+对所有的子模块（递归`_apply(fn)`）、参数、buffers调用`fn`   
+
+---
+`xxx.apply(fn)`：  
+递归地对所有子模块调用`apply(fn)`  
+一般用于模块参数初始化时  
+
+<br>
+
+---
 ### torch.autograd.Function
 用于定义 自定义的<b>自动微分操作</b> 的 抽象类  
 通过继承 `torch.autograd.Function` 并实现`forward`和`backward`方法来在PyTorch的自动微分系统中创建一个自定义函数  
