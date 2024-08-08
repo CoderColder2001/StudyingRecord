@@ -17,6 +17,32 @@ sum(x >= y for x, y in pairwise(word))
 `str[::-1]` 字符串反转  
 
 `[..., None]` （在最后）增加一个维度  
+
+<br>
+
+---
+### yield
+<https://blog.csdn.net/mieleizhi0522/article/details/82142856>  
+
+（一种特殊的“return”）  
+带yield语句的函数是一个生成器，而不是一个函数，用于生成迭代器对象（在每一次执行 yield语句 时执行）  
+
+```py
+def f():
+    while True:
+        res = yield 99
+        print(res)
+
+g = f()
+print(next())
+print(g.send(100))
+```
+执行语句`g = f() # f 中含有yield` 时，函数并不会真的执行，而是先得到一个生成器g（相当于一个对象） 
+调用next时，`f`才真正执行  
+send方法会将100传给res并调用next  
+
+**返回迭代器对象可以节省内存开销（在需要返回大量有连续性的数据时）**  
+
 <br>
 
 ------
