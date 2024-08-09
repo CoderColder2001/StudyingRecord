@@ -1946,6 +1946,40 @@ public:
 <br>
 
 --- 
+### &emsp; 3132. 找出与数组相加的整数II MID
+关键思路：
+- 由于只能移除两个整数，`nums1`的前三小元素一定有一个是保留下来的，<b>枚举</b>差值`x`
+- <b>排序</b>后，判断`nums2`是否为`{nums1[i] + x}`的子序列
+- 倒序枚举是因为`nums1[i]`越大答案越小，第一个满足的就是答案
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int minimumAddedInteger(vector<int>& nums1, vector<int>& nums2) {
+        ranges::sort(nums1);
+        ranges::sort(nums2);
+        for(int i = 2; i > 0; i--)
+        {
+            int x = nums2[0] - nums1[i];
+            // 在{nums1[i] + x}中找子序列 nums2
+            int j = 0;
+            for(int k = i; k < nums1.size(); k++)
+            {
+                if(nums2[j] == nums1[k] + x && ++j == nums2.size())
+                    return x;
+            }
+        }
+        return nums2[0] - nums1[0]; // 题目保证答案一定存在
+    }
+};
+```
+</details>
+<br>
+
+--- 
 ### &emsp; 3143. 正方形中的最多点数 MID
 关键思路：
 - 以所有标签的 距原点的次小的切比雪夫距离 中最小的标签为界
