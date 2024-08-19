@@ -1513,6 +1513,56 @@ public:
 </details>
 <br>
 
+--- 
+### &emsp; 2940. 找到Alice和Bob可以相遇的建筑 :rage: HARD
+关键思路：
+- 设查询的两个位置为a、b(a < b)，`heights[a] < heights[b]`时，可以在`b`相遇
+- 否则要寻找`b`右侧第一个大于`heights[a]`的下标
+- 对于所有离线查询的处理，倒序遍历heights，维护一个从左到右高度递减的<b>单调递减栈</b>
+- <b>二分查找单调栈</b>中最后一个大于 `heights[a]` 的高度 （如何转化为lower_bound？）
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    vector<int> leftmostBuildingQueries(vector<int>& heights, vector<vector<int>>& queries) {
+        vector<int> ans(queries.size());
+        vector<vector<pair<int, int>>> qs(heights.size());
+        for(int i = 0; i < queries.size(); i++)
+        {
+            int a = queries[i][0], b = queries[i][1];
+            if(a > b)
+                swap(a, b); // 保证 a <= b
+            
+            if(a == b || heights[a] < heights[b])
+                ans[i] = b;
+            else
+                qs[b].emplace_back(heights[a], i); // 之后离线查询
+        }
+
+        vector<int> st;
+        for(int i = heights.size() - 1; i >= 0; i--)
+        {
+            for(auto &[h_a, q_i] : qs[i])
+            {
+                auto it = ranges::lower_bound(st, -h_a, {}, [&](int j) {
+                    return -heights[j];
+                }); // （由于st单调减）取反后，相当于找 < -h_a 的最大下标，即找 >= -h_a 的最小下标减1
+                ans[q_i] = it > st.begin() ? *prev(it) : -1; // *prev(it)
+            }
+            while(!st.empty() && heights[i] >= heights[st.back()])
+                st.pop_back();
+            st.push_back(i);
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 其他： 
 

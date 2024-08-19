@@ -223,6 +223,87 @@ public:
 <br>
 
 ---
+### &emsp; 518. 零钱兑换II MID
+关键思路：  
+- 背包类<b>构造型问题</b> 求解方案个数
+- <b>枚举能用的，去更新各个结果的方案数</b>
+- 状态转移式子第一维只与上一层有关，可以进一步空间优化
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        int n = coins.size();
+        vector<vector<int>> dp(n + 1, vector<int>(amount + 1));
+        dp[0][0] = 1;
+        for(int i = 0; i < n; i++) // 枚举能用的硬币
+        {
+            for(int c = coins[i]; c <= amount; c++) // 影响各个金额的方案
+            {
+                if(c < coins[i])
+                    dp[i + 1][c] = dp[i][c];
+                else
+                    dp[i + 1][c] = dp[i][c] + dp[i + 1][c - coins[i]];
+            }
+        }
+        return dp[n][amount];
+    }
+};
+```
+</details> 
+<br>
+
+---
+### &emsp; 552. 学生出勤记录II :rage: HARD
+关键思路：  
+- <b>DP构造字符串</b> 从最右端开始填 根据填什么划分子问题
+- 之前填过`j`个A 右边相邻位置有`k`个连续L
+- 把DP递推的过程写在外面，可以在多个测试用例间共享
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+const int MOD = 1e9+7;
+const int MX = 1e5+7;
+
+int dp[MX][2][3];
+
+auto init = []{
+    dp[0][0][0] = dp[0][0][1] = dp[0][0][2] = dp[0][1][0] = dp[0][1][1] = dp[0][1][2] = 1;
+    for(int i = 1; i < MX; i++)
+    {
+        for(int j = 0; j < 2; j++)
+        {
+            for(int k = 0; k < 3; k++)
+            {
+                int &res = dp[i][j][k]; // 引用取别名
+
+                res = dp[i - 1][j][0]; // 填P
+                if(j == 0) // 可以填A
+                    res = (res + dp[i - 1][1][0]) % MOD;
+                if(k < 2) // 可以填L
+                    res = (res + dp[i - 1][j][k + 1]) % MOD; 
+            }
+        }
+    }
+    return 0;
+}();
+
+class Solution {
+public:
+    int checkRecord(int n) {
+        return dp[n][0][0];
+    }
+};
+```
+</details> 
+<br>
+
+---
 ### &emsp; 741. 摘樱桃 :rage: HARD
 关键思路：  
 - <b>两条路径的并集</b> 问题可以等价为：*两个点同时从左上角开始，最终都走到右下角时的最大得分*
@@ -1115,6 +1196,41 @@ public:
 ```
 </details> 
 <br>
+
+---
+### &emsp; 1035. 不相交的线 MID
+关键思路：  
+- 类似于 “寻找最长公共子序列”
+- 考虑 <b>选或不选</b>；当前位置数字相同时，都选
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int maxUncrossedLines(vector<int>& nums1, vector<int>& nums2) {
+        int m = nums1.size(), n = nums2.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1));
+        for(int i = 1; i <= m; i++)
+        {
+            int num1 = nums1[i - 1];
+            for(int j = 1; j <= n; j++)
+            {
+                int num2 = nums2[j - 1];
+                if(num1 == num2)
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                else
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+</details> 
+<br>
+
 
 ---
 ### &emsp; 1043. 分隔数组以得到最大和 MID
