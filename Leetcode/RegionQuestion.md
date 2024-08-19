@@ -1021,6 +1021,57 @@ public:
 </details>
 <br>
 
+--- 
+### &emsp; 3234. 统计1显著的字符串数量 MID
+关键思路：
+- 前缀思想：记录每一个`0`的位置，保存到一个数组中`a[]`，后续即可通过`a[x]`找到第`x`个`0`的位置
+- 通过<b>枚举左端点</b> 和 <b>枚举`0`的数量</b> 枚举子串
+- 维护查找`0`的范围`[i, ...)`，即维护`i`：在当前枚举左端点范围内的第一个`0`是全局的`i`个`0`
+- 当前枚举`0`数量对应的子串个数：`max(a[k + 1] - a[k] - max(cnt0*cnt0 - cnt1, 0), 0)`
+  
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int numberOfSubstrings(string s) {
+        int n = s.length();
+        vector<int> a; // 0的位置
+        for(int i = 0; i < n; i++)
+        {
+            if(s[i] == '0')
+                a.push_back(i);
+        }
+        int tot1 = n - a.size(); // 1的数量
+        a.push_back(n); // 哨兵
+
+        int ans = 0;
+        int i = 0; // 左端点从0开始枚举，初始时找第一个0
+        for(int left = 0; left < n; left++)
+        {
+            if(s[left] == '1')
+                ans += a[i] - left; // 不含0
+
+            for(int k = i; k < a.size() - 1; k++) // 枚举字串含0的个数
+            {
+                int cnt0 = k - i + 1; // 0的个数
+                if(cnt0 * cnt0 > tot1)
+                    break;
+
+                int cnt1 = a[k] - left - (k - i); // 子串1的个数
+                ans += max(a[k + 1] - a[k] - max(cnt0*cnt0 - cnt1, 0), 0);
+            }
+            if(s[left] == '0')
+                i++; // 这个0之后不会再枚举到了
+        }
+        return ans;
+    }
+};
+```
+</details>
+<br>
+
 ------
 ## 差分： 
 用于维护 <b>在一段区间上的操作</b>
