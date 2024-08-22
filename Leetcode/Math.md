@@ -232,3 +232,38 @@ public:
 </details> 
 <br>  
 
+---
+### &emsp; 3133. 数组最后一个元素的最小值 MID
+关键思路：  
+- <b>位运算</b> 
+- `x`的bits是每个`nums[i]`的bits的子集，即每个`nums[i]`的bits都是`x`的bits的一个超集
+- <b>选择`x`的bits的超集中最小的`n`个数</b>
+- 把`x`的bits中的`0`视作空位，往其中填`n-1`的二进制表示即为`nums[n-1]`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    long long minEnd(int n, int x) {
+        int v = n - 1;
+        long long ans = x;
+        int i = 0; // 遍历x的数位
+        int j = 0; // 填了n-1的第几个bit
+        while(v >> j)
+        {
+            if((ans >> i & 1) == 0) // x 的空位
+            {
+                ans |= (long long) (v >> j & 1) << i;
+                j++;
+            }
+            i++;
+        }
+        return ans;
+    }
+};
+```
+</details> 
+<br>  
+
