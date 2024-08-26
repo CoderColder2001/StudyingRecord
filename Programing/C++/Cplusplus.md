@@ -93,10 +93,9 @@ C++的类型安全机制：
 RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑定到对象的生命周期上</b>   
 <b>用对象管理内存</b>   
 通过makexxx创建  
-&emsp; &emsp; 在RAII中，资源的获取和释放被绑定到对象的构造函数和析构函数上。当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
+&emsp; &emsp; 在RAII中，**资源的获取和释放被绑定到对象的 构造函数 和 析构函数 上。** 当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
 
-* ### shared_ptr
-
+### shared_ptr
 `shared_ptr`和他人共享资源，持有者仅可以显式地释放自己共享的份额（`use_count`）但是不能释放资源；只有持有者已经是最后一个持有人地时候，释放自己份额地时候也会释放资源
 - 不要使用原始指针初始化多个`shared_ptr`（它们之间不知情）
 - 不要从栈的内存中（指向栈内存的指针）创建`shared_ptr`对象
@@ -110,14 +109,18 @@ sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被
 //sp2.reset(new int(5))  sp2放弃共享资源，计数归零，资源被释放,sp2指向了新资源
 ```
 
-* ### weak_ptr 
+<br>
+
+### weak_ptr 
 对象的一种弱引用，<b>不增加对象的`use_count`</b>  
 为了避免 `shared_ptr` 带来的环状引用  
 
 `shared_ptr`可以直接赋值给`weak_ptr`，`weak_ptr`也可以通过调用`lock()`函数来获得`shared_ptr`   
 `weak_ptr`并没有重载`operator ->`和`operator *`操作符，因此不可直接通过`weak_ptr`使用对象；典型的用法是调用其`lock()`函数来获得`shared_ptr`实例，进而访问原始对象  
 
-* ### unique_ptr 
+<br>
+
+### unique_ptr 
 <b>独占资源（该块内存只能通过这个指针访问）</b> 
 
 开销比 `shared_ptr` 小许多  
