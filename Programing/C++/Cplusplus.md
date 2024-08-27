@@ -37,7 +37,7 @@
 
 ---
 ### static
-全局变量加static后只能在该文件所在的编译模块内访问；局部变量加static后始终存在，但只能在相应作用域内访问  
+全局变量加static后只能在该文件所在的编译模块内访问；局部变量加static后（局部static对象）在第一次使用前分配，在程序结束时销毁，但只能在相应作用域内访问   
 未初始化的全局静态变量和局部静态变量都在全局未初始化区并被默认初始化为`0`  
 
 static 成员变量：只与类关联，不与具体对象关联；不能在类声明中初始化；定义时要分配空间；生命周期从类被加载直到类被卸载   
@@ -55,6 +55,15 @@ C++的类型安全机制：
 - 引入const关键字代替`#define xxx`，它是有类型、作用域的
 - 一些宏可以改写为inline函数，结合函数的重载，可以在类型安全的前提下支持多种类型
 - C++的`dynamic_cast`使类型转换更安全，比`static_cast`涉及更多的类型检查
+
+<br>
+
+---
+### 动态内存
+程序使用动态内存出于一下原因：
+- 程序不确定自己需要使用多少对象  
+- 程序不确定所需对象的准确类型
+- 程序需要在多个对象间共享数据（资源生命周期不单一取决于某一使用者）
 
 <br>
 
@@ -95,19 +104,36 @@ RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑�
 通过makexxx创建  
 &emsp; &emsp; 在RAII中，**资源的获取和释放被绑定到对象的 构造函数 和 析构函数 上。** 当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
 
+使用智能指针还能确保程序在异常发生后仍可以正确释放资源  
+
 ### shared_ptr
 `shared_ptr`和他人共享资源，持有者仅可以显式地释放自己共享的份额（`use_count`）但是不能释放资源；只有持有者已经是最后一个持有人地时候，释放自己份额地时候也会释放资源
 - 不要使用原始指针初始化多个`shared_ptr`（它们之间不知情）
 - 不要从栈的内存中（指向栈内存的指针）创建`shared_ptr`对象
 
-`reset`可以传参也可以不传参，不传参时和当前资源脱钩并减一引用计数，传参时绑定到新资源
+`reset`可以传参也可以不传参，不传参时和当前资源脱钩并减一引用计数，传参时绑定到新资源  
 ```c++
+std::shared_ptr<T> sp = make_shared<T>(args); //安全地分配动态内存
+
 std::shared_ptr<int> sp1(new int(10)); //资源被sp1共享，sp1引用计数 1
 std::shared_ptr<int> sp2 = sp1; //资源被sp2共享，sp1、2引用计数都是2
 sp1.reset();//sp1放弃共享资源，sp1自身置空，sp2引用计数变为1
 sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被释放
 //sp2.reset(new int(5))  sp2放弃共享资源，计数归零，资源被释放,sp2指向了新资源
+
+shared_ptr<connection> p(&conn, end_connection); // 自定义删除其end_connection代替delete
 ```
+
+<br>
+
+计数器递增：  
+- 用一个`shared_ptr`初始化另一个`shared_ptr`
+- 作为参数传递给一个函数
+- 作为函数的返回值
+
+计数器递减：  
+- 给`shared_ptr`赋予一个新值
+- 被销毁（如一个局部`shared_ptr`离开其作用域）
 
 <br>
 
@@ -129,7 +155,7 @@ sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被
 使用`std::make_unique`创建：  
 ```c++
 std::unique_ptr<int> up1 = std::make_unique<int>(1111);
-std::unique_ptr<int> up3 = std::move(up1);
+std::unique_ptr<int> up3 = std::move(up1); // 用std::move转移所有权
 ```
 
 <br>
