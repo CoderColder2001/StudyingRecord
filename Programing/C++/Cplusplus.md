@@ -92,14 +92,38 @@ C++的类型安全机制：
 `new`实际操作：  
 - 调用名为`operator new`或`operator new[]`的标准库函数，分配一块足够大的、原始的、未命名的内存空间 以便存储特定类型的对象或对象数组
 - 运行相应的构造函数，并为其传入初始值
-- 返回一个指向该对象的指针
+- 返回一个指向该对象的指针（创建动态数组时，仍返回元素类型的指针）
 
 `delete`实际操作：  
 - 执行对应析构函数
-- 调用名为`operator delete`或`operator delete[]`的标准库函数释放内存空间
+- 调用名为`operator delete`或`operator delete[]`的标准库函数释放内存空间（释放动态数组时，逆序销毁）
 
 如果应用程序希望控制内存分配的过程，需要定义自己的`operator new`函数与`operator delete`函数  
 编译器查找顺序：类及其基类的作用域 -> 全局作用域 -> 标准库  
+
+<br>
+
+---
+### allocator
+用于分配大块内存，但只有在真正需要时才执行对象创建操作（按需分配对象）  
+避免用不上的对象的构造开销，以及不必要的赋值开销   
+为 没有默认构造函数的类 实现动态分配数组  
+但同时，又仍然提供一种 **类型感知的内存分配方法**  
+
+```c++
+allocator<string> alloc;
+auto const p = alloc.allocate(n); //为n个未初始化的string分配内存
+// allocator分配的内存是未经构造的
+auto q = p; // q指向最后构造的元素后继的位置
+alloc.construct(q++); // construct 接受一个指针和若干个额外参数
+alloc.construct(q++, 10, 'c');
+alloc.construct(q++. "hello");
+
+while(q != p)
+    alloc.destroy(--q); // 执行相应析构函数
+
+alloc.deallocate(p, n); //释放内存
+``` 
 
 <br>
 
@@ -114,11 +138,11 @@ C++的类型安全机制：
 <br>
 
 ------
-## 智能指针（C++11） todo
+## 智能指针（C++11）
 ---
 RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑定到对象的生命周期上</b>   
 <b>用对象管理内存</b>   
-通过makexxx创建  
+通过 makexxx（工厂函数）创建  
 &emsp; &emsp; 在RAII中，**资源的获取和释放被绑定到对象的 构造函数 和 析构函数 上。** 当对象被创建时，资源被获取并初始化，当对象离开作用域时，析构函数被调用，资源被释放  
 
 使用智能指针还能确保程序在异常发生后仍可以正确释放资源  
@@ -127,6 +151,8 @@ RAII（Resource Acquisition Is Initialization） <b>将资源的生命周期绑�
 `shared_ptr`和他人共享资源，持有者仅可以显式地释放自己共享的份额（`use_count`）但是不能释放资源；只有持有者已经是最后一个持有人地时候，释放自己份额地时候也会释放资源
 - 不要使用原始指针初始化多个`shared_ptr`（它们之间不知情）
 - 不要从栈的内存中（指向栈内存的指针）创建`shared_ptr`对象
+
+可以表达 **数据结构间的共享关系**  
 
 `reset`可以传参也可以不传参，不传参时和当前资源脱钩并减一引用计数，传参时绑定到新资源  
 ```c++
@@ -140,6 +166,8 @@ sp2.reset();//sp2放弃共享资源，sp2自身置空，计数归零，资源被
 
 shared_ptr<connection> p(&conn, end_connection); // 自定义删除其end_connection代替delete
 ```
+
+与`unique_ptr`不同，`shared_ptr`不直接支持管理动态数组  
 
 <br>
 
@@ -159,12 +187,14 @@ shared_ptr<connection> p(&conn, end_connection); // 自定义删除其end_connec
 为了避免 `shared_ptr` 带来的环状引用  
 
 `shared_ptr`可以直接赋值给`weak_ptr`，`weak_ptr`也可以通过调用`lock()`函数来获得`shared_ptr`   
-`weak_ptr`并没有重载`operator ->`和`operator *`操作符，因此不可直接通过`weak_ptr`使用对象；典型的用法是调用其`lock()`函数来获得`shared_ptr`实例，进而访问原始对象  
+`weak_ptr`并没有重载`operator ->`和`operator *`操作符，因此不可直接通过`weak_ptr`使用对象；典型的用法是**调用其`lock()`函数来获得`shared_ptr`实例，进而访问原始对象**  
+（持有`weak_ptr`，使用时在check并获得相应的`shared_ptr`）  
 
 <br>
 
 ### unique_ptr 
-<b>独占资源（该块内存只能通过这个指针访问）</b> 
+<b>独占资源（该块内存只能通过这个指针访问）</b>   
+不支持普通的拷贝或赋值操作  
 
 开销比 `shared_ptr` 小许多  
 `unique_ptr`可以显示地删除资源，也可以分享独占资源或者将独占资源移交给另外地独占者
@@ -173,6 +203,10 @@ shared_ptr<connection> p(&conn, end_connection); // 自定义删除其end_connec
 ```c++
 std::unique_ptr<int> up1 = std::make_unique<int>(1111);
 std::unique_ptr<int> up3 = std::move(up1); // 用std::move转移所有权
+
+auto up = up3.release(); // up3放弃对指针的控制权，并将up3置空
+up.reset(up2); // 释放了原来up指向的内存，并接管up2
+up.reset(); // 释放
 ```
 
 <br>
@@ -320,8 +354,8 @@ size_t是 sizeof 关键字（注：sizeof是关键字，并非运算符）运算
 ### lambda表达式（C++11）
 *源于函数式编程 &emsp; 可以就地匿名定义目标函数或函数对象，不需要额外写一个命名函数或者函数对象*   
 
-当定义一个lambda时，编译器生成一个与lambda对应的新的（未命名的）类类型；  
-向一个函数传递一个lambda时，同时定义了一个新的类类型和该类型的一个对象  
+当定义一个 lambda 时，编译器生成一个与 lambda 对应的新的（未命名的）类类型；  
+**向一个函数传递一个lambda** 时，同时定义了一个新的类类型和该类型的一个对象  
 
 lambda表达式表示一个可调用的代码单元，定义了一个匿名函数（代替函数对象），并且可以捕获一定范围内的变量  
 `[ capture 捕获列表 ] ( params 参数列表 ) opt 函数选项-> ret 返回值类型 { body; 函数体 };`   
@@ -500,6 +534,8 @@ const对象不可以调用 非const成员函数
   - unordered_map
 - algorithm
 
+相较于使用动态数组，使用容器的类可以使用默认版本的拷贝、赋值和析构操作  
+
 ------
 ## DataStructure
 ### map/set
@@ -537,12 +573,6 @@ priority_queue<Tweet*, vector<Tweet*>, cmp> q;
 ### vector
 底层是数组，内存空间连续，遍历时有 <b>更好的空间局部性</b>  
 
-默认实现：在每次扩容时将当前容量翻倍  
-（扩容后迭代器会失效）  
-
-`vector.reserve(n)`至少分配与需求一样大的内存空间（可能更大），而当`n`小于当前容量时，什么也不做，容器不会退回内存空间   
-`resize`只改变容器中元素的数目，而不改变容器的容量  
-
 将哈希表内容存到vector中，并根据value降序排序，按值重复存放到string中：  
 ``` c++
 vector<pair<char, int>> vec;
@@ -572,12 +602,29 @@ for (auto &[ch, num] : vec) {
 返回新范围的末尾迭代器的下一个（指向第一个无效值）；同`erase`搭配使用删除指定条件的元素   
 如`xxx.erase(remove(xxx.begin(), xxx.end(), 0), xxx.end()); // 删除0`    
 
+注意：当删除元素时，尾后迭代器总是失效（被删元素之前元素的迭代器、指针、引用仍有效）  
+因此，添加或删除元素的程序循环必须反复调用`end()`获取最新的尾后迭代器  
+
+<br>
+
+### vector 容量变化
+当没有空间容纳新元素时，容器分配新的内存空间，将已有元素从旧位置移动到新空间中，然后添加新元素，释放旧内存空间  
+默认实现：在每次扩容时将当前容量翻倍  
+（扩容后迭代器会失效）  
+
+`reserve(n)`：分配至少能容纳n个元素的内存空间（可能更大）；当`n`小于当前容量（`capacity`）时，什么也不做，容器不会退回内存空间  
+
+`resize(n)`：只改变容器中元素的数目，不改变容量  
+
+<br>
+
 ---
 ### list
 双向链表；C++11 开始有一个记录长度信息的头节点   
 在随机插入数据、随机删除数据时不会导致数据搬移；所以 **在频繁的随机插入/删除的场景使用list**  
+添加/删除元素不会使list的其他元素指针、引用、迭代器失效  
 
-list 在 pop_front/pop_back 时需要判断 size 是否为0  
+list 在 pop_front/pop_back 时需要判断 size 是否为`0`  
 
 排序使用`list.sort()`  
 
