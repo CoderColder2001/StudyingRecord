@@ -84,6 +84,10 @@ Point3d::Point3d(const Point3d &rhs)
 减少临时对象的创建及相应构造函数的隐式调用  
 
 编译器会一一操作 initialization list，以在class中的声明顺序在 constructor 之内安插初始化操作，且在任何 explicit user code 之前  
+如果没有在构造函数初始化列表中显示的初始化成员，在进入构造函数体之前，这些成员将执行默认初始化   
+随着构造函数体开始执行时，初始化就完成了（成员为const或引用时必须初始化）  
+
+成员的实际初始化顺序与在类定义中出现的顺序一致  
 
 <br>
 
