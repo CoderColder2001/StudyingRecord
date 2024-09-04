@@ -1969,6 +1969,33 @@ public:
 <br>
 
 --- 
+### &emsp; 2860. 让所有学生保持开心的分组方法数 MID
+关键思路：
+- 若恰好选`k`个学生，那么所有`nums[i] < k`的学生都要选，所有`nums[i] > k`的学生都不能选，且不能出现`nums[i] == k`的情况
+- 排序后 枚举划分点
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    int countWays(vector<int>& nums) {
+        ranges::sort(nums);
+        int ans = static_cast<int>(nums[0] > 0); // 一个学生都不选
+        for(int i = 1; i < nums.size(); i++)
+        {
+            ans += static_cast<int>(nums[i - 1] < i && i < nums[i]); // i 是否能划分
+        }
+        return ans + 1; // 一定可以都选
+    }
+};
+```
+</details>
+<br>
+
+
+--- 
 ### &emsp; 2908. 元素和最小的山形三元组I EASY
 关键思路：
 - 三元组 通常<b>枚举中间的数</b>
