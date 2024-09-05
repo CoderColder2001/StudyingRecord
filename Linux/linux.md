@@ -1,3 +1,6 @@
+[TOC]
+
+------
 # LINUX & WSL2 & 服务器
 基于WSL2或双系统  
 记录LINUX的常用命令与有关知识  
@@ -117,3 +120,36 @@ module unload | rm # 卸载环境变量
 
 module swap # 替换环境变量
 ```
+
+<br>
+
+------
+# Linux 开发
+
+## core dump 文件
+当一个进程因为某种原因（例如，非法内存访问、非法指令等）异常终止时，操作系统可以将进程的内存信息保存到一个core dump文件中，以便进行调试和分析  
+主要包含了 用户空间的内存信息（用户空间栈、代码段、数据段和堆等）  
+
+gdb 可以读取 core dump 文件，并提供了一系列命令来分析程序崩溃时的内存状态  
+```sh
+(gdb) bt # 查看程序崩溃时的堆栈信息
+(gdb) p # 查看程序崩溃时的变量值
+(gdb) info registers # 查看程序崩溃时的寄存器状态
+(gdb) disassemble # 查看程序崩溃时的汇编代码
+```
+
+objdump（反汇编工具）可以将可执行文件和共享库文件反汇编成汇编代码，用于分析程序崩溃时的汇编代码   
+```sh
+objdump -d -j .text # 查看 core dump 文件中的程序代码段
+objdump -s -j .data # 查看 core dump 文件中的程序数据段
+objdump -t # 查看 core dump 文件中的程序符号表
+```
+
+readelf 用于查看可执行文件和共享库文件的 ELF 格式文件头，可以用于分析程序崩溃时的内存布局  
+```sh
+readelf -S <executable> # 查看 core dump 文件中的程序段
+readelf -s <executable> # 查看 core dump 文件中的程序符号表
+readelf -d <executable> # 查看 core dump 文件中的程序动态链接信息
+```
+
+<br>
