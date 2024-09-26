@@ -226,6 +226,7 @@ foo(const std::shared_ptr<Widget>& widget); // foo可能要持有一份引用计
 
 ---
 ### 智能指针与多线程 todo
+多线程写智能指针并发时，要加锁（进行智能指针赋值操作时，可能只修改了ptr指向，但尚未更新cnt）  
 
 ------
  
