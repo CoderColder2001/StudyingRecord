@@ -52,6 +52,25 @@ $e^{x_i}/\sum_{i=0}^{N-1}(e^{x_i})$
 De-noising Auto-encoder：输入加噪声，但要求解码后与未加入噪声的输入尽可能接近  
 （高维数据中存在信息冗余；希望能够从部分损坏的数据中得到有效的数据表示）  
 
+
+---
+### 扩散模型 Diffusion Model
+生成式模型  
+学习一个能从噪声中回复符合某种分布的原始数据的神经网络  
+（学习“如何去噪”）本质是一个“预测噪声的网络”，然后逐步减去这些噪声  
+
+由一个正向和一个反向的马尔可夫过程组成  
+
+``` python
+sample = random_sample
+for t in range(T, 0, -1):
+  extra_noise = random_sample if t > 1 else 0
+  predicted_noise = trained_nn(x_tsub1, t) # x_t-1
+  s1, s2, s3 = ddpm_scaling(t) # Denoising Diffusion Probabilistic Model
+  sample = s1*(sample - s2*predicted_noise)+s3*extra_noise
+```
+Sampling  
+
 ------
 ## 聚类
 
