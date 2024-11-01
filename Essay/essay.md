@@ -587,27 +587,48 @@ Scene Graph在描绘图像或文本中场景的内在语义结构方面取得了
 统一VSG/TSG/3DSG表示，通过编码物体、属性、关系对应的标签，为对象节点vobj、属性节点varr和关系节点vrel建模维为统一的表示  
 
 
-### 对偶学习框架
-对偶学习常用于增强具有相同输入和输出但方向相反的对称任务  
-在对偶双向学习下，模型可以从主要任务和对偶任务中捕获潜在的互信息  
-对偶学习的关键是**对“对称任务之间成对、互补的特征”进行建模，然后在学习过程中它们能够相互强化**  
-<b>用 共享的三维空间特征 连接SI2T和ST2I任务</b>，并使用对偶学习来增强三维特征的构建   
+### 扩散过程
+离散diffusion中，采用转移概率矩阵$Q_t$ 表示$x_0$如何在正向过程的每一步中转换到$x_t$  
+$[Q_t]_{ij} = q(x_t=i|x_{t-1}=j)$  
 
 三个部分：  
 - 3DSG diffusion model：X->3D  
 - ST2I diffusion model：3D->image  
 - SI2T diffusion model：3D->text  
 
+3DSG diffusion model：  
 首先，通过现成的VSG和TSG解析器从输入的图像和文本描述中获取初始的VSG和TSG，节点由离散图自动编码器（DGAE）编码到潜在的量化表示；再经由离散扩散得到3DSG   
 在对偶学习中，3DSG扩散模型利用了 3D->X 过程的中间特性来帮助 TSG->3DSG 和 VSG->3DSG 的生成过程  
 
 对于TSG->3DSG，模型采用全局文本特征 和 对偶SI2T扩散的中间特征  
 对于VSG->3DSG，模型采用全局图像特征 和 对偶ST2I扩散的中间特征  
 
+ST2I diffusion model：采用向量量化的变分自动编码器作为量化模型将图像数据编码到embedding vectors中  
+ST2I diffusion model 有两个条件：通过CLIP模型提取的全局文本特征$c^Y$、共享的3DSG特性$c^G$  
+$p^{ST2I}_\theta(z^I_{t-1}|z^I_t, c^Y \oplus c^G)$  
+利用VQ-VAE的解码器从潜在编码中生成图像   
 
-### 扩散过程
-离散diffusion中，采用转移概率矩阵$Q_t$ 表示$x_0$如何在正向过程的每一步中转换到$x_t$  
-$[Q_t]_{ij} = q(x_t=i|x_{t-1}=j)$  
+对于SI2T，另一个diffusion model作用再文本隐变量$z^Y$上：$p^{SI2T}_\phi(z^Y_{t-1}|z^Y_t, c^I \oplus c^G)$  
+
+获取了图像、文本和3DSG的预测的潜在表示   
+
+生成阶段：
+- ST2I：采用注意力机制降生成图向量融到视觉向量中，再喂给image decoder
+- SI2T：在文本编码后append图的编码，再喂给 text decoder
+
+<br>
+
+### 对偶学习框架
+对偶学习常用于增强具有相同输入和输出但方向相反的对称任务  
+在对偶双向学习下，模型可以从主要任务和对偶任务中捕获潜在的互信息  
+对偶学习的关键是**对“对称任务之间成对、互补的特征”进行建模，然后在学习过程中它们能够相互强化**  
+<b>用 共享的三维空间特征 连接SI2T和ST2I任务</b>，并使用对偶学习来增强三维特征的构建   
+
+对偶学习中，理想的SI2T与ST2I模型间满足：$p(i)p_\theta(y|i)=p(y)p_\phi(i|y)=p(i,y)$  
+损失函数加入相应正则项：  
+$L_{dual}=L_{SI2T}+L{ST2I}+||log\hat{p}(i) + logp_\theta(y|i) - log\hat{p}(y) - logp_\phi(i|y)||$
+
+VAE decoder重建损失：
 
 
 ### 思考
