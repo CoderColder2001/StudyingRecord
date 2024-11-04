@@ -624,12 +624,34 @@ $p^{ST2I}_\theta(z^I_{t-1}|z^I_t, c^Y \oplus c^G)$
 对偶学习的关键是**对“对称任务之间成对、互补的特征”进行建模，然后在学习过程中它们能够相互强化**  
 <b>用 共享的三维空间特征 连接SI2T和ST2I任务</b>，并使用对偶学习来增强三维特征的构建   
 
+**对偶学习损失**：  
+$L_{ST2I}=E_{i,y}logp_{\theta}(i|y)$  
+$L_{SI2T}=E_{i,y}logp_{\phi}(y|i)$  
 对偶学习中，理想的SI2T与ST2I模型间满足：$p(i)p_\theta(y|i)=p(y)p_\phi(i|y)=p(i,y)$  
 损失函数加入相应正则项：  
-$L_{dual}=L_{SI2T}+L{ST2I}+||log\hat{p}(i) + logp_\theta(y|i) - log\hat{p}(y) - logp_\phi(i|y)||$
+$L_{dual}=L_{SI2T}+L_{ST2I}+||log\hat{p}(i) + logp_\theta(y|i) - log\hat{p}(y) - logp_\phi(i|y)||$  
 
-VAE decoder重建损失：
+**3D特征互学习损失**：   
+3DSG diffusion model用于估计TSG或VSG的三维场景信息  
+$L_{I23D}=E_{i,y}logp_{\theta}(g|i)$  
+$L_{T23D}=E_{i,y}logp_{\phi}(g|y)$  
 
+**特征空间对齐损失**：  
+通过共享的3DSG空间表示，对齐分布从图像和从文本获取的不同特征空间下的特征对  
+VAE decoder重建损失：$L_{v-dec}=||I-G_V(z^{I+}_0)||^2$  
+next token预测损失：$L_{t-dec}=-\sum^{|y|}_{i=1}log(p(y_i|y_{<i}),[z^Y_0;z^G_0])$  
+
+**3DSG重建损失**：（训练初始化graph encoder&decoder 的参数）  
+$L_{DGAE}=-E_{\hat{Z}^G}ln(p(G_{host}|\hat{Z}^G))$  
+其中$\hat{Z}^G$是预测的3DSG的隐变量，$G_{host}$是最佳3DSG  
+
+<br>
+
+### Pipeline
+- DGAE预训练：$L_{DGAE}$训练 Graph encoder&decoder；在3DSG数据集上进行自监督训练
+- 空间对齐：$L_{v-dec}+L_{t-dec}$训练 visual-decoder 和 text-decoder
+- 2DSG->3DSG训练：$L_{I23D}+L_{T23D}$训练 graph diffuser；使用构建的对齐的3DSG-图像-文本数据
+- 全局训练：对偶学习；$L_{dual}+L_{mutual}$训练graph diffuser、Image diffuser、Text diffuser
 
 ### 思考
 
