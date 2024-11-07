@@ -242,6 +242,85 @@ loss = (loss_i + loss_t) / 2 # 对称交叉熵损失
 <br>
 
 ---
+## （2023 NeurIPS）3D-LLM: Injecting the 3D World into Large Language Models
+ 
+keywords：3DLLM；  
+
+**任务：将3D点云及其特征作为输入，并能执行一组不同的3D相关任务的LLM**  
+
+3D-LLM被期望具有潜在的三维空间信息感知信息  
+
+首先使用一个三维特征提取器，从渲染的多视图图像中获得三维特征  
+使用2D-VLM作为backbone来训练3D-LLM  
+
+3D-LLM相比2D-VLM的优点：  
+- 关于整个场景的长期记忆可以存储在整体的3D表示中，而不依赖对情景的部分视图观察
+- 如功能支持和空间关系等三维属性可以从三维表示推理
+
+难点：
+- 3D数据难有、与语言描述对齐的3D数据更难有  
+- 如何获得有意义的能够与3D-LLMs中语言特征相对齐的3D特征？
+
+利用一个3D特征提取器，从渲染的多视图图像的2D预训练特征中构建3D特征  
+（提取的三维特征被映射到与二维预训练特征相同的特征空间）  
+开发了一种三维定位机制，以弥补语言和空间位置之间的差距；在提取的三维特征上附加三维位置嵌入，以更好地编码空间信息  
+在3D-LLM中附加一系列位置tokens，可以通过输出场景中给定的对特定对象的语言描述所对应的位置tokens来训练定位能力  
+
+<br>
+
+### Background：
+最近的研究探索了将图像和视频与LLM对齐，以训练多模态LLMs，使LLMs具有理解和推理2D图像的能力  
+但当前LLM不是基于3D物理世界，而物理世界涉及更丰富的概念，如空间关系、功能支持、物理、布局等   
+
+当前视觉语言大模型（VLM）要么用大量的图像-语言对从头开始训练模型，要么将预训练好的视觉模型和预训练好的LLM与附加的可学习的神经模块连接起来  
+
+有许多最新的工作从2D多视图图像中构建3D特征  
+
+<br>
+
+### 问题：
+1、如何获取训练所需的数据对？  
+2、如何获得有意义的能够与3D-LLMs中语言特征相对齐的3D特征？  
+
+<br>
+
+### “3D-语言”数据生成
+如何生成一个可以用于所有类型的3d相关任务的3d语言数据集？  
+
+利用GPT生成各种类型的3d语言数据  
+- Boxes-demonstration-instruction based prompting.
+- ChatCaptioner based prompting：prompt chatGPT去提问，BLIP回答关于（不同视角下）图像信息的问题，形成一个全局的3D描述文  
+- Revision based prompting
+
+<br>
+
+### 3D-LLM 训练
+数据集体量小，不能从零开始训练；且3D场景没有预训练好的encoder（类似2D中的CLIP encoder）  
+
+构建可以与语言特性对齐的有意义的3D特征：  
+从渲染得到的2D多视图图像中提取三维特征  
+（通过对齐策略）使用预训练的image encoder提取图像特征，并映射到3D数据的特征中  
+由于预训练的图像特征可以作为2DVLM的输入，因此在相同特征空间中映射的3D特征也可以无缝地输入作为训练3DLLM的backbone的预训练二维2DVLM  
+
+获取像素对齐的密集的2D特征后，映射回3D数据的方法：
+- 由RGBD图像和groundtruth相机参数，直接重建回点云
+- 使用gradslam融合特征（适用于3D数据的深度图或相机参数比较noisy时）
+- 重建神经体素辐射场，构建紧凑的三维表示（每个体素除了密度、颜色还带一个特征）；使用MSE loss对齐一个像素的2D特征和这条光线上的3D特征（适用于没有深度数据，相机参数比较noisy时）
+
+获取的3D特征与2D特征在同一个特征空间中  
+
+3D定位机制：  
+- 用position embedding增强3D特征；生成三个维度上的 sin/cos embeddings  
+- 在词汇表中增加代表位置的特殊token（要定位的区域可以表示为一系列离散的tokens，以AABB的形式表示边界框）  
+
+<br>
+
+### 思考
+
+
+<br>
+
+---
 ## （2024CVPR）Alpha-CLIP: A CLIP Model Focusing on Wherever You Want
  
 keywords：图像-文本；  
@@ -635,6 +714,7 @@ $L_{dual}=L_{SI2T}+L_{ST2I}+||log\hat{p}(i) + logp_\theta(y|i) - log\hat{p}(y) -
 3DSG diffusion model用于估计TSG或VSG的三维场景信息  
 $L_{I23D}=E_{i,y}logp_{\theta}(g|i)$  
 $L_{T23D}=E_{i,y}logp_{\phi}(g|y)$  
+$L_{mutual}=L_{I23D} + L_{X\_I23D} + L_{T23D} + L_{X\_T23D}$
 
 **特征空间对齐损失**：  
 通过共享的3DSG空间表示，对齐分布从图像和从文本获取的不同特征空间下的特征对  
