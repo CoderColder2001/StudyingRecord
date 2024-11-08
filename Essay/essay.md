@@ -287,20 +287,20 @@ keywords：3DLLM；
 ### “3D-语言”数据生成
 如何生成一个可以用于所有类型的3d相关任务的3d语言数据集？  
 
-利用GPT生成各种类型的3d语言数据  
-- Boxes-demonstration-instruction based prompting.
-- ChatCaptioner based prompting：prompt chatGPT去提问，BLIP回答关于（不同视角下）图像信息的问题，形成一个全局的3D描述文  
-- Revision based prompting
+在现有的3D数据集（针对于特定任务）基础上，利用GPT生成各种类型的3d语言数据  
+- Boxes-demonstration-instruction based prompting：基于输入的boundingbox和场景的语义、位置信息进行query，由GPT生成
+- ChatCaptioner based prompting：prompt chatGPT去提问，BLIP回答关于（不同视角下）图像信息的问题，再形成一个全局的3D描述文本  
+- Revision based prompting：给定描述内容，生成问答形式的文本
 
 <br>
 
 ### 3D-LLM 训练
 数据集体量小，不能从零开始训练；且3D场景没有预训练好的encoder（类似2D中的CLIP encoder）  
 
-构建可以与语言特性对齐的有意义的3D特征：  
+构建<b>可以与语言特征对齐的有意义的3D特征</b>：  
 从渲染得到的2D多视图图像中提取三维特征  
-（通过对齐策略）使用预训练的image encoder提取图像特征，并映射到3D数据的特征中  
-由于预训练的图像特征可以作为2DVLM的输入，因此在相同特征空间中映射的3D特征也可以无缝地输入作为训练3DLLM的backbone的预训练二维2DVLM  
+（通过对齐策略）使用 预训练的image encoder 提取图像特征，并映射到3D数据的特征中  
+由于预训练的图像特征可以作为2DVLM的输入，因此在相同特征空间中映射的3D特征也可以无缝地输入作为训练3DLLM的backbone的预训练二维2DVLM中  
 
 获取像素对齐的密集的2D特征后，映射回3D数据的方法：
 - 由RGBD图像和groundtruth相机参数，直接重建回点云
@@ -310,13 +310,14 @@ keywords：3DLLM；
 获取的3D特征与2D特征在同一个特征空间中  
 
 3D定位机制：  
-- 用position embedding增强3D特征；生成三个维度上的 sin/cos embeddings  
-- 在词汇表中增加代表位置的特殊token（要定位的区域可以表示为一系列离散的tokens，以AABB的形式表示边界框）  
+- 用position embedding增强3D特征；生成三个维度方向上相应的 sin/cos position embeddings  
+- 在词汇表中增加代表位置的特殊token（要定位的区域可以表示为一系列离散的tokens <xmin,ymin,zmin,xmax,ymax,zmax>，以AABB的形式表示边界框）；在语言模型的input&ouput embedding中，解冻这些tokens的权重  
 
 <br>
 
 ### 思考
-
+特征还是依靠2D图像的特征聚合得到的？  
+空间位置编码的“学习”？    
 
 <br>
 
