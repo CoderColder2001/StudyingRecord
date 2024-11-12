@@ -395,6 +395,68 @@ AlphaCLIP当前的结构和训练过程限制了它 <b>关注多个对象</b> �
 
 <br>
 
+---
+## （2024 NeurIPS）Chat-Scene: Bridging 3D Scene and Large Language Models with Object Identifiers
+ 
+keywords：3DLLM；  
+
+**任务：将3D点云及其特征作为输入，并能执行一组不同的3D相关任务的LLM**  
+
+使用对象标识符引用三维场景 & 使用训练好的以对象为中心的表示法来表示三维场景  
+
+使用 对象标识符 和 以对象为中心的表示形式，定义 <b>对象级别上的三维场景</b> 并可进行交互   
+将输入的三维场景分解为一组对象建议，每个建议分配一个唯一的标识符token  
+
+由于“场景-语言”数据稀缺，将场景嵌入建模为一个显式的对象级嵌入序列，这些嵌入（以对象为中心的表示）从训练好的二维和三维的模型中获得（提取对象特征）  
+通过简单的线性层，将它们投影到语言模型的嵌入空间中；对象级的嵌入与对象标识符结合后构成三维场景表示，并输入LLM  
+
+通过对象标识符，将不同的3D场景语言任务转换为一个 统一的问答格式  
+
+通过3D detectors（如mask3D）将整个三维场景分解为一组对象建议，以在对象级别上建模场景嵌入；为每个对象分配标识符（一组可学习的标识符tokens），以在语言模型中区分对象，允许LLM使用离散标识符tokens引用各自的对象   
+
+<br>
+
+### Background：
+3DLLM在定位上效果并不理想，这可能主要由于位置tokens在3D域中的无效主要是由于场景语言区域的显著的（关于grounding的）数据稀缺   
+3DLLM使用position embeddings、学习location tokens，并将3D特征投影到预先训练过的2D视觉语言模型（vlm）的输入空间中  
+
+大多数现有的3Dmllm将3D场景转换为隐式的3D场景嵌入（如使用基于Q-Former的模块）；这种架构本质上缺乏有效地**解释单个对象实例**的能力  
+
+场景级别的表示需要大量“场景-语言”数据进行训练  
+
+<br>
+
+### 问题：
+1、如何进行场景的特征表示？  
+2、如何学习空间关系？   
+
+<br>
+
+### Pipeline
+- 先用detector（如mask3D）将点云分解为对象proposals，以及相应在各个视角下的2D masks  
+- 再使用预训练的3D和2D encoders，分别从点云和多视图图像中推导出以对象为中心的表示，再映射到语言模型的token embedding空间中  
+  - 3D encoder：（使用Uni3D）从每个对象的点云中提取空间属性和形状属性
+  - 2D encoder：（使用DINOv2）从每个对象的多视图图像的所有mask区域中提取并聚合局部特征；同时考虑mask区域和多视图信息
+  - 使用3D语言projector `fp`和2D语言projector `fv`将3D点云特征和2D视觉特征映射到语言模型的token嵌入空间中（论文实现为3层MLP），组成 3D/2D object token embeddings $F^p_i$、$F^v_i$
+- 通过将n个可学习的对象标识符标记 $\{<{OBJ}_i>\},i=1...n$ 并入到语言模型的词汇表中，将这些标识符与相应的对象proposals连接起来；这些标识符由tokenizer处理产生相应的 object identifier token embeddings $\{O_i\},i=1...n$  
+- 由 对象embeddings的序列 组成的场景embeddings输入到LLM中
+
+<br>
+
+### prompt模板
+所有任务统一为使用对象标识符（identifier）  
+
+系统信息将场景信息编码为“$<{OBJ}_i><object>$”的序列，其中$<{OBJ}_i>$表示第i个对象proposal的identifier token，$<object>$是object tokens的占位符  
+language tokenizer将$<{OBJ}_i>$转换为$O_i$，将 $<object>$转换为$F^p_i$、$F^v_i$   
+
+用户可以直接使用identifier token来引用特定的对象  
+
+<br>
+
+### 思考    
+
+<br>
+
 ------
 # 2D Semantic
 
