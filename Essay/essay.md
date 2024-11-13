@@ -88,11 +88,15 @@ encoder输出作为key和value，previous decoder layer的输出作为query；�
 <br>
 
 ### Position Encoding
+<a href="https://blog.csdn.net/weixin_43406046/article/details/130745363">position encoding</a>  
+
 在输入里加入时序信息（编码词所处的位置`i`）  
-方法：采用 <b>周期不同的sin和cos函数</b>，映射成512维向量，与输入的词向量相加  
+方法：采用 <b>周期不同的sin和cos函数</b>，映射成`d=512`维向量，与输入的词向量相加（编码没有集成到模型本身，通过注入字词的顺序来加强模型的输入）  
+（对于不同句子，即使长度不同，相同距离的时间戳有相同的意义）  
+
 $PE(pos, 2i)=sin(pos/10000^{2i/d_{model}})$   
 $PE(pos, 2i+1)=cos(pos/10000^{2i/d_{model}})$  
-对于任何偏移量`k`，$PE_{pos+k}$可以表示为$PE_{pos}$的线性函数  
+对于任何偏移量`k`，$PE_{pos+k}$可以表示为$PE_{pos}$的线性函数（允许模型掌握相对位置）  
 
 <br>
 
@@ -417,6 +421,8 @@ keywords：3DLLM；
 <br>
 
 ### Background：
+传统的专家模型以针对特定任务的固定格式生成输出，而基于llm的模型可以产出适用于更广泛的应用范围的开放式输出  
+
 3DLLM在定位上效果并不理想，这可能主要由于位置tokens在3D域中的无效主要是由于场景语言区域的显著的（关于grounding的）数据稀缺   
 3DLLM使用position embeddings、学习location tokens，并将3D特征投影到预先训练过的2D视觉语言模型（vlm）的输入空间中  
 
@@ -451,9 +457,28 @@ language tokenizer将$<{OBJ}_i>$转换为$O_i$，将 $<object>$转换为$F^p_i$�
 
 用户可以直接使用identifier token来引用特定的对象  
 
+<img src="./pic/chatscene_1.png" width="100%">   
+<img src="./pic/chatscene_2.png" width="100%">  
+
+<br>
+
+### 训练策略 & 损失函数
+大多数现有的MLLM采取两阶段训练，先在特征对齐阶段对projector进行专门训练，再微调projector和Language Model  
+
+本工作选择了一个单阶段的过程，同时训练projector和Language Model  
+将所有的任务统一为单轮Q-A对，不需要额外的任务头  
+
+为了进一步简化多模态任务的训练，将下游任务的数据集标准化为统一的Q-A指令格式（从而无需依赖任务特定的head）  
+
+唯一的训练损失是语言模型的交叉熵损失：  
+$L(\theta)=-\sum^k_{i=1}logP(s^{res}_i|s^{res}_{[1,...,i-1]},s^{prefix})$，$s^{prefix}$为给定的前缀序列，包含系统消息和用户指令  
+最小化由该算法生成的目标响应序列$s^{res}$的负对数似然值  
+可训练参数包含：两个vision-language projectors、n个object identifiers的token embeddings、Language Model本身  
+
 <br>
 
 ### 思考    
+训练的数据集如何转换成QA对以及object标识符？  
 
 <br>
 
