@@ -108,7 +108,7 @@ dd 删除当前一行
 
 
 ------
-## Envrionment modules工具
+## Envrionment modules 模块配置工具
 ```sh
 module avail  # 查看可用模块
 module list  # 查看已加载模块 
@@ -120,6 +120,22 @@ module unload | rm # 卸载环境变量
 
 module swap # 替换环境变量
 ```
+
+<br>
+
+------
+## slurm 任务调度工具
+Linux集群的任务调度系统  
+
+| command | Description |
+|--|--|
+|``` sbatch ``` | 向 SLURM 提交批处理脚本 |
+|``` squeue ``` | 列出当前正在运行或在队列中的所有作业 |  
+|``` scancel ``` | 取消提交的工作 | 
+|``` sinfo ``` | 检查所有分区中节点的可用性 | 
+|``` scontrol ``` | 查看特定节点的配置或有关作业的信息 |
+|``` sacct ```| 显示所有作业的数据 |
+|``` salloc ```| 预留交互节点 |
 
 <br>
 

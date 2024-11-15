@@ -294,7 +294,7 @@ keywords：3DLLM；
 在现有的3D数据集（针对于特定任务）基础上，利用GPT生成各种类型的3d语言数据  
 - Boxes-demonstration-instruction based prompting：基于输入的boundingbox和场景的语义、位置信息进行query，由GPT生成
 - ChatCaptioner based prompting：prompt chatGPT去提问，BLIP回答关于（不同视角下）图像信息的问题，再形成一个全局的3D描述文本  
-- Revision based prompting：给定描述内容，生成问答形式的文本
+- Revision based prompting：根据给定描述内容，生成问答形式的文本（GPT生成与描述对应的提问）
 
 <br>
 
@@ -316,6 +316,8 @@ keywords：3DLLM；
 3D定位机制：  
 - 用position embedding增强3D特征；生成三个维度方向上相应的 sin/cos position embeddings  
 - 在词汇表中增加代表位置的特殊token（要定位的区域可以表示为一系列离散的tokens <xmin,ymin,zmin,xmax,ymax,zmax>，以AABB的形式表示边界框）；在语言模型的input&ouput embedding中，解冻这些tokens的权重  
+
+在定位的推理阶段，相对于其他baseline model，我们的方法不使用任何显式的对象建议模块或gt边框，而是直接使用LLM的损失来预测token以输出边界框的位置  
 
 <br>
 
@@ -442,10 +444,12 @@ keywords：3DLLM；
 - 先用detector（如mask3D）将点云分解为对象proposals，以及相应在各个视角下的2D masks  
 - 再使用预训练的3D和2D encoders，分别从点云和多视图图像中推导出以对象为中心的表示，再映射到语言模型的token embedding空间中  
   - 3D encoder：（使用Uni3D）从每个对象的点云中提取空间属性和形状属性
-  - 2D encoder：（使用DINOv2）从每个对象的多视图图像的所有mask区域中提取并聚合局部特征；同时考虑mask区域和多视图信息
+  - 2D encoder：（使用DINOv2）从每个对象的多视图图像的所有mask区域中提取并聚合局部特征；同时考虑mask区域和多视图信息，不同图像特征之间的权重由mask大小确定
   - 使用3D语言projector `fp`和2D语言projector `fv`将3D点云特征和2D视觉特征映射到语言模型的token嵌入空间中（论文实现为3层MLP），组成 3D/2D object token embeddings $F^p_i$、$F^v_i$
-- 通过将n个可学习的对象标识符标记 $\{<{OBJ}_i>\},i=1...n$ 并入到语言模型的词汇表中，将这些标识符与相应的对象proposals连接起来；这些标识符由tokenizer处理产生相应的 object identifier token embeddings $\{O_i\},i=1...n$  
+- 通过将n个可学习的对象标识符标记 $\{<{OBJ}_i>\},i=1...n$ 并入到语言模型的词汇表中，将这些标识符与相应的对象proposals连接起来；这些标识符由 tokenizer 处理产生相应的 object identifier token embeddings $\{O_i\},i=1...n$  
 - 由 对象embeddings的序列 组成的场景embeddings输入到LLM中
+
+系统消息将场景中的对象信息编码为 $<{OBJ}_i><object>$序列  
 
 <br>
 
@@ -479,6 +483,7 @@ $L(\theta)=-\sum^k_{i=1}logP(s^{res}_i|s^{res}_{[1,...,i-1]},s^{prefix})$，$s^{
 
 ### 思考    
 训练的数据集如何转换成QA对以及object标识符？  
+在复杂场景中，定位能力的表现一般；空间位置理解的问题？对墙壁、天花板和地板等内部结构元素的理解有限（因为它们本身并不被视为对象，所以这部分不会被训练）  
 
 <br>
 
