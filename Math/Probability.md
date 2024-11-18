@@ -1,9 +1,15 @@
+# Probability
 [TOC]
 
 ------
 ### 条件概率的一般形式
 $P(A,B,C) = P(C|B,A) P(B,A) = P(C|B,A) P(B|A) P(A)$  
 $P(B,C|A) = P(B|A) P(C|A,B)$
+
+<br>
+
+## 马尔科夫链
+todo
 
 ### 基于马尔可夫假设的条件概率
 如果满足马尔可夫链关系 $A\rightarrow B \rightarrow C$：  

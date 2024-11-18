@@ -1,8 +1,20 @@
 # 机器学习
+[TOC]
 
 ------
 ## 模块
 ### 残差连接
+
+
+### Self Attention
+相较于卷积，可以在单单一个layer中关注全局信息  
+$Attention=softmax({QK^T\over\sqrt{d_k}})*V$  
+其中$QK^T$得到相似度矩阵  
+softmax将其转化为对“元素之间注意力”的度量  
+
+### Cross Attention
+场景：向模块中注入额外的条件信息  
+Q是原始信息的映射，而K、V是条件信息（context）的映射  
 
 ------
 ## 优化
@@ -70,13 +82,23 @@ De-noising Auto-encoder：输入加噪声，但要求解码后与未加入噪声
 
 ``` python
 sample = random_sample
-for t in range(T, 0, -1):
+for t in range(T, 0, -1): # T,...,1
   extra_noise = random_sample if t > 1 else 0
   predicted_noise = trained_nn(x_tsub1, t) # x_t-1
   s1, s2, s3 = ddpm_scaling(t) # Denoising Diffusion Probabilistic Model
-  sample = s1*(sample - s2*predicted_noise)+s3*extra_noise
+  sample = s1*(sample - s2*predicted_noise)+s3*extra_noise # 减去神经网络预测的噪声，再加上一个随机噪声用于神经网络的下一轮迭代
 ```
-Sampling  
+
+DDPM的网络架构：UNet 一系列downsample + 一系列upsample（输入图像，输出与图像同样大小的预测噪音）  
+UNet 可以在unsample中接受额外的输入信息（如 time embedding、context embedding）  
+- time embedding 通常采用**加法**：将时间嵌入与原始特征相结合，保留原始特征；使得时间信息在整个网络中传播得更加平滑，同时梯度能够更直接地从损失函数传播回时间嵌入部分和原始特征部分
+- context embedding 通常采用**乘法**（可以增强某些特征的作用，同时抑制其他特征的影响）
+
+UNet训练：  
+<img src="./pic/ml_1.png" width="80%">  
+
+更快的采样 —— DDIM（打破了马尔可夫假设，时间上可以跳步进行）  
+stable diffusion：在图像的隐空间（对image embedding）上进行操作  
 
 ------
 ## 聚类

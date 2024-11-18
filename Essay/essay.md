@@ -72,7 +72,7 @@ LayerNorm：对batch中的每一个样本做normalization，而非对batch中的
 output是value的加权和（输出维度和value维度一样）  
 由query和key的相似度计算出value的权重
 *不同的相似函数对应不同的注意力机制*
-$Attention=softmax({QK^T\over\sqrt{d_k}})*V$
+$Attention=softmax({QK^T\over\sqrt{d_k}})*V$  
 当$d_k$比较大时，点积结果值之间的相对差距可能比较大，导致最大值的softmax结果更加接近1，其他结果更加接近0，从而会导致梯度比较小；因此，对结果值除以$\sqrt{d_k}$  
 时序mask：对第t时间的$q_t$，在做计算时只留下$k_1$至$k_{t-1}$对应的结果值是有效的，其他换成大负数（softmax结果为0）  
 
