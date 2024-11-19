@@ -16,6 +16,8 @@ softmax将其转化为对“元素之间注意力”的度量
 场景：向模块中注入额外的条件信息  
 Q是原始信息的映射，而K、V是条件信息（context）的映射  
 
+在 encoder hidden state（得到K、V、context vector） 和 decoder hidden state（得到Q） 间传递信息  
+
 ------
 ## 优化
 通过最小化损失函数，调整神经网络模型的参数（如权重和偏差）的算法  

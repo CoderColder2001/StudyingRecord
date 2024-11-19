@@ -252,7 +252,10 @@ keywords：3DLLM；
 
 **任务：将3D点云及其特征作为输入，并能执行一组不同的3D相关任务的LLM**  
 
+3D-LLM的输入：场景整体的3D特征  
 3D-LLM被期望具有潜在的三维空间信息感知信息  
+
+通过3D包围盒与用户交互？  
 
 首先使用一个三维特征提取器，从渲染的多视图图像中获得三维特征  
 使用2D-VLM作为backbone来训练3D-LLM  
@@ -285,6 +288,8 @@ keywords：3DLLM；
 ### 问题：
 1、如何获取训练所需的数据对？  
 2、如何获得有意义的能够与3D-LLMs中语言特征相对齐的3D特征？  
+3、如何获得3D信息？   
+4、最终如何嵌入到LLM与用户交互？  
 
 <br>
 
@@ -316,6 +321,10 @@ keywords：3DLLM；
 3D定位机制：  
 - 用position embedding增强3D特征；生成三个维度方向上相应的 sin/cos position embeddings  
 - 在词汇表中增加代表位置的特殊token（要定位的区域可以表示为一系列离散的tokens <xmin,ymin,zmin,xmax,ymax,zmax>，以AABB的形式表示边界框）；在语言模型的input&ouput embedding中，解冻这些tokens的权重  
+
+训练中finetune的部分：
+- QFormer(BLIP) / perceiver(Flamingo)
+- location tokens 在 input&output embedding 中的对应权重
 
 在定位的推理阶段，相对于其他baseline model，我们的方法不使用任何显式的对象建议模块或gt边框，而是直接使用LLM的损失来预测token以输出边界框的位置  
 
