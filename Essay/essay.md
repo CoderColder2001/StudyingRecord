@@ -163,6 +163,7 @@ $\mu_\theta$ 最直接的参数化是一个预测 $\widetilde{\mu_t}$（正向�
 
 ------
 # Visual Language Pre-training
+多模态任务的关键：向量对齐问题  
 
 ---
 ## （2021ICML）（CLIP）Learning Transferable Visual Models From Natural Language Supervision

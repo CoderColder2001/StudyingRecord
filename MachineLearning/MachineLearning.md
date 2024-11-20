@@ -6,6 +6,7 @@
 ### 残差连接
 
 
+---
 ### Self Attention
 相较于卷积，可以在单单一个layer中关注全局信息  
 $Attention=softmax({QK^T\over\sqrt{d_k}})*V$  
@@ -17,6 +18,13 @@ softmax将其转化为对“元素之间注意力”的度量
 Q是原始信息的映射，而K、V是条件信息（context）的映射  
 
 在 encoder hidden state（得到K、V、context vector） 和 decoder hidden state（得到Q） 间传递信息  
+
+### Causal Attention
+因果注意力机制，处理**序列生成任务**（如GPT）  
+每个位置的输出只能依赖于其自身位置以及之前位置的信息，而不能 “看到” 未来位置的信息  
+在计算注意力分数$A_{ij}$时，当$j > i$（即位置在位置之后），将注意力分数$A_{ij}$设为`0`   
+
+<br>
 
 ------
 ## 优化
@@ -70,7 +78,21 @@ $e^{x_i}/\sum_{i=0}^{N-1}(e^{x_i})$
 De-noising Auto-encoder：输入加噪声，但要求解码后与未加入噪声的输入尽可能接近  
 （高维数据中存在信息冗余；希望能够从部分损坏的数据中得到有效的数据表示）  
 
+<br>
 
+---
+### Perceiver Architecture （Transformer）
+基于 Transformer 的模型架构，旨在解决高维输入数据（如图像、视频、音频和其他类型的多模态数据）的处理问题  
+**引入一个较小的、固定尺寸的潜在表示（latent representation）来处理高维输入**，而不是像传统Transformer那样直接处理输入数据的每一个元素  
+
+- 首先，将输入数据映射到一个低维空间  
+- 再使用一个固定大小的<b>潜在表示</b>（latent variables）（如Q-Former中的query?），这些潜在变量的维度远小于输入数据的维度  
+- 通过在潜在表示和输入数据之间使用自注意力机制进行交互；时间复杂度为$O(L*D)$（传统transformer为$O(N^2)$）  
+- 训练中更新潜在表示，以便更好地捕捉输入数据中的结构和模式
+
+<br>
+
+---
 ### 低秩微调 LoRA
 本质是将一个大的`d*d`矩阵分解为两个小的`d*r`、`r*d`矩阵，减少了参数量，并且结果可以直接与（训练好的）原矩阵的线性相加  
 
