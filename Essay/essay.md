@@ -434,6 +434,7 @@ keywords：3DLLM；
 
 ### Background：
 传统的专家模型以针对特定任务的固定格式生成输出，而基于llm的模型可以产出适用于更广泛的应用范围的开放式输出  
+目前很多3Dmllm工作需要使用额外的 prompt encoder 来理解用户指定的对象  
 
 3DLLM在定位上效果并不理想，这可能主要由于位置tokens在3D域中的无效主要是由于场景语言区域的显著的（关于grounding的）数据稀缺   
 3DLLM使用position embeddings、学习location tokens，并将3D特征投影到预先训练过的2D视觉语言模型（vlm）的输入空间中  
@@ -445,8 +446,8 @@ keywords：3DLLM；
 <br>
 
 ### 问题：
-1、如何进行场景的特征表示？  
-2、如何学习空间关系？   
+1、对于LLM，如何进行场景的特征表示？  
+2、如何学习空间关系？（依靠DINOv2？）   
 
 <br>
 
@@ -722,7 +723,7 @@ $F(p)=\frac{1}{L}\sum_{j=1}^L \sum_{k=1}^K w_k · F^j(p+p_k +\Delta p_k^j) · \D
 keywords：2D图像空间关系；生成；文生图；图生文；对偶学习；3D Scene Graph 
 
 **任务：双边协同、空间感知的生成**   
-通过充分建模空间三维场景表示，进一步成功地研究了两者之间的协同学习  
+通过充分<b>建模空间三维场景表示</b>，进一步成功地推进了<b>两个任务之间的协同学习</b>  
 
 用一种新颖的三维场景图（3D Scene Graph）表示法表示三维空间场景特征，以用于文生图/图生文的任务中  
 **用语义结构表示表示空间对象、它们的关系和三维场景中的布局**  
@@ -966,6 +967,37 @@ cuda 需要手动实现forward和backward
 ------
 # 3D Semantic
 ---
+## （2019 ICCV）3D Scene Graph, A Structure for Unified Semantics, 3D Space, and Camera
+
+**问题：各种语义信息（objects、scene catagories、material types、3D shapes、relationships等）应该以什么样的结构定义在什么样的空间中？**  
+
+融合语义、3D空间、相机  
+
+理想的定义空间：  
+- 不随各种变化而改变
+- 可以轻松且确定地连接到不同域与任务所需的各种输出接口
+
+将语义信息保存在3D上  
+
+将3D场景图视为一个分层图；每层代表一个不同的实体：如buildings、rooms、objects、cameras  
+类似与2D Scene Graph，每个实体都带有多个属性，并与其他实体连接，以形成不同类型的关系  
+
+### Background：
+
+### 问题：
+1、  
+
+<br>
+
+###  
+
+<br>
+
+### 思考
+1、使用的是预定义的类别？  
+
+<br>
+
 ---
 ## （2023NeurIPS）OpenMask3D: Open-Vocabulary 3D Instance Segmentation
  
@@ -980,7 +1012,8 @@ keywords：3D场景分割；物体实例查询；open-vocabulary
 1、生成类无关的mask  
 2、查找该实例高度可见的视图，聚合mask特征  
 
-zero-shot使用CLIP特征，不进行微调或任何额外的训练，并使用预测的3D实例mask计算2Dmask
+zero-shot使用CLIP特征，不进行微调或任何额外的训练，并使用预测的3D实例mask计算2Dmask  
+
 <br>
 
 ### Background：
