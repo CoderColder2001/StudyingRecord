@@ -728,6 +728,8 @@ keywords：2D图像空间关系；生成；文生图；图生文；对偶学习�
 用一种新颖的 三维场景图（3D Scene Graph）表示法 表示三维空间场景特征，以用于文生图/图生文的任务中  
 **用语义结构表示表示空间对象、它们的关系和三维场景中的布局**  
 
+利用CLIP（文本encoder、图像encoder）抽取对齐的多模态特征的能力
+
 提出了 对偶空间离散diffusion（SD3）框架 同时考虑 SI2T 和 ST2I  
 **利用 3D->X 过程的中间特征来指导困难的 X->3D 的过程**  
 3DSG 由 SI2T 和 ST2I 过程的共享图扩散模型得到  
@@ -860,7 +862,7 @@ $L_{DGAE}=-E_{\hat{Z}^G}ln(p(G_{host}|\hat{Z}^G))$
 ------
 # 3D Graphics
 ---
-## （2023SIGGRAPH）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
+## （2023 SIGGRAPH）3D Gaussian Splatting for Real-Time Radiance Field Rendering 
  
 keywords：3D高斯；场景表示；可微渲染  
 
@@ -1474,6 +1476,8 @@ $Loss_{norm}(p)=1-||F(p)||_2$
 
 $L = \sum_{(p_1,p_2)\in \delta(I) \times \delta(I)}Loss_{corr}(p_1, p_2) + \frac{1}{HW}\sum_{p\in \delta(I)}Loss_{norm}(p)$
 
+在每次迭代中，我们从视图中随机抽取8个不同的尺度和1000个像素（10002个像素对）进行训练  
+
 <br>
 
 ### 应用：推理阶段
@@ -1482,12 +1486,21 @@ $L = \sum_{(p_1,p_2)\in \delta(I) \times \delta(I)}Loss_{corr}(p_1, p_2) + \frac
 对于场景的自动划分，采用HDBSCAN在3D上根据关联特征进行聚类  
 
 结合CLIP作开发词汇分割时，由于不同mask的分割特征可能在不同的特征子空间中，需要寻找一个跨尺度一致的全局特征（？）  
-多视图特征融合本质上是一种投票机制  
+多视图特征融合本质上是一种<b>投票机制</b>  
+
+先计算每个mask的相关性得分；再对于每一个高斯实例（聚类）将其对应的二维masks的相关性得分进行聚合，形成其最终的相关性得分  
+
+文章提及语义相关工作的问题：不同粒度的分割因为包含相同物体而可能有相同的语义 & SAM分割导致上下文context丢失  
 
 <br>
 
 ### 思考
-  
+推理（分割）过程需要给定尺度  
+
+文章中提到的局限：  
+- 对尺度变化其实不敏感：很多像素对的正负样本关系在尺度变化下不变，这导致scale gate 坍缩到一个常数输出
+- 正负样本数据不平衡：大多数像素对呈负对应关系
+- 在图像中占用较多像素的大目标对优化的影响更大，导致小目标的分割性能不佳
 
 <br>
 
