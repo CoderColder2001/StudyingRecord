@@ -9,6 +9,7 @@
 windows安装winScp传文件到服务器  
 
 <a href = "https://blog.csdn.net/qq_38048756/article/details/117935610">windows下的pycharm配置连接linux </a>  
+<a href = "https://blog.csdn.net/m0_48632667/article/details/139216975">windows下的pycharm配置连接linux上的conda环境 </a>  
 右键工程文件夹目录upload  
 
 ------
