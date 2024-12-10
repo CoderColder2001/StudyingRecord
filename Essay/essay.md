@@ -1592,3 +1592,42 @@ CLIP特征提供了高维对象级的平滑性，这可以隐式地减少（要�
 
 
 <br>
+
+---
+## （2024）Multiview Equivariance Improves 3D Correspondence Understanding with Minimal Feature Finetuning
+  
+keyword：多视图一致性    
+
+**任务：提高基于2D的ViT的三维认知能力**  
+
+**基于3D一致性的微调策略**  
+
+对于现在基于ViT的视觉模型，提出了三个问题：
+- 视觉模型对三维结构的理解能力如何？
+- 这种空间意识如何影响到在基于图像的3D视觉任务中的表现？
+- 可以提高ViT的三维意识吗？  
+
+3D等方差（3D equivariance）的质量与三个需要理解3D对应关系的下游任务的性能密切相关：姿态估计、视频跟踪、语义一致性  
+
+对于一个Objaverse数据集中的物体，随机选择两个视角渲染并采样对应的像素，使用 SmoothAP loss 约束这些对应像素的特征一致性   
+
+<br>
+
+### Background：  
+ViT在掌握3D空间关系的能力如何仍不清楚  
+目前的大型视觉模型确实表现出某种程度的视图一致的特征生成（其中DINOv2表现最好）  
+
+<br>
+
+### 问题：
+1、训  
+
+<br> 
+
+### 
+
+
+### 思考
+
+
+<br>
