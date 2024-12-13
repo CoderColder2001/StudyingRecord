@@ -1668,6 +1668,7 @@ ViT的特征的一个关键优势是可以在不同的数据集和任务中高�
 keyword：3D-LLM；3DLA；空间关系   
 
 **任务：增强3DLA感知点云中更精细细节的能力,对细节和上下文都更要感知力，构建更有信息的LLM视觉表示**   
+设计一种新的 <b>编码方法</b>  
 
 从不同的点云区域并行捕获高分辨率（本地）细节，并将它们与从低分辨率的整个点云中获得的（全局）上下文集成   
 
@@ -1699,6 +1700,13 @@ keyword：3D-LLM；3DLA；空间关系
 
 处理点云在处理图像外的独特挑战：需要处理一组无序的点，而不是栅格化的像素  
 
+在3DLA中保留来自点云的细节特征的方法仍未得到充分的探索  
+与现有3DLA中以 用有限的3D数据对齐3d和语言 为目标相反，PerLA旨在提高3DLA对场景细节的感知能力  
+
+多粒度表征学习：结合局部和全局视图，比依赖单一的全局视图产生更多的信息表示  
+
+Scene-LLM 和 Segment3D 通过将语义细节从多视点图像转移到点云来提高分割精度  
+
 <br>
 
 ### 问题：
@@ -1706,10 +1714,20 @@ keyword：3D-LLM；3DLA；空间关系
 
 <br> 
 
-### 
-基于
+### 架构与训练
+text prompt 由 text prompt encoder（基于BLIP-2的transformer）生成文本表示，随后输入到 LLM 与 MMA（多模态适配器）中  
+点云由 perceptive scene encoder 处理得到场景表示，随后输入到 MMA 和后续的encoder中  
+visual prompt 由 visual prompt encoder 结合 场景表示 得到将由 MMA 进一步处理的表示  
+MMA（由Q-former实现）以这些多模态表示作为输入，输出由 LLM 处理的tokens  
+最后，这些投影表示由LLM进行处理，以生成输出响应  
+
+采用3D-LLM的数据进行训练，在不同的下游任务上微调  
 
 <br>
+
+### Perceptive Scene Encoder
+计算point-level的表示  
+先划分点云，分块encode后，再基于交叉注意力和GCN进行聚合  
 
 ### 思考
 
