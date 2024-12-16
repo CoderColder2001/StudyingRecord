@@ -1726,8 +1726,34 @@ MMA（由Q-former实现）以这些多模态表示作为输入，输出由 LLM �
 <br>
 
 ### Perceptive Scene Encoder
-计算point-level的表示  
-先划分点云，分块encode后，再基于交叉注意力和GCN进行聚合  
+目标：计算point-level的表示  
+*对原始点云，若直接降采样，会丢失细节信息*  
+
+**划分与encode**  
+先划分点云（基于点的数量），对各分块点云和原始点云分别encode后，再基于交叉注意力和GCN进行聚合  
+使用 Hilbert Curve 进行序列化和划分  
+预训练的encoder 采用 Fastest Point Sampling 得到一系列super-points，并得到super-points的特征表示  
+（对全局点云和部分点云，降采样的超点数量都为`M`，并把所有`L`个部分点云降采样所得到的点聚合到一个大小`M*L`的集合$P^l$中）  
+
+**Hilbert-based NN-search**  
+为快速查询全局点云$P^g$中某个超点对应部分点云$P^l$中的K-NN超点，使用 Hilbert Curve 序列化$P^g \cup P^l$，根据序列化索引得到$P^l$上最近的`k`个超点  
+
+**两步骤聚合**  
+交叉注意力利用邻域信息来更新全局表示 & 通过一个基于消息传递的基于GCN的方法细化全局表示  
+- Localized cross-attention：一种基于学习的加权机制；是 全局超点$p^g_i$ 及其 相关的局部邻居$p^l_{k_i}$的特征表示和相对位置 的函数
+  - 限制cross-attention只在局部邻近区域  
+  - relative position embedding：$R_i=\{R_{ij}=pos((p^g_i-p^l_{k_i})/\sigma)\}^{K^l}_{j=1}$，与特征同为`d`维
+  - $\sigma$是控制相对位置尺度的可学习参数；$pos(\mathbf{x})=[sin(2\pi\mathbf{x}·B);cos(2\pi\mathbf{x}·B);]$，B是可学习的`3*(d/2)`维参数矩阵
+  - 用交叉注意力 更新全局特征：
+    - $s_{ij}=(W_q f^g_i)^T(W_k (f^l_j + W_r R_{ij}))/\sqrt{d}$
+    - $s_i=\{s_{ij}\}^{K^l}_{i=1}, w_i=softmax(s_i)$
+    - $\hat{f^g_i}=f^g_i + w_i(W_v(F^l_{K_i}+R_i))$
+- GCN message passing：
+  - KNN建图后，得到一个`N*N`的矩阵`W`
+  - $W_{ij}=\begin{cases}\frac{{f^g_i}^T {f^g_j}}{||f^g_i|||f^g_j|||}, p^l_j \in kNN(p^g_i)\\
+  0, else\\ 
+  \end{cases}$
+  - 对图执行 one-time message passing，得到更新后的特征矩阵
 
 ### 损失函数
 鼓励模型学习更具有对象感知力的特征表示，提高提取细节的能力，并保留全局信息  
