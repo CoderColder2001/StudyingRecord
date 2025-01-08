@@ -1158,6 +1158,62 @@ keywords: **基于文本的3D生成**；diffusion；
 
 <br>
 
+
+---
+## （2024 SIGGRAPH-ASIA）LLM-enhanced Scene Graph Learning for Household Rearrangement
+  
+keyword：Scene Graph；空间关系；场景分析；LLM-enhanced  
+
+**任务：LLM增强的场景图学习，将物品归位整理放置**   
+给定SG与各个物体节点对应的关键帧，利用LLM对场景中的所有对象进行上下文诱导的affordace分析  
+使用LLM，将输入SG转换为具有 信息增强节点 和 新发现的边（关系）的可见性增强图（AEG）  
+（使用LLM挖掘与用户偏好对齐的物体对象的功能，得到AEG）  
+
+假设现有的室内场景布局已封装了足够的偏好信息；可以通过分析场景的上下文来识别，为代理执行重排任务提供了一个自然的提示  
+
+将所有容器的与任务相关的affordance（与任务描述相关的affordance）预先编码为一个外部存储，其思想与检索增强生成（RAG）类似  
+
+LLM辅助的 错误位置检测 和 正确的放置定位  
+使用SG和选定的RGB关键帧提示GPT4V来自动计划对重排任务的操作  
+
+<br>
+
+### Background：  
+LLM具有较强的常识性推理能力，在zero-shot task planning任务方面表现出了显著的有效性，包括场景重排；但LLM本质上缺乏关于针对当前场景的对象功能和位置的具体知识  
+需要进行 scene grounding  
+
+如果prompt没有被仔细设计或调整，LLM将忽略使用者的偏好  
+TidyBot通过prompt显式地将用户偏好作为范例放置，并让LLM从范例中总结用户偏好，可以缓解这种情况  
+
+Scene Graph 是一种用于场景分析的LLM友好的表示  
+
+部分研究针从人类交互的视角研究affordance，另一部分研究物体间的affordance（对象间的物理交互作用，如放置、堆叠）  
+但目前所有这些 “对象-对象affordance”的工作都没有考虑对象的“场景affordance”  
+
+一些工作使用或蒸馏基础模型中提供的丰富常识来识别单一对象的affordance  
+
+<br>
+
+### 问题：
+1、如何使LLM与使用者偏好对齐？  
+2、如何得到物体affordance？如何使用LLM增强SG以及相关应用任务？  
+
+<br> 
+
+### 上下文诱导的affordance分析
+通过LLM以局部到全局的方式分析上下文信息，增强初始场景图  
+
+初始场景图中以物体作为节点，根据物体间距离（足够近）连接边  
+分为三种关系：near、on、support  
+将每个节点与一个具有代表性的RGB帧相关联  
+对每个物体实例，计算其所有RGB-D图像上的投影像素数  
+累计所有相邻的对象的投影像素数，取最大的作为当前物体hi里的关键帧  
+
+### 思考
+ 
+
+<br>
+
 ---
 ## （2024 CVPR） LangSplat: 3D Language Gaussian Splatting
 
@@ -1832,7 +1888,7 @@ $L_n=\sum_{(u,v)} (1-<\hat{n_{uv}}·n_{uv}>), \hat{n_{uv}}=\sum_{i}^N n_i\alpha_
 
 用SAM进行分割时，忽略法向量方差大的图像段（认为是当前相机帧的无效区域）  
 将SAM masks提升到3D主要的困难：  
-- 不同视角下masks的关联关系未知
+- 不同视角下masks之间的关联关系未知
 - 不同图像划分的数目不同、最大划分数量未知
 
 限制描述符`z`为单位向量  
