@@ -5,12 +5,16 @@
 基于WSL2或双系统  
 记录LINUX的常用命令与有关知识  
 
+传文件工具：WINSCP  
+
 <a href = "">ubuntu服务器安装桌面</a>  
 windows安装winScp传文件到服务器  
 
 <a href = "https://blog.csdn.net/qq_38048756/article/details/117935610">windows下的pycharm配置连接linux </a>  
 <a href = "https://blog.csdn.net/m0_48632667/article/details/139216975">windows下的pycharm配置连接linux上的conda环境 </a>  
 右键工程文件夹目录upload  
+
+<a href = "https://blog.csdn.net/allywater/article/details/113343175">vscode做ssh远程终端</a>  
 
 ------
 ## Content
@@ -102,6 +106,10 @@ sudo dpkg -i xxx.deb // 安装deb软件包
 ```
 
 使用nohup后台运行进程  
+
+```sh
+pwd # 输出当前绝对路径
+```
 
 ------
 ## vim
