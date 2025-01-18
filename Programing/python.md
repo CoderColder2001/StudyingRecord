@@ -59,6 +59,21 @@ conda env remove --name xxx # 删除环境
 conda create --name new_env --clone source_env # 本机复制环境
 
 conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装pytorch前）
+
+## 
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu118
+```
+
+（服务器）安装前加载cuda模块、gcc模块  
+记得检查是否为gpu版本pytorch  
+``` python
+import torch
+
+print(torch.__version__)  # 打印 PyTorch 版本
+print(torch.cuda.is_available())  # 如果返回 True，表示 PyTorch 可以使用 GPU
+print(torch.cuda.current_device())  # 打印当前设备的ID
+print(torch.cuda.get_device_name(0))  # 打印 GPU 名称
 ```
 
 ### pycharm + conda

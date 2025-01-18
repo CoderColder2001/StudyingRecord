@@ -1,6 +1,9 @@
 # 机器学习
 [TOC]
 
+<a href="https://transformers.run/">transformers库官方文档</a>  
+<a href="https://www.openaidoc.com.cn/docs/quickstart">OpenAI中文开发文档</a>
+
 ------
 ## 模块
 ### 残差连接
@@ -31,6 +34,14 @@ Q是原始信息的映射，而K、V是条件信息（context）的映射
 
 ### MSELoss
 均方误差损失  
+
+### NCELoss
+处理大规模词汇表时，将问题转化为二分类问题，避免（softmax）对整个词汇表的归一化，减少计算开销  
+
+### infoNCELoss
+自监督对比损失函数  
+常用于**对比学习**  
+拉进正样本之间的距离，推开负样本之间的距离  
 
 ------
 ## 优化
