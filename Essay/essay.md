@@ -1657,6 +1657,38 @@ $L = \sum_{(p_1,p_2)\in \delta(I) \times \delta(I)}Loss_{corr}(p_1, p_2) + \frac
 <br>
 
 ---
+## （2024 NeurIPS）OpenGaussian, Towards Point-Level 3D Gaussian-based Open Vocabulary Understanding
+  
+keyword：open-vocabulary；3D高斯；    
+
+**任务：3D点级别的3DGS开放语义特征学习**  
+
+提出一个两阶段过程将语义特征从粗到细进行离散化  
+一种实例级的3D-2D特征关联方法，将3D点链接到2D masks，并进一步与CLIP特征进行关联  
+
+
+<br>
+
+### Background：  
+现今面向开放式文本的3DGS语义特征学习主要集中于2D像素级上，由于较弱的特征表达能力和不准确的2D-3D特征关联，难以处理3D点级任务 
+
+LangSplat和LEGaussians都将高维CLIP特征压缩为低维。虽然然后使用解码器进行重构，但转换不是无损的，减少了不同语义概念之间的区别，并产生了许多相似的特征  
+
+<br>
+
+### 问题：
+1、   
+
+<br> 
+
+### 
+
+
+### 思考
+
+<br>
+
+---
 ## （2024）GLS: Geometry-aware 3D Language Gaussian Splatting
   
 keyword：3D高斯；实例分割；open-vocabulary    
@@ -1996,6 +2028,7 @@ alpha-blending的监督不是单独针对每个实例
 
 为保持对于各个平面描述符`z`的整体可分离性，每`N`次迭代（2000轮后的每100轮）根据下式进行几轮（10轮）`z`的更新：  
 <img src="./pic/PGS_4.png">   
+增强了不同平面所对应的描述符之间的可区分性  
 
 <br>
 
