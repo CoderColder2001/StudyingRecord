@@ -1,6 +1,8 @@
 # 机器学习
 [TOC]
 
+<a href="https://scikit-learn.org/stable/user_guide.html">sklearn user-guide</a>  
+
 <a href="https://transformers.run/">transformers库官方文档</a>  
 <a href="https://www.openaidoc.com.cn/docs/quickstart">OpenAI中文开发文档</a>
 

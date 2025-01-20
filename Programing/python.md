@@ -60,9 +60,13 @@ conda create --name new_env --clone source_env # 本机复制环境
 
 conda install -c conda-forge cudatoolkit=x.x # 安装某一版本cuda（安装pytorch前）
 
-## 
+pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
+pip install xformers==0.0.21
+
+## 不指定版本？
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu118
+
 ```
 
 （服务器）安装前加载cuda模块、gcc模块  
