@@ -14,11 +14,19 @@
 ---
 ### Self Attention
 相较于卷积，可以在单单一个layer中关注全局信息  
-$Attention=softmax({QK^T\over\sqrt{d_k}})*V$  
-其中$QK^T$得到相似度矩阵  
+$Attention=softmax({QK^T\over\sqrt{d_k}})*V$（为缓解梯度消失问题，除以查询特征的维度）  
+（*Q、K也来自token embedding（$W_QE_i$），维度常常比embedding要小；V与embedding同维度（对嵌入向量要执行的实际操作，相加得到调整后编码了更多上下文信息的向量），$W_V$通过分解为两个矩阵相乘减少参数量*）  
+其中$QK^T$得到<b>相似度矩阵</b>  
 softmax将其转化为对“元素之间注意力”的度量  
+（$V_{i}$的加权和）  
+
+多头注意力：多个注意力模块**并行**处理同一embedding   
+（可以理解为每个“头”对应一种吸收上下文信息的方式）  
+
+<br>
 
 ### Cross Attention
+处理两种不同类型的数据（Q、K对应不同的数据集）  
 场景：向模块中注入额外的条件信息  
 Q是原始信息的映射，而K、V是条件信息（context）的映射  
 
