@@ -39,6 +39,13 @@ Q是原始信息的映射，而K、V是条件信息（context）的映射
 
 <br>
 
+---
+### Layer Normalization
+
+### Feed forward 前馈神经网络层
+通过非线性激活函数（如ReLU、GELU），负责对每个位置的表示进行非线性变换和特征增强  
+在标准的Transformer模型中，$FFN(x)=ReLU(xW_1+b_1)W_2+b_2$  
+
 ------
 ## 损失函数  
 
