@@ -100,9 +100,12 @@ nvcc --version // 查看已安装的cuda（通过/bin里的nvcc）
 
 nvidia-smi // 查看显卡状态
 
+ps
 ps aux # 查看运行的进程
 
 sudo dpkg -i xxx.deb // 安装deb软件包
+
+cp [options] source dest # 拷贝
 ```
 
 使用nohup后台运行进程  

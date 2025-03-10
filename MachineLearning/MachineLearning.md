@@ -1,4 +1,6 @@
 # 机器学习
+机器学习的基础知识  
+
 [TOC]
 
 <a href="https://scikit-learn.org/stable/user_guide.html">sklearn user-guide</a>  
@@ -231,3 +233,5 @@ NCEloss
 基于生成式任务：  
 以通过编码器后得到未来时刻的特征输出作为正样本，任意选取输入得到的编码器的特征输出作为负样本  
 增大“域”之间的互信息  
+
+<br>
