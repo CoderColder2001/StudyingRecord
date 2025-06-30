@@ -1685,6 +1685,43 @@ public:
 </details>
 <br>
 
+---
+### &emsp; 392. 判断子序列 EASY
+进阶问题：如果有大量输入的 S，称作 S1, S2, ... , Sk 其中 k >= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？（如何才能**不需要每次都遍历`T`**）   
+关键思路：
+- 通过预处理出`next[][26]`数组（*可以理解为一个自动机*），后续可以$O(1)$计算`t`中对于位置`i`各个字母下次出现的位置
+- 后续只需遍历`s`通过next数组跳转`t`
+
+<details> 
+<summary> <b>C++ Code</b> </summary>
+
+```c++
+class Solution {
+public:
+    bool isSubsequence(string s, string t) {
+        int n = t.size();
+        vector<array<int, 26>> next(n + 1);
+        ranges::fill(next[n], n);
+        for(int i = n - 1; i >= 0; i--) // 倒序处理t
+        {
+            next[i] = next[i + 1]; // copy
+            next[i][t[i] - 'a'] = i;
+        }
+        
+        int i = -1; // 表示已经匹配的
+        for(char c : s) // 只需遍历s 跳转t
+        {
+            i = next[i + 1][c - 'a']; // 快速跳转t指针
+            if(i == n) // 跳转到尾巴了 当前c不在t中
+                return false;
+        }
+        return true;
+    }
+};
+```
+</details>
+<br>
+
 --- 
 ### &emsp; 699. 掉落的方块 :rage: HARD
 关键思路：
