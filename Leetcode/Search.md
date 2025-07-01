@@ -18,10 +18,8 @@
 ---
 ### &emsp; 47. 全排列II MID
 关键思路：
-- DFS 参数x为当前正在排的位置 
-- `[0, x)`已经排完；`[x, n]`枚举选哪个排列到这个位置 
-- 用一个 set 避免在当前位置重复考虑相同值的元素 
-- 交换元素 并向下递归
+- 排列型回溯 全排列搜索树节点
+- 逐渐向`path`添加元素 并在全局用`on_path[n]`记录已填入排列的元素（注意`on_path`为所有递归共用 需要恢复现场）（也可以改为在dfs函数内用一个 set 避免在当前位置重复考虑相同值的元素）
 
 <details> 
 <summary> <b>C++ Code</b> </summary>
@@ -30,27 +28,37 @@
 class Solution {
 public:
     vector<vector<int>> permuteUnique(vector<int>& nums) {
-        vector<vector<int>> res;
-        function<void(int)> dfs = [&](int x)
-        {
-            if(x == nums.size() - 1)
+        vector<vector<int>> ans;
+        ranges::sort(nums);
+
+        int n = nums.size();
+        vector<int> path; // 一个排列长度为n
+        vector<int> on_path(n); // 表示nums[j]是否已填入排列
+
+        // 排列型回溯 全排列搜索树节点
+        auto dfs = [&](this auto&& dfs) -> void { // 逐渐添加元素
+            if(path.size() == n)
             {
-                res.emplace_back(nums);
+                ans.push_back(path);
                 return;
             }
-            set<int> st;
-            for(int i = x; i < nums.size(); i++)
+
+            // 枚举nums[j]填入path[i]
+            for(int j = 0; j < n; j++)
             {
-                if(st.find(nums[i]) != st.end())
+                // 剪枝策略 已填入排列 || 与前一个数相同但前一个数没填入排列
+                if(on_path[j] || j > 0 && nums[j] == nums[j - 1] && !on_path[j - 1]) 
                     continue;
-                st.insert(nums[i]);
-                swap(nums[i], nums[x]); // 交换 将 nums[i] 固定在第 x 位
-                dfs(x + 1);
-                swap(nums[i], nums[x]);
+                
+                path.push_back(nums[j]);
+                on_path[j] = true;
+                dfs();
+                on_path[j] = false; // 恢复现场
+                path.pop_back(); // 恢复现场
             }
         };
-        dfs(0);
-        return res;
+        dfs();
+        return ans;
     }
 };
 ```
