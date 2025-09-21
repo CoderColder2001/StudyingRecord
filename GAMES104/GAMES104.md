@@ -1,8 +1,10 @@
 ## 1 引擎架构分层
+引擎是虚拟世界的OS
 * 工具层（UI编辑器）  
-* 功能层 &emsp;&emsp; 游戏绘制（三维场景到一帧二维图像）&emsp; （可视、可动、可玩）   
-  tickMain -> tickLogic. tickRender 分离逻辑与绘制  
+* 功能层 &emsp; 游戏绘制（三维场景到一帧二维图像）&emsp; （可视、可动、可玩）   
+  `tickMain` -> `tickLogic`、`tickRender` 分离逻辑与绘制  
   如何从多核角度思考架构底层代码？
+  JOB System、JOB之间的依赖关系管理
     > 渲染  
     > 动画  
     > 物理计算  
@@ -11,8 +13,8 @@
 * 资源层 &emsp;  <u>数据是开发的核心！</u>
     > 文件转化成高效的中间格式 （resource -> asset）  
     > 定义数据关联 （唯一识别号GUID）  
-    > 实时资产管理器（runtime asset manager） 管理资产生命周期
-* 核心层 &emsp;    内存管理（引擎是虚拟世界的OS）
+    > 实时资产管理器（runtime asset manager） 资源如何分配？ **管理资产生命周期**（GC）
+* 核心层 &emsp; 数学库、数据结构与容器（如何高效使用内存，提高访问效率并减少内存碎片）
     > 调用底层代码（工具箱） 如线程管理、数学计算等（效率）   
     > 提供数据结构、容器等 &emsp; 提高内存利用率和访问效率  
         memory pool/allocator;&emsp; reduce cache miss
